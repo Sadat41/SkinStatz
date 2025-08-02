@@ -1,0 +1,37 @@
+{
+  "name": "cs2-trading-tracker",
+  "version": "2.0.0",
+  "description": "Professional CS2 Skin Trading Dashboard with Advanced Analytics",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "vite preview --port 3000"
+  },
+  "dependencies": {
+    "alpinejs": "^3.13.3",
+    "lit": "^3.1.0",
+    "page": "^1.11.6",
+    "zustand": "^4.4.7",
+    "lightweight-charts": "^4.1.3",
+    "d3": "^7.8.5",
+    "plotly.js-dist": "^2.26.0",
+    "date-fns": "^2.30.0",
+    "simple-statistics": "^7.8.3"
+  },
+  "devDependencies": {
+    "vite": "^5.0.8"
+  },
+  "keywords": [
+    "cs2",
+    "csgo",
+    "trading",
+    "dashboard",
+    "analytics",
+    "skins",
+    "investment"
+  ],
+  "author": "CS2 Trading Team",
+  "license": "MIT"
+}

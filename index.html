@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS2 Trading Tracker | Empire Enhanced</title>
+    
+    <!-- Favicon and PWA Meta -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    <meta name="theme-color" content="#1f2937">
+    <meta name="description" content="Professional CS2 skin trading dashboard with advanced analytics, portfolio management, and market insights.">
+    
+    <!-- External Dependencies (Keep existing) -->
+    <script src="apexcharts.min.js"></script>
+    <script src="chart.min.js"></script>
+    <script src="xlsx.full.min.js"></script>
+    <script src="lucide.js"></script>
+    <!-- <script src="index.min.js"></script> Commented out - causing exports error -->
+    <script src="notyf.min.js"></script>
+    <script src="Sortable.min.js"></script>
+    
+    <!-- Stylesheets -->
+    <link href="tailwind.min.css" rel="stylesheet">
+    <link href="animate.min.css" rel="stylesheet">
+    <link href="notyf.min.css" rel="stylesheet">
+    <link href="tracker.css" rel="stylesheet">
+    
+    <!-- Modern Dependencies - All Local Files -->
+    <script src="zustand-local.js"></script>
+    <script src="page.js"></script>
+    <script src="cdn.min.js" defer></script>
+    
+    <!-- Custom Styles for Modular Interface -->
+    <style>
+        /* Modern Navigation Styles */
+        .nav-sidebar {
+            background: rgba(31, 41, 55, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(75, 85, 99, 0.3);
+        }
+        
+        .nav-item {
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .nav-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-left-color: rgba(59, 130, 246, 0.5);
+            transform: translateX(2px);
+        }
+        
+        .nav-item.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-left-color: #3b82f6;
+            color: #3b82f6;
+        }
+        
+        .nav-item.active .nav-icon {
+            color: #3b82f6;
+        }
+        
+        /* Loading States */
+        .loading {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #3b82f6, transparent);
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        /* Page Transitions */
+        .page-content {
+            min-height: calc(100vh - 120px);
+        }
+        
+        .page-content.active {
+            animation: fadeInUp 0.3s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .nav-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .nav-sidebar.open {
+                transform: translateX(0);
+            }
+        }
+        
+        /* CS2 Theme Colors */
+        .cs2-primary { color: #ff6b35; }
+        .cs2-secondary { color: #004e89; }
+        .cs2-accent { color: #ffa400; }
+        
+        /* Modern glassmorphism cards */
+        .glass-card {
+            background: rgba(31, 41, 55, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(75, 85, 99, 0.2);
+        }
+        
+        .glass-card:hover {
+            background: rgba(31, 41, 55, 0.9);
+            border-color: rgba(75, 85, 99, 0.3);
+        }
+        
+        /* Gradient text effect */
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Mobile Navigation Toggle -->
+    <button id="mobile-nav-toggle" class="md:hidden fixed top-4 left-4 z-50 bg-gray-800 p-2 rounded-lg">
+        <i data-lucide="menu" class="w-6 h-6"></i>
+    </button>
+
+    <div class="flex h-screen">
+        <!-- Sidebar Navigation -->
+        <nav id="nav-sidebar" class="nav-sidebar w-64 md:w-72 fixed md:relative h-full z-40 flex flex-col">
+            <!-- Header -->
+            <div class="p-6 border-b border-gray-700">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                        <span class="text-xl">📊</span>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold gradient-text">CS2 Tracker</h1>
+                        <p class="text-xs text-gray-400">Professional Trading</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navigation Items -->
+            <div class="flex-1 overflow-y-auto py-4">
+                <ul class="space-y-1 px-3">
+                    <li>
+                        <a href="#/dashboard" class="nav-item flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white" data-page="dashboard">
+                            <i data-lucide="layout-dashboard" class="w-5 h-5 nav-icon"></i>
+                            <span>Dashboard</span>
+                            <kbd class="hidden md:inline-block ml-auto text-xs bg-gray-700 px-2 py-1 rounded">⌘+1</kbd>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#/trading" class="nav-item flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white" data-page="trading">
+                            <i data-lucide="trending-up" class="w-5 h-5 nav-icon"></i>
+                            <span>Trading</span>
+                            <kbd class="hidden md:inline-block ml-auto text-xs bg-gray-700 px-2 py-1 rounded">⌘+2</kbd>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#/investments" class="nav-item flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white" data-page="investments">
+                            <i data-lucide="briefcase" class="w-5 h-5 nav-icon"></i>
+                            <span>Investments</span>
+                            <kbd class="hidden md:inline-block ml-auto text-xs bg-gray-700 px-2 py-1 rounded">⌘+3</kbd>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#/cases" class="nav-item flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white" data-page="cases">
+                            <i data-lucide="package" class="w-5 h-5 nav-icon"></i>
+                            <span>Case Drops</span>
+                            <kbd class="hidden md:inline-block ml-auto text-xs bg-gray-700 px-2 py-1 rounded">⌘+4</kbd>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#/analytics" class="nav-item flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white" data-page="analytics">
+                            <i data-lucide="bar-chart-3" class="w-5 h-5 nav-icon"></i>
+                            <span>Analytics</span>
+                            <kbd class="hidden md:inline-block ml-auto text-xs bg-gray-700 px-2 py-1 rounded">⌘+5</kbd>
+                        </a>
+                    </li>
+                </ul>
+                
+                <!-- Section Divider -->
+                <div class="border-t border-gray-700 my-4 mx-6"></div>
+                
+                <!-- Quick Actions -->
+                <div class="px-3">
+                    <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 mb-2">Quick Actions</h3>
+                    <ul class="space-y-1">
+                        <li>
+                            <button id="quick-add-trade" class="nav-item w-full flex items-center space-x-3 px-4 py-2 rounded-lg text-gray-300 hover:text-white text-left">
+                                <i data-lucide="plus-circle" class="w-4 h-4 nav-icon"></i>
+                                <span class="text-sm">Add Trade</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button id="quick-export" class="nav-item w-full flex items-center space-x-3 px-4 py-2 rounded-lg text-gray-300 hover:text-white text-left">
+                                <i data-lucide="download" class="w-4 h-4 nav-icon"></i>
+                                <span class="text-sm">Export Data</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="p-4 border-t border-gray-700">
+                <div class="text-xs text-gray-400 text-center">
+                    <p>CS2 Trading Tracker v2.0</p>
+                    <p>Empire Enhanced</p>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Main Content Area -->
+        <main class="flex-1 flex flex-col min-h-screen">
+            <!-- Top Bar -->
+            <header class="bg-gray-800 border-b border-gray-700 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 id="page-title" class="text-xl font-bold text-white">Dashboard</h2>
+                        <p id="page-subtitle" class="text-sm text-gray-400">Trading performance overview</p>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <!-- Search -->
+                        <div class="relative hidden md:block">
+                            <input type="text" placeholder="Search trades, items..." 
+                                   class="bg-gray-700 text-white placeholder-gray-400 px-4 py-2 rounded-lg pr-10 w-64 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <i data-lucide="search" class="w-4 h-4 absolute right-3 top-3 text-gray-400"></i>
+                        </div>
+                        
+                        <!-- Notifications -->
+                        <button class="relative p-2 text-gray-400 hover:text-white transition-colors">
+                            <i data-lucide="bell" class="w-5 h-5"></i>
+                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">3</span>
+                        </button>
+                        
+                        <!-- Settings -->
+                        <button class="p-2 text-gray-400 hover:text-white transition-colors">
+                            <i data-lucide="settings" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Page Content -->
+            <div id="main-content" class="flex-1 p-6 overflow-y-auto">
+                <!-- Content will be dynamically loaded here -->
+                <div id="initial-loading" class="text-center py-20">
+                    <div class="animate-pulse">
+                        <div class="w-16 h-16 bg-blue-500 rounded-full mx-auto mb-4 flex items-center justify-center">
+                            <i data-lucide="loader" class="w-8 h-8 text-white animate-spin"></i>
+                        </div>
+                        <p class="text-gray-400">Loading CS2 Trading Tracker...</p>
+                        <div class="mt-4">
+                            <div class="text-xs text-gray-500">If this takes too long, check browser console for errors</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Mobile Overlay -->
+    <div id="mobile-overlay" class="md:hidden fixed inset-0 bg-black bg-opacity-50 z-30 hidden"></div>
+    
+    <!-- Load modular system components with proper dependency handling -->
+    <script>
+        // Enhanced dependency loading system
+        console.log('🚀 Starting CS2 Trading Tracker initialization...')
+        
+        // Wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('📄 DOM loaded, starting module initialization...')
+            
+            // Set a global timeout to prevent infinite loading
+            const globalTimeout = setTimeout(() => {
+                console.error('❌ Global initialization timeout - forcing fallback interface')
+                showErrorInterface(new Error('Initialization timed out after 10 seconds'))
+            }, 10000) // 10 second global timeout
+            
+            try {
+                // Load modules in sequence with timeout protection
+                console.log('📦 Loading store module...')
+                await Promise.race([
+                    import('./src/store.js'),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Store module timeout')), 3000))
+                ])
+                
+                // Wait a bit for store to be available globally
+                await new Promise(resolve => setTimeout(resolve, 200))
+                
+                if (!window.useAppStore) {
+                    throw new Error('Store module failed to export useAppStore globally')
+                }
+                console.log('✅ Store module loaded successfully')
+                
+                console.log('📦 Loading router module...')
+                await Promise.race([
+                    import('./src/router.js'),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Router module timeout')), 3000))
+                ])
+                
+                // Wait a bit for router to be available globally
+                await new Promise(resolve => setTimeout(resolve, 200))
+                
+                if (!window.CS2Router) {
+                    throw new Error('Router module failed to export CS2Router globally')
+                }
+                console.log('✅ Router module loaded successfully')
+                
+                console.log('📦 Loading main application...')
+                await Promise.race([
+                    import('./src/main.js'),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Main application timeout')), 5000))
+                ])
+                console.log('✅ Main application loaded successfully')
+                
+                // Clear the global timeout since we succeeded
+                clearTimeout(globalTimeout)
+                console.log('🎉 All modules loaded successfully!')
+                
+            } catch (error) {
+                clearTimeout(globalTimeout)
+                console.error('❌ Module loading failed:', error)
+                showErrorInterface(error)
+            }
+        })
+        
+        // Error interface fallback
+        function showErrorInterface(error) {
+            const mainContent = document.getElementById('main-content')
+            if (mainContent) {
+                mainContent.innerHTML = `
+                    <div class="text-center py-20">
+                        <div class="text-red-400 text-6xl mb-4">⚠️</div>
+                        <h1 class="text-3xl font-bold text-red-400 mb-4">Module Loading Error</h1>
+                        <p class="text-gray-400 mb-4">${error.message}</p>
+                        <div class="glass-card rounded-xl p-6 max-w-md mx-auto">
+                            <h3 class="text-lg font-semibold text-white mb-3">Troubleshooting:</h3>
+                            <ul class="text-left text-gray-300 space-y-2 mb-4">
+                                <li>• Check browser console for detailed errors</li>
+                                <li>• Verify all files are properly served</li>
+                                <li>• Try refreshing the page</li>
+                                <li>• Use the original tracker as fallback</li>
+                            </ul>
+                            <div class="space-y-2">
+                                <button onclick="location.reload()" 
+                                        class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                                    Reload Page
+                                </button>
+                                <button onclick="window.location.href='tracker.html'" 
+                                        class="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg">
+                                    Use Original Tracker
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `
+            }
+        }
+        
+        // Mobile navigation toggle
+        document.addEventListener('DOMContentLoaded', () => {
+            const mobileToggle = document.getElementById('mobile-nav-toggle')
+            const overlay = document.getElementById('mobile-overlay')
+            
+            if (mobileToggle) {
+                mobileToggle.addEventListener('click', () => {
+                    const sidebar = document.getElementById('nav-sidebar')
+                    
+                    sidebar.classList.toggle('open')
+                    overlay.classList.toggle('hidden')
+                })
+            }
+            
+            // Close mobile nav when overlay is clicked
+            if (overlay) {
+                overlay.addEventListener('click', () => {
+                    const sidebar = document.getElementById('nav-sidebar')
+                    
+                    sidebar.classList.remove('open')
+                    overlay.classList.add('hidden')
+                })
+            }
+            
+            // Initialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons()
+            }
+            
+            // Test navigation click detection
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('a[href^="#/"]')) {
+                    const link = e.target.closest('a[href^="#/"]')
+                    console.log('🔍 Navigation link clicked:', link.href)
+                }
+            })
+        })
+        
+        // Emergency fallback - if nothing loads after 5 seconds, show basic content
+        setTimeout(() => {
+            const mainContent = document.getElementById('main-content')
+            const initialLoading = document.getElementById('initial-loading')
+            
+            // Only show emergency fallback if still showing loading screen
+            if (mainContent && initialLoading && initialLoading.style.display !== 'none') {
+                console.warn('🚨 Emergency fallback activated - modules failed to load in time')
+                mainContent.innerHTML = `
+                    <div class="text-center py-20">
+                        <h1 class="text-3xl font-bold gradient-text mb-4">CS2 Trading Dashboard</h1>
+                        <p class="text-gray-400 mb-8">Emergency Mode - Basic functionality available</p>
+                        <div class="glass-card rounded-xl p-6 max-w-md mx-auto">
+                            <h3 class="text-lg font-semibold text-white mb-3">Quick Actions:</h3>
+                            <div class="space-y-3">
+                                <button onclick="window.location.href='tracker.html'" 
+                                        class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                                    Use Original Tracker
+                                </button>
+                                <button onclick="location.reload()" 
+                                        class="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg">
+                                    Try Again
+                                </button>
+                                <button onclick="console.clear(); location.reload()" 
+                                        class="w-full bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg">
+                                    Clear Console & Reload
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mt-6 text-xs text-gray-500">
+                            Check browser console (F12) for detailed error information
+                        </div>
+                    </div>
+                `
+                
+                // Initialize icons for the emergency interface
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons()
+                }
+            }
+        }, 5000) // 5 second emergency timeout
+        
+        console.log('🚀 CS2 Trading Tracker - Enhanced Module Loading System')
+    </script>
+</body>
+</html>
