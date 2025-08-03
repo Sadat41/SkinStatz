@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CS2 Trading Tracker | Empire Enhanced</title>
+    <title>SkinStatz | Professional CS2 Trading Tracker</title>
     
     <!-- Favicon and PWA Meta -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
     <meta name="theme-color" content="#1f2937">
-    <meta name="description" content="Professional CS2 skin trading dashboard with advanced analytics, portfolio management, and market insights.">
+    <meta name="description" content="SkinStatz - Professional CS2 skin trading dashboard with advanced analytics, portfolio management, and market insights.">
     
     <!-- External Dependencies (Keep existing) -->
     <script src="apexcharts.min.js"></script>
@@ -34,30 +34,62 @@
     <style>
         /* Modern Navigation Styles */
         .nav-sidebar {
-            background: rgba(31, 41, 55, 0.95);
-            backdrop-filter: blur(10px);
-            border-right: 1px solid rgba(75, 85, 99, 0.3);
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.95) 100%);
+            backdrop-filter: blur(16px);
+            border-right: 1px solid rgba(59, 130, 246, 0.1);
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.1);
         }
         
         .nav-item {
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border-left: 3px solid transparent;
+            position: relative;
+            border-radius: 0 12px 12px 0;
+            margin: 2px 8px 2px 0;
+        }
+        
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(147, 51, 234, 0.05));
+            border-radius: inherit;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .nav-item:hover::before {
+            opacity: 1;
         }
         
         .nav-item:hover {
-            background: rgba(59, 130, 246, 0.1);
-            border-left-color: rgba(59, 130, 246, 0.5);
-            transform: translateX(2px);
+            background: transparent;
+            border-left-color: rgba(59, 130, 246, 0.6);
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
         }
         
         .nav-item.active {
-            background: rgba(59, 130, 246, 0.2);
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(147, 51, 234, 0.1));
             border-left-color: #3b82f6;
-            color: #3b82f6;
+            color: #60a5fa;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.2);
         }
         
         .nav-item.active .nav-icon {
-            color: #3b82f6;
+            color: #60a5fa;
+        }
+        
+        .nav-item .nav-icon {
+            transition: all 0.3s ease;
+        }
+        
+        .nav-item:hover .nav-icon {
+            color: #93c5fd;
+            transform: scale(1.1);
         }
         
         /* Loading States */
@@ -138,6 +170,152 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
+
+        /* Sidebar toggle functionality - SIMPLIFIED */
+        .nav-sidebar {
+            transition: all 0.3s ease;
+            overflow: visible;
+        }
+
+        /* Collapsed state */
+        .nav-sidebar.collapsed {
+            width: 80px !important;
+            min-width: 80px !important;
+            max-width: 80px !important;
+            flex-basis: 80px !important;
+        }
+
+        /* Expanded state - restore original width */
+        .nav-sidebar:not(.collapsed) {
+            width: 288px !important; /* md:w-72 equivalent */
+            min-width: 288px !important;
+            max-width: 288px !important;
+            flex-basis: 288px !important;
+        }
+
+        /* Mobile responsive - smaller width */
+        @media (max-width: 767px) {
+            .nav-sidebar:not(.collapsed) {
+                width: 256px !important; /* w-64 equivalent */
+                min-width: 256px !important;
+                max-width: 256px !important;
+                flex-basis: 256px !important;
+            }
+        }
+
+        /* Hide text elements in collapsed state */
+        .nav-sidebar.collapsed .sidebar-text,
+        .nav-sidebar.collapsed .nav-item > span,
+        .nav-sidebar.collapsed .nav-item > kbd,
+        .nav-sidebar.collapsed h3 {
+            display: none;
+        }
+
+        /* Hide support dropdown and chevron in collapsed state */
+        .nav-sidebar.collapsed #support-dropdown,
+        .nav-sidebar.collapsed #support-chevron {
+            display: none;
+        }
+
+        /* Center nav items in collapsed state */
+        .nav-sidebar.collapsed .nav-item {
+            justify-content: center !important;
+            padding: 0.75rem !important;
+        }
+
+        /* Main content area flex behavior */
+        .main-area {
+            flex: 1 1 0%;
+            min-width: 0;
+            overflow-x: auto;
+        }
+
+        /* Enhanced toggle button */
+        .sidebar-toggle-btn {
+            position: absolute;
+            top: 50%;
+            right: -28px;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 40px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border: 2px solid #1e3a8a;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .sidebar-toggle-btn:hover {
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            transform: translateY(-50%) translateX(3px);
+            box-shadow: 5px 0 20px rgba(59, 130, 246, 0.4);
+        }
+
+        /* Ensure toggle button doesn't interfere with main content */
+        @media (min-width: 768px) {
+            .main-area {
+                position: relative;
+                z-index: 1;
+            }
+            
+            .sidebar-toggle-btn {
+                z-index: 999;
+            }
+        }
+
+        .sidebar-toggle-btn i {
+            color: white;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-sidebar.collapsed .sidebar-toggle-btn i {
+            transform: rotate(180deg);
+        }
+
+        .nav-sidebar.collapsed .sidebar-toggle-btn {
+            right: -28px;
+        }
+
+        /* Ensure toggle is always accessible */
+        @media (max-width: 767px) {
+            .sidebar-toggle-btn {
+                display: none;
+            }
+        }
+
+        /* Active state feedback */
+        .sidebar-toggle-btn:active {
+            transform: translateY(-50%) translateX(1px) scale(0.95);
+        }
+
+        /* Accessibility */
+        .sidebar-toggle-btn:focus {
+            outline: 2px solid #60a5fa;
+            outline-offset: 2px;
+        }
+
+        /* Support dropdown styling */
+        #support-dropdown {
+            transition: all 0.3s ease;
+        }
+
+        #support-dropdown a:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-left-color: rgba(102, 126, 234, 0.6);
+        }
+
+        /* Ensure support section works well in mobile */
+        @media (max-width: 767px) {
+            #support-dropdown {
+                margin-left: 0.5rem;
+            }
+        }
+
     </style>
 </head>
 
@@ -147,20 +325,23 @@
         <i data-lucide="menu" class="w-6 h-6"></i>
     </button>
 
-    <div class="flex h-screen">
+    <div class="flex h-screen overflow-hidden">
         <!-- Sidebar Navigation -->
         <nav id="nav-sidebar" class="nav-sidebar w-64 md:w-72 fixed md:relative h-full z-40 flex flex-col">
             <!-- Header -->
-            <div class="p-6 border-b border-gray-700">
+            <div class="p-6 border-b border-gray-700/50 relative bg-gradient-to-r from-slate-900/50 to-slate-800/30">
                 <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                        <span class="text-xl">📊</span>
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0 border border-blue-400/30">
+                        <i data-lucide="trending-up" class="w-6 h-6 text-white"></i>
                     </div>
-                    <div>
-                        <h1 class="text-lg font-bold gradient-text">CS2 Tracker</h1>
-                        <p class="text-xs text-gray-400">Professional Trading</p>
+                    <div class="sidebar-text">
+                        <h1 class="text-lg font-bold gradient-text">SkinStatz</h1>
+                        <p class="text-xs text-gray-400">Your Skin Arsenal, Fully Tracked.</p>
                     </div>
                 </div>
+                <button id="sidebar-toggle" class="sidebar-toggle-btn">
+                    <i data-lucide="panel-left-close" class="w-4 h-4"></i>
+                </button>
             </div>
             
             <!-- Navigation Items -->
@@ -190,25 +371,37 @@
                     <li>
                         <a href="#/cases" class="nav-item flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white" data-page="cases">
                             <i data-lucide="package" class="w-5 h-5 nav-icon"></i>
-                            <span>Case Drops</span>
+                            <span>Weekly Drops</span>
                             <kbd class="hidden md:inline-block ml-auto text-xs bg-gray-700 px-2 py-1 rounded">⌘+4</kbd>
                         </a>
                     </li>
                     <li>
-                        <a href="#/analytics" class="nav-item flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white" data-page="analytics">
-                            <i data-lucide="bar-chart-3" class="w-5 h-5 nav-icon"></i>
-                            <span>Analytics</span>
+                        <a href="#/inventory" class="nav-item flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white" data-page="inventory">
+                            <i data-lucide="package-2" class="w-5 h-5 nav-icon"></i>
+                            <span>Inventory</span>
                             <kbd class="hidden md:inline-block ml-auto text-xs bg-gray-700 px-2 py-1 rounded">⌘+5</kbd>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#/skin-explorer" class="nav-item flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white" data-page="skin-explorer">
+                            <i data-lucide="search" class="w-5 h-5 nav-icon"></i>
+                            <span>Skin Explorer</span>
+                            <kbd class="hidden md:inline-block ml-auto text-xs bg-gray-700 px-2 py-1 rounded">⌘+6</kbd>
                         </a>
                     </li>
                 </ul>
                 
                 <!-- Section Divider -->
-                <div class="border-t border-gray-700 my-4 mx-6"></div>
+                <div class="border-t border-gray-700/30 my-4 mx-6 relative">
+                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/20 to-transparent h-px"></div>
+                </div>
                 
                 <!-- Quick Actions -->
                 <div class="px-3">
-                    <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 mb-2">Quick Actions</h3>
+                    <h3 class="text-xs font-semibold text-blue-300/80 uppercase tracking-wider px-4 mb-3 flex items-center">
+                        <i data-lucide="zap" class="w-3 h-3 mr-2"></i>
+                        Quick Actions
+                    </h3>
                     <ul class="space-y-1">
                         <li>
                             <button id="quick-add-trade" class="nav-item w-full flex items-center space-x-3 px-4 py-2 rounded-lg text-gray-300 hover:text-white text-left">
@@ -222,50 +415,75 @@
                                 <span class="text-sm">Export Data</span>
                             </button>
                         </li>
+                        <li>
+                            <button id="quick-import" class="nav-item w-full flex items-center space-x-3 px-4 py-2 rounded-lg text-gray-300 hover:text-white text-left">
+                                <i data-lucide="upload" class="w-4 h-4 nav-icon"></i>
+                                <span class="text-sm">Import Data</span>
+                            </button>
+                        </li>
                     </ul>
                 </div>
             </div>
             
             <!-- Footer -->
             <div class="p-4 border-t border-gray-700">
-                <div class="text-xs text-gray-400 text-center">
-                    <p>CS2 Trading Tracker v2.0</p>
-                    <p>Empire Enhanced</p>
+                <!-- User Section -->
+                <ul class="space-y-1 mb-4">
+                    <!-- Profile Section -->
+                    <li>
+                        <a href="#/profile" class="nav-item flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white" data-page="profile">
+                            <i data-lucide="user" class="w-5 h-5 nav-icon"></i>
+                            <span>Profile</span>
+                        </a>
+                    </li>
+                </ul>
+                
+                <!-- Community Section Divider -->
+                <div class="border-t border-gray-700/30 mb-4 relative">
+                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/10 to-transparent h-px"></div>
                 </div>
+                
+                <!-- Community Section -->
+                <ul class="space-y-1">
+                    <!-- Support Section -->
+                    <li>
+                        <button id="support-toggle" class="nav-item w-full flex items-center justify-between px-4 py-3 rounded-lg text-gray-300 hover:text-white text-left">
+                            <div class="flex items-center space-x-3">
+                                <i data-lucide="heart" class="w-5 h-5 nav-icon"></i>
+                                <span>Support</span>
+                            </div>
+                            <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200" id="support-chevron"></i>
+                        </button>
+                        
+                        <!-- Support Options Dropdown -->
+                        <div id="support-dropdown" class="hidden mt-2 ml-4 space-y-1">
+                            <a href="https://buymeacoffee.com/sadat_41" target="_blank" rel="noopener noreferrer" class="nav-item flex items-center space-x-3 px-4 py-2 rounded-lg text-gray-400 hover:text-white text-sm">
+                                <i data-lucide="coffee" class="w-4 h-4 nav-icon"></i>
+                                <span>Buy Me a Coffee</span>
+                                <i data-lucide="external-link" class="w-3 h-3 ml-auto opacity-60"></i>
+                            </a>
+                            <a href="https://steamcommunity.com/tradeoffer/new/?partner=194904016&token=hHHzu1LH" target="_blank" rel="noopener noreferrer" class="nav-item flex items-center space-x-3 px-4 py-2 rounded-lg text-gray-400 hover:text-white text-sm">
+                                <i data-lucide="gamepad-2" class="w-4 h-4 nav-icon"></i>
+                                <span>Steam</span>
+                                <i data-lucide="external-link" class="w-3 h-3 ml-auto opacity-60"></i>
+                            </a>
+                        </div>
+                    </li>
+                    
+                    <!-- Contribute Section -->
+                    <li>
+                        <a href="https://github.com/Sadat41/SkinStatz" target="_blank" rel="noopener noreferrer" class="nav-item flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white">
+                            <i data-lucide="code" class="w-5 h-5 nav-icon"></i>
+                            <span>Contribute</span>
+                            <i data-lucide="external-link" class="w-3 h-3 ml-auto opacity-60"></i>
+                        </a>
+                    </li>
+                </ul>
             </div>
         </nav>
         
         <!-- Main Content Area -->
-        <main class="flex-1 flex flex-col min-h-screen">
-            <!-- Top Bar -->
-            <header class="bg-gray-800 border-b border-gray-700 px-6 py-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h2 id="page-title" class="text-xl font-bold text-white">Dashboard</h2>
-                        <p id="page-subtitle" class="text-sm text-gray-400">Trading performance overview</p>
-                    </div>
-                    
-                    <div class="flex items-center space-x-4">
-                        <!-- Search -->
-                        <div class="relative hidden md:block">
-                            <input type="text" placeholder="Search trades, items..." 
-                                   class="bg-gray-700 text-white placeholder-gray-400 px-4 py-2 rounded-lg pr-10 w-64 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <i data-lucide="search" class="w-4 h-4 absolute right-3 top-3 text-gray-400"></i>
-                        </div>
-                        
-                        <!-- Notifications -->
-                        <button class="relative p-2 text-gray-400 hover:text-white transition-colors">
-                            <i data-lucide="bell" class="w-5 h-5"></i>
-                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">3</span>
-                        </button>
-                        
-                        <!-- Settings -->
-                        <button class="p-2 text-gray-400 hover:text-white transition-colors">
-                            <i data-lucide="settings" class="w-5 h-5"></i>
-                        </button>
-                    </div>
-                </div>
-            </header>
+        <main class="main-area flex-1 flex flex-col min-h-screen">
             
             <!-- Page Content -->
             <div id="main-content" class="flex-1 p-6 overflow-y-auto">
@@ -275,7 +493,7 @@
                         <div class="w-16 h-16 bg-blue-500 rounded-full mx-auto mb-4 flex items-center justify-center">
                             <i data-lucide="loader" class="w-8 h-8 text-white animate-spin"></i>
                         </div>
-                        <p class="text-gray-400">Loading CS2 Trading Tracker...</p>
+                        <p class="text-gray-400">Loading SkinStatz...</p>
                         <div class="mt-4">
                             <div class="text-xs text-gray-500">If this takes too long, check browser console for errors</div>
                         </div>
@@ -291,7 +509,7 @@
     <!-- Load modular system components with proper dependency handling -->
     <script>
         // Enhanced dependency loading system
-        console.log('🚀 Starting CS2 Trading Tracker initialization...')
+        console.log('🚀 Starting SkinStatz initialization...')
         
         // Wait for DOM to be ready
         document.addEventListener('DOMContentLoaded', async () => {
@@ -408,6 +626,63 @@
                 })
             }
             
+            // Sidebar toggle functionality
+            const sidebarToggle = document.getElementById('sidebar-toggle')
+            const sidebar = document.getElementById('nav-sidebar')
+            
+            if (sidebarToggle && sidebar) {
+                sidebarToggle.addEventListener('click', () => {
+                    console.log('Toggle clicked')
+                    sidebar.classList.toggle('collapsed')
+                    
+                    // Store the collapsed state in localStorage
+                    const isCollapsed = sidebar.classList.contains('collapsed')
+                    localStorage.setItem('sidebarCollapsed', isCollapsed)
+                    console.log('Sidebar collapsed:', isCollapsed)
+                })
+                
+                // Restore sidebar state from localStorage
+                const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true'
+                console.log('Restored state:', isCollapsed)
+                if (isCollapsed) {
+                    sidebar.classList.add('collapsed')
+                }
+            }
+            
+            // Support dropdown functionality
+            const supportToggle = document.getElementById('support-toggle')
+            const supportDropdown = document.getElementById('support-dropdown')
+            const supportChevron = document.getElementById('support-chevron')
+            
+            if (supportToggle && supportDropdown && supportChevron) {
+                // Force initial state to be closed
+                supportDropdown.classList.add('hidden')
+                supportChevron.style.transform = 'rotate(0deg)'
+                
+                supportToggle.addEventListener('click', () => {
+                    const isHidden = supportDropdown.classList.contains('hidden')
+                    
+                    if (isHidden) {
+                        supportDropdown.classList.remove('hidden')
+                        supportChevron.style.transform = 'rotate(180deg)'
+                        localStorage.setItem('supportDropdownOpen', 'true')
+                    } else {
+                        supportDropdown.classList.add('hidden')
+                        supportChevron.style.transform = 'rotate(0deg)'
+                        localStorage.setItem('supportDropdownOpen', 'false')
+                    }
+                })
+                
+                // Only restore state if explicitly set to true
+                setTimeout(() => {
+                    const storedState = localStorage.getItem('supportDropdownOpen')
+                    if (storedState === 'true') {
+                        supportDropdown.classList.remove('hidden')
+                        supportChevron.style.transform = 'rotate(180deg)'
+                    }
+                }, 100)
+            }
+            
             // Initialize Lucide icons
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons()
@@ -432,7 +707,7 @@
                 console.warn('🚨 Emergency fallback activated - modules failed to load in time')
                 mainContent.innerHTML = `
                     <div class="text-center py-20">
-                        <h1 class="text-3xl font-bold gradient-text mb-4">CS2 Trading Dashboard</h1>
+                        <h1 class="text-3xl font-bold gradient-text mb-4">SkinStatz Dashboard</h1>
                         <p class="text-gray-400 mb-8">Emergency Mode - Basic functionality available</p>
                         <div class="glass-card rounded-xl p-6 max-w-md mx-auto">
                             <h3 class="text-lg font-semibold text-white mb-3">Quick Actions:</h3>
@@ -464,7 +739,11 @@
             }
         }, 5000) // 5 second emergency timeout
         
-        console.log('🚀 CS2 Trading Tracker - Enhanced Module Loading System')
+        console.log('🚀 SkinStatz - Enhanced Module Loading System')
+        
+        // Debug function to clear dropdown state - remove this after testing
+        // Uncomment the next line if you want to reset the dropdown state
+        // localStorage.removeItem('supportDropdownOpen')
     </script>
 </body>
 </html>

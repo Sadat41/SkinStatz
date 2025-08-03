@@ -1,7 +1,7 @@
 {
-  "name": "cs2-trading-tracker",
+  "name": "skinstatz",
   "version": "2.0.0",
-  "description": "Professional CS2 Skin Trading Dashboard with Advanced Analytics",
+  "description": "SkinStatz - Professional CS2 Skin Trading Dashboard with Advanced Analytics",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -32,6 +32,6 @@
     "skins",
     "investment"
   ],
-  "author": "CS2 Trading Team",
+  "author": "SkinStatz Team",
   "license": "MIT"
 }

@@ -16,6 +16,8 @@ export class InvestmentsPage {
         this.editingInvestment = null
         this.editingLongTermInvestment = null
         this.selectedCategoryId = null
+        this.selectedStatusFilter = 'holding' // null = all, 'holding', 'sold'
+        this.selectedSortOption = 'recent' // 'recent', 'ascending', 'descending'
         this.priceCache = new Map()
         this.pricePromises = new Map()
         this.isSelectMode = false
@@ -36,6 +38,8 @@ export class InvestmentsPage {
                     this.initializeInvestmentForm()
                     this.renderLongTermInvestments()
                     this.renderCategoryTabs()
+                    this.updateStatusFilterButtons()
+                    this.updateSortButtonText()
                     this.updateMetrics()
                     this.initializeHoldingsChart()
                     console.log('💼 Investments page initialized')
@@ -431,11 +435,14 @@ export class InvestmentsPage {
                                     <i data-lucide="trash-2" class="w-4 h-4 relative z-10"></i>
                                     <span class="relative z-10">Remove Selected</span>
                                 </button>
-                                <!-- Move Category Dropdown - Hidden by default -->
-                                <div id="moveCategoryDropdown" class="absolute top-full left-0 mt-2 bg-gray-800 border border-gray-600 rounded-lg shadow-xl z-[100]" style="display: none; min-width: 200px; max-height: 300px; overflow-y: auto;">
-                                    <div class="p-3">
-                                        <div class="text-gray-300 text-sm font-medium mb-3">Move to Category:</div>
-                                        <div id="categoryDropdownList" class="space-y-1">
+                                <!-- Move Category Dropdown - Enhanced Styling -->
+                                <div id="moveCategoryDropdown" class="absolute top-full left-0 mt-2 bg-gray-900 border-2 border-gray-600 rounded-xl shadow-2xl z-[100]" style="display: none; min-width: 220px; max-height: 320px; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);">
+                                    <div class="p-4">
+                                        <div class="flex items-center gap-2 text-white text-sm font-semibold mb-4">
+                                            <i data-lucide="folder-open" class="w-4 h-4 text-blue-400"></i>
+                                            Move to Category:
+                                        </div>
+                                        <div id="categoryDropdownList" class="space-y-2">
                                             <!-- Categories will be populated here -->
                                         </div>
                                     </div>
@@ -448,19 +455,34 @@ export class InvestmentsPage {
                             <!-- Categories will be populated here as tabs -->
                         </div>
 
-                        <!-- Add Category Form - Hidden by default -->
-                        <div id="addCategoryForm" class="hidden mb-6 p-4 bg-gray-800 border border-gray-600 rounded-lg">
+                        <!-- Add Category Form - Compact Enhanced Styling -->
+                        <div id="addCategoryForm" class="hidden mb-4 p-4 bg-gray-900 border border-gray-700 rounded-lg">
                             <div class="flex gap-3 items-end">
-                                <div class="flex-1">
+                                <div class="flex-1 group">
                                     <label class="block text-sm font-medium text-gray-300 mb-2">Category Name</label>
-                                    <input type="text" id="newCategoryName" placeholder="e.g., Cases, Weapons, Stickers" 
-                                            class="w-full px-3 py-2 rounded-lg text-white placeholder-gray-500 outline-none bg-gray-700 border border-gray-600 focus:border-blue-500 transition">
+                                    <div class="relative">
+                                        <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 p-0.5 opacity-50 group-focus-within:opacity-100 transition-opacity duration-200">
+                                            <div class="w-full h-full bg-gray-900 rounded-xl"></div>
+                                        </div>
+                                        <input type="text" id="newCategoryName" placeholder="e.g., Cases, Weapons, Stickers" 
+                                                class="relative z-10 w-full bg-transparent text-white px-3 py-2 rounded-xl focus:outline-none transition-colors duration-200">
+                                    </div>
                                 </div>
-                                <button type="button" id="saveCategoryBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition">
-                                    Save
+                                <!-- Save Button with Gradient Border -->
+                                <button type="button" id="saveCategoryBtn" class="group relative bg-gray-900 hover:bg-gradient-to-r hover:from-green-500 hover:to-emerald-600 text-gray-300 hover:text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center gap-2 overflow-hidden">
+                                    <div class="absolute inset-0 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 p-0.5">
+                                        <div class="w-full h-full bg-gray-900 rounded-lg group-hover:bg-transparent transition-colors duration-300"></div>
+                                    </div>
+                                    <i data-lucide="check" class="w-4 h-4 relative z-10"></i>
+                                    <span class="relative z-10">Save</span>
                                 </button>
-                                <button type="button" id="cancelCategoryBtn" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition">
-                                    Cancel
+                                <!-- Cancel Button with Gradient Border -->
+                                <button type="button" id="cancelCategoryBtn" class="group relative bg-gray-900 hover:bg-gradient-to-r hover:from-gray-500 hover:to-gray-600 text-gray-300 hover:text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center gap-2 overflow-hidden">
+                                    <div class="absolute inset-0 rounded-lg bg-gradient-to-r from-gray-500 to-gray-600 p-0.5">
+                                        <div class="w-full h-full bg-gray-900 rounded-lg group-hover:bg-transparent transition-colors duration-300"></div>
+                                    </div>
+                                    <i data-lucide="x" class="w-4 h-4 relative z-10"></i>
+                                    <span class="relative z-10">Cancel</span>
                                 </button>
                             </div>
                         </div>
@@ -471,9 +493,56 @@ export class InvestmentsPage {
                         <div class="p-4 border-b border-gray-700">
                             <div class="flex items-center justify-between">
                                 <h3 class="text-white font-semibold">Investment History</h3>
-                                <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-3">
                                     <i data-lucide="activity" class="w-4 h-4 text-gray-400"></i>
-                                    <span class="text-gray-400 text-sm">All transactions</span>
+                                    <!-- Status Filter Buttons -->
+                                    <div class="flex items-center gap-1 bg-gray-800 p-1 rounded-lg border border-gray-600">
+                                        <button onclick="window.investmentsPage?.selectStatusFilter(null)" 
+                                                id="statusFilterAll"
+                                                class="status-filter-btn px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 text-gray-400 hover:text-white hover:bg-gray-700">
+                                            All
+                                        </button>
+                                        <button onclick="window.investmentsPage?.selectStatusFilter('holding')" 
+                                                id="statusFilterHolding"
+                                                class="status-filter-btn px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 bg-blue-600 text-white">
+                                            Holding
+                                        </button>
+                                        <button onclick="window.investmentsPage?.selectStatusFilter('sold')" 
+                                                id="statusFilterSold"
+                                                class="status-filter-btn px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 text-gray-400 hover:text-white hover:bg-gray-700">
+                                            Sold
+                                        </button>
+                                    </div>
+                                    <!-- Sort Dropdown -->
+                                    <div class="relative z-[9999]">
+                                        <button onclick="window.investmentsPage?.toggleSortDropdown()" 
+                                                id="sortDropdownBtn"
+                                                class="flex items-center gap-2 bg-gray-800 text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-1.5 rounded-lg border border-gray-600 transition-all duration-200 text-xs font-medium">
+                                            <i data-lucide="arrow-up-down" class="w-3.5 h-3.5"></i>
+                                            <span id="sortButtonText">Recent</span>
+                                            <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+                                        </button>
+                                        <!-- Sort Dropdown Menu -->
+                                        <div id="sortDropdown" class="absolute top-full right-0 mt-2 bg-gray-900 border-2 border-gray-600 rounded-lg shadow-2xl" style="display: none; min-width: 160px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8); z-index: 10000;">
+                                            <div class="p-2">
+                                                <button onclick="window.investmentsPage?.selectSortOption('recent')" 
+                                                        class="sort-option w-full text-left px-3 py-2 text-xs text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-all duration-200 flex items-center gap-2">
+                                                    <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                                                    Recent
+                                                </button>
+                                                <button onclick="window.investmentsPage?.selectSortOption('ascending')" 
+                                                        class="sort-option w-full text-left px-3 py-2 text-xs text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-all duration-200 flex items-center gap-2">
+                                                    <i data-lucide="trending-up" class="w-3.5 h-3.5"></i>
+                                                    Ascending (Low to High)
+                                                </button>
+                                                <button onclick="window.investmentsPage?.selectSortOption('descending')" 
+                                                        class="sort-option w-full text-left px-3 py-2 text-xs text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-all duration-200 flex items-center gap-2">
+                                                    <i data-lucide="trending-down" class="w-3.5 h-3.5"></i>
+                                                    Descending (High to Low)
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -680,69 +749,204 @@ export class InvestmentsPage {
             </div>
             </div>
 
-            <!-- Edit Long Term Investment Modal -->
-            <div id="editLongTermModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
-                <div class="glass-card rounded-2xl p-6 w-full max-w-md">
-                    <h3 class="text-xl font-bold gradient-text mb-4">Edit Long Term Investment</h3>
-                    <form id="editLongTermForm">
-                        <div class="space-y-4">
-                            <!-- Item Name -->
+            <!-- Edit Long Term Investment Modal - Enhanced -->
+            <div id="editLongTermModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+                <div class="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-2xl transform transition-all duration-300 scale-95">
+                    <!-- Modal Header -->
+                    <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-t-2xl p-6">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                            </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-2">Item Name</label>
-                                <input type="text" id="editLongTermItemName" class="input-field w-full px-3 py-2 rounded-lg text-white bg-gray-700 border border-gray-600 focus:border-blue-500 outline-none" required>
-                            </div>
-                        
-                            <!-- Quantity and Category -->
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-300 mb-2">Quantity</label>
-                                    <input type="number" id="editLongTermQuantity" min="1" step="1" class="input-field w-full px-3 py-2 rounded-lg text-white bg-gray-700 border border-gray-600 focus:border-blue-500 outline-none" required>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-300 mb-2">Category</label>
-                                    <select id="editLongTermCategory" class="input-field w-full px-3 py-2 rounded-lg text-white bg-gray-700 border border-gray-600 focus:border-blue-500 outline-none">
-                                        <option value="">Select Category</option>
-                                        <!-- Categories will be populated by JavaScript -->
-                                    </select>
-                                </div>
-                            </div>
-                        
-                            <!-- Buy Date and Sell Date -->
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-300 mb-2">Buy Date</label>
-                                    <input type="date" id="editLongTermBuyDate" class="input-field w-full px-3 py-2 rounded-lg text-white bg-gray-700 border border-gray-600 focus:border-blue-500 outline-none" required>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-300 mb-2">Sell Date</label>
-                                    <input type="date" id="editLongTermSellDate" class="input-field w-full px-3 py-2 rounded-lg text-white bg-gray-700 border border-gray-600 focus:border-blue-500 outline-none">
-                                </div>
-                            </div>
-                        
-                            <!-- Buy & Sell Price -->
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-300 mb-2">Unit Buy Price ($)</label>
-                                    <input type="number" id="editLongTermBuyPrice" step="0.01" min="0" class="input-field w-full px-3 py-2 rounded-lg text-white bg-gray-700 border border-gray-600 focus:border-blue-500 outline-none" required>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-300 mb-2">Unit Sell Price ($)</label>
-                                    <input type="number" id="editLongTermSellPrice" step="0.01" min="0" class="input-field w-full px-3 py-2 rounded-lg text-white bg-gray-700 border border-gray-600 focus:border-blue-500 outline-none">
-                                </div>
+                                <h3 class="text-2xl font-bold text-white">Edit Investment</h3>
+                                <p class="text-blue-100 text-sm">Update your investment details</p>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Modal Body -->
+                    <div class="p-6">
+                        <form id="editLongTermForm">
+                            <div class="grid grid-cols-1 gap-6">
+                                <!-- Item Name - Full Width -->
+                                <div class="group">
+                                    <label class="block text-sm font-semibold text-gray-400 mb-2 group-focus-within:text-blue-400 transition-colors">
+                                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                                        </svg>
+                                        Item Name
+                                    </label>
+                                    <input type="text" id="editLongTermItemName" 
+                                           class="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200" 
+                                           placeholder="Enter item name" required>
+                                </div>
+                        
+                                <!-- Quantity and Category Row -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="group">
+                                        <label class="block text-sm font-semibold text-gray-400 mb-2 group-focus-within:text-blue-400 transition-colors">
+                                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+                                            </svg>
+                                            Quantity
+                                        </label>
+                                        <input type="number" id="editLongTermQuantity" min="1" step="1" 
+                                               class="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200" 
+                                               placeholder="1" required>
+                                    </div>
+                                    <div class="group">
+                                        <label class="block text-sm font-semibold text-gray-400 mb-2 group-focus-within:text-blue-400 transition-colors">
+                                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                                            </svg>
+                                            Category
+                                        </label>
+                                        <select id="editLongTermCategory" 
+                                                class="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-xl text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200">
+                                            <option value="">Select Category</option>
+                                            <!-- Categories will be populated by JavaScript -->
+                                        </select>
+                                    </div>
+                                </div>
+                        
+                                <!-- Dates Row -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="group">
+                                        <label class="block text-sm font-semibold text-gray-400 mb-2 group-focus-within:text-blue-400 transition-colors">
+                                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                            </svg>
+                                            Buy Date
+                                        </label>
+                                        <input type="date" id="editLongTermBuyDate" 
+                                               class="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-xl text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200" 
+                                               required>
+                                    </div>
+                                    <div class="group">
+                                        <label class="block text-sm font-semibold text-gray-400 mb-2 group-focus-within:text-blue-400 transition-colors">
+                                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                            </svg>
+                                            Sell Date
+                                            <span class="text-xs text-gray-500 ml-1">(optional)</span>
+                                        </label>
+                                        <input type="date" id="editLongTermSellDate" 
+                                               class="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-xl text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200">
+                                    </div>
+                                </div>
+                        
+                                <!-- Prices Row -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="group">
+                                        <label class="block text-sm font-semibold text-gray-400 mb-2 group-focus-within:text-green-400 transition-colors">
+                                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                                            </svg>
+                                            Unit Buy Price ($)
+                                        </label>
+                                        <input type="number" id="editLongTermBuyPrice" step="0.01" min="0" 
+                                               class="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition-all duration-200" 
+                                               placeholder="0.00" required>
+                                    </div>
+                                    <div class="group">
+                                        <label class="block text-sm font-semibold text-gray-400 mb-2 group-focus-within:text-emerald-400 transition-colors">
+                                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                                            </svg>
+                                            Unit Sell Price ($)
+                                            <span class="text-xs text-gray-500 ml-1">(optional)</span>
+                                        </label>
+                                        <input type="number" id="editLongTermSellPrice" step="0.01" min="0" 
+                                               class="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500 focus:ring-opacity-50 transition-all duration-200" 
+                                               placeholder="0.00">
+                                    </div>
+                                </div>
+                            </div>
                     
-                        <!-- Action Buttons -->
-                        <div class="flex space-x-4 mt-6">
-                            <button type="submit" class="bg-green-600 hover:bg-green-700 flex-1 text-white font-semibold py-2 px-4 rounded-lg">
-                                Save Changes
-                            </button>
-                            <button type="button" id="cancelLongTermEdit" class="bg-gray-600 hover:bg-gray-700 flex-1 text-white font-semibold py-2 px-4 rounded-lg transition">
+                            <!-- Action Buttons -->
+                            <div class="flex gap-4 mt-8 pt-6 border-t border-gray-700">
+                                <button type="button" id="cancelLongTermEdit" 
+                                        class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 flex items-center justify-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                    Cancel
+                                </button>
+                                <button type="submit" 
+                                        class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>     
+                </div>
+            </div>
+
+            <!-- Custom Modal Infrastructure -->
+            <!-- Delete Confirmation Modal -->
+            <div id="deleteConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center" style="display: none;">
+                <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">Delete Investment</h3>
+                        <p class="text-gray-400 mb-6">
+                            Are you sure you want to delete "<span id="deleteItemName" class="text-white font-medium"></span>"?
+                            <br><span class="text-sm text-gray-500">This action cannot be undone.</span>
+                        </p>
+                        <div class="flex gap-3">
+                            <button id="cancelDelete" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors duration-200">
                                 Cancel
                             </button>
+                            <button id="confirmDelete" class="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105">
+                                Delete
+                            </button>
                         </div>
-                    </form>
-                </div>     
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sell Price Input Modal -->
+            <div id="sellPriceModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center" style="display: none;">
+                <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">Sell Investment</h3>
+                        <p class="text-gray-400 mb-4">
+                            Enter sell price for "<span id="sellItemName" class="text-white font-medium"></span>"
+                        </p>
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-400 mb-2">Unit Sell Price ($)</label>
+                            <input type="number" id="sellPriceInput" step="0.01" min="0" 
+                                   class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                   placeholder="0.00">
+                            <div class="mt-2 text-sm text-gray-500">
+                                Buy price: $<span id="originalBuyPrice">0.00</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <button id="cancelSell" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors duration-200">
+                                Cancel
+                            </button>
+                            <button id="confirmSell" class="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105">
+                                Confirm Sale
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         `
     }
@@ -795,6 +999,9 @@ export class InvestmentsPage {
         if (clearAllBtn) {
             clearAllBtn.addEventListener('click', () => this.clearAllInvestments())
         }
+
+        // Custom Modal Event Listeners
+        this.setupModalEventListeners()
 
         // Add Category functionality
         const addCategoryBtn = document.getElementById('addCategoryBtn')
@@ -975,12 +1182,24 @@ export class InvestmentsPage {
             return
         }
 
-        const filteredInvestments = this.selectedCategoryId 
-            ? state.longTermInvestments.filter(inv => inv.categoryId === this.selectedCategoryId)
-            : state.longTermInvestments
+        let filteredInvestments = state.longTermInvestments
+
+        // Apply category filter
+        if (this.selectedCategoryId) {
+            filteredInvestments = filteredInvestments.filter(inv => inv.categoryId === this.selectedCategoryId)
+        }
+
+        // Apply status filter
+        if (this.selectedStatusFilter) {
+            filteredInvestments = filteredInvestments.filter(inv => inv.status === this.selectedStatusFilter)
+        }
+
+        // Apply sorting based on selected option
+        filteredInvestments = this.applySorting(filteredInvestments)
 
         console.log('🔍 Filtered investments:', filteredInvestments)
         console.log('🔍 Selected category:', this.selectedCategoryId)
+        console.log('🔍 Selected status filter:', this.selectedStatusFilter)
 
         if (filteredInvestments.length === 0) {
             console.log('📝 Showing empty state')
@@ -1425,6 +1644,101 @@ export class InvestmentsPage {
         this.renderLongTermInvestments()
         this.renderCategoryTabs()
         this.renderHoldingsChart()
+    }
+
+    selectStatusFilter(status) {
+        this.selectedStatusFilter = status
+        this.renderLongTermInvestments()
+        this.renderHoldingsChart()
+        this.updateStatusFilterButtons()
+    }
+
+    updateStatusFilterButtons() {
+        // Update button styles based on selected filter
+        const allBtn = document.getElementById('statusFilterAll')
+        const holdingBtn = document.getElementById('statusFilterHolding')
+        const soldBtn = document.getElementById('statusFilterSold')
+
+        if (allBtn && holdingBtn && soldBtn) {
+            // Reset all buttons to inactive state
+            const inactiveClasses = 'text-gray-400 hover:text-white hover:bg-gray-700'
+            const activeClasses = 'bg-blue-600 text-white'
+
+            allBtn.className = `status-filter-btn px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${this.selectedStatusFilter === null ? activeClasses : inactiveClasses}`
+            holdingBtn.className = `status-filter-btn px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${this.selectedStatusFilter === 'holding' ? activeClasses : inactiveClasses}`
+            soldBtn.className = `status-filter-btn px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${this.selectedStatusFilter === 'sold' ? activeClasses : inactiveClasses}`
+        }
+    }
+
+    applySorting(investments) {
+        return [...investments].sort((a, b) => {
+            switch (this.selectedSortOption) {
+                case 'recent':
+                    // Sort by date - newest first
+                    const dateA = new Date(a.date)
+                    const dateB = new Date(b.date)
+                    return dateB - dateA
+                    
+                case 'ascending':
+                    // Sort by total buy price - lowest to highest
+                    return a.totalBuyPrice - b.totalBuyPrice
+                    
+                case 'descending':
+                    // Sort by total buy price - highest to lowest
+                    return b.totalBuyPrice - a.totalBuyPrice
+                    
+                default:
+                    return 0
+            }
+        })
+    }
+
+    toggleSortDropdown() {
+        const dropdown = document.getElementById('sortDropdown')
+        if (dropdown) {
+            const isVisible = dropdown.style.display !== 'none'
+            dropdown.style.display = isVisible ? 'none' : 'block'
+            
+            // Close dropdown when clicking outside
+            if (!isVisible) {
+                setTimeout(() => {
+                    document.addEventListener('click', this.closeSortDropdownOutside.bind(this), { once: true })
+                }, 100)
+            }
+        }
+    }
+
+    closeSortDropdownOutside(event) {
+        const dropdown = document.getElementById('sortDropdown')
+        const button = document.getElementById('sortDropdownBtn')
+        
+        if (dropdown && button && !dropdown.contains(event.target) && !button.contains(event.target)) {
+            dropdown.style.display = 'none'
+        }
+    }
+
+    selectSortOption(option) {
+        this.selectedSortOption = option
+        this.renderLongTermInvestments()
+        this.updateSortButtonText()
+        
+        // Close dropdown
+        const dropdown = document.getElementById('sortDropdown')
+        if (dropdown) {
+            dropdown.style.display = 'none'
+        }
+    }
+
+    updateSortButtonText() {
+        const buttonText = document.getElementById('sortButtonText')
+        if (buttonText) {
+            const textMap = {
+                'recent': 'Recent',
+                'ascending': 'Low to High',
+                'descending': 'High to Low'
+            }
+            buttonText.textContent = textMap[this.selectedSortOption] || 'Recent'
+        }
     }
 
     editInvestment(id) {
@@ -2083,6 +2397,14 @@ export class InvestmentsPage {
         if (this.selectedCategoryId) {
             filteredInvestments = filteredInvestments.filter(inv => inv.categoryId === this.selectedCategoryId)
         }
+
+        // Apply status filter if selected (for consistency, though this chart only shows holdings)
+        if (this.selectedStatusFilter === 'sold') {
+            // If filter is set to "sold", show no data since this chart only shows holdings
+            filteredInvestments = []
+        } else if (this.selectedStatusFilter === 'holding') {
+            // Already filtered to holdings only above, so no additional filtering needed
+        }
         
         const holdingsData = filteredInvestments
             .reduce((acc, inv) => {
@@ -2293,13 +2615,27 @@ export class InvestmentsPage {
         document.getElementById('editLongTermBuyDate').value = investment.date
         document.getElementById('editLongTermSellDate').value = investment.sellDate || ''
 
-        // Show modal
-        document.getElementById('editLongTermModal').classList.remove('hidden')
+        // Show modal with animation
+        const modal = document.getElementById('editLongTermModal')
+        modal.classList.remove('hidden')
+        const modalContent = modal.querySelector('.bg-gray-900')
+        modalContent.classList.remove('scale-95')
+        modalContent.classList.add('scale-100')
     }
 
     closeLongTermEditModal() {
-        document.getElementById('editLongTermModal').classList.add('hidden')
-        this.editingLongTermInvestment = null
+        const modal = document.getElementById('editLongTermModal')
+        const modalContent = modal.querySelector('.bg-gray-900')
+        
+        // Animate out
+        modalContent.classList.remove('scale-100')
+        modalContent.classList.add('scale-95')
+        
+        // Hide after animation
+        setTimeout(() => {
+            modal.classList.add('hidden')
+            this.editingLongTermInvestment = null
+        }, 200)
     }
 
     handleLongTermEditSubmit(e) {
@@ -2334,19 +2670,155 @@ export class InvestmentsPage {
         this.showNotification('Investment updated successfully!', 'success')
     }
 
-    deleteLongTermInvestment(id) {
-        const state = this.store()
-        const investment = state.longTermInvestments.find(inv => inv.id === id)
-        if (!investment) return
+    // Modal Event Listeners Setup
+    setupModalEventListeners() {
+        // Delete confirmation modal
+        const deleteModal = document.getElementById('deleteConfirmModal')
+        const cancelDelete = document.getElementById('cancelDelete')
+        const confirmDelete = document.getElementById('confirmDelete')
 
-        if (confirm(`Are you sure you want to delete "${investment.itemName}"?`)) {
-            this.store().deleteLongTermInvestment(id)
+        if (cancelDelete) {
+            cancelDelete.addEventListener('click', () => this.hideDeleteModal())
+        }
+
+        if (confirmDelete) {
+            confirmDelete.addEventListener('click', () => this.executeDelete())
+        }
+
+        if (deleteModal) {
+            deleteModal.addEventListener('click', (e) => {
+                if (e.target === deleteModal) this.hideDeleteModal()
+            })
+        }
+
+        // Sell price modal
+        const sellModal = document.getElementById('sellPriceModal')
+        const cancelSell = document.getElementById('cancelSell')
+        const confirmSell = document.getElementById('confirmSell')
+        const sellPriceInput = document.getElementById('sellPriceInput')
+
+        if (cancelSell) {
+            cancelSell.addEventListener('click', () => this.hideSellModal())
+        }
+
+        if (confirmSell) {
+            confirmSell.addEventListener('click', () => this.executeSell())
+        }
+
+        if (sellModal) {
+            sellModal.addEventListener('click', (e) => {
+                if (e.target === sellModal) this.hideSellModal()
+            })
+        }
+
+        if (sellPriceInput) {
+            sellPriceInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') this.executeSell()
+            })
+        }
+
+        // ESC key support
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.hideDeleteModal()
+                this.hideSellModal()
+                this.closeLongTermEditModal()
+            }
+        })
+
+        // Edit modal click outside to close
+        const editModal = document.getElementById('editLongTermModal')
+        if (editModal) {
+            editModal.addEventListener('click', (e) => {
+                if (e.target === editModal) this.closeLongTermEditModal()
+            })
+        }
+    }
+
+    // Modal Helper Methods
+    showDeleteModal(id, itemName) {
+        this.pendingDeleteId = id
+        document.getElementById('deleteItemName').textContent = itemName
+        document.getElementById('deleteConfirmModal').style.display = 'flex'
+    }
+
+    hideDeleteModal() {
+        document.getElementById('deleteConfirmModal').style.display = 'none'
+        this.pendingDeleteId = null
+    }
+
+    executeDelete() {
+        if (this.pendingDeleteId) {
+            const state = this.store()
+            this.store().deleteLongTermInvestment(this.pendingDeleteId)
             this.renderLongTermInvestments()
             this.updateMetrics()
             this.renderCategoryTabs()
             this.renderHoldingsChart()
             this.showNotification('Investment deleted', 'success')
+            this.hideDeleteModal()
         }
+    }
+
+    showSellModal(id, itemName, buyPrice) {
+        this.pendingSellId = id
+        document.getElementById('sellItemName').textContent = itemName
+        document.getElementById('originalBuyPrice').textContent = buyPrice.toFixed(2)
+        document.getElementById('sellPriceInput').value = buyPrice.toFixed(2)
+        document.getElementById('sellPriceModal').style.display = 'flex'
+        
+        // Focus and select the input for quick editing
+        setTimeout(() => {
+            const input = document.getElementById('sellPriceInput')
+            input.focus()
+            input.select()
+        }, 100)
+    }
+
+    hideSellModal() {
+        document.getElementById('sellPriceModal').style.display = 'none'
+        this.pendingSellId = null
+    }
+
+    executeSell() {
+        if (!this.pendingSellId) return
+        
+        const sellPriceInput = document.getElementById('sellPriceInput')
+        const sellPrice = parseFloat(sellPriceInput.value)
+        
+        if (!sellPrice || sellPrice <= 0) {
+            this.showNotification('Please enter a valid sell price', 'error')
+            return
+        }
+
+        const state = this.store()
+        const investment = state.longTermInvestments.find(inv => inv.id === this.pendingSellId)
+        if (!investment) return
+
+        const updatedData = {
+            unitSellPrice: sellPrice,
+            totalSellPrice: sellPrice * investment.quantity,
+            sellDate: new Date().toISOString().split('T')[0],
+            status: 'sold',
+            profit: (sellPrice - investment.unitBuyPrice) * investment.quantity,
+            returnPercentage: ((sellPrice - investment.unitBuyPrice) / investment.unitBuyPrice) * 100
+        }
+        
+        this.store().updateLongTermInvestment(this.pendingSellId, updatedData)
+        this.renderLongTermInvestments()
+        this.updateMetrics()
+        this.renderCategoryTabs()
+        this.renderHoldingsChart()
+        this.showNotification(`Investment sold for $${sellPrice.toFixed(2)}`, 'success')
+        this.hideSellModal()
+    }
+
+    deleteLongTermInvestment(id) {
+        const state = this.store()
+        const investment = state.longTermInvestments.find(inv => inv.id === id)
+        if (!investment) return
+
+        this.showDeleteModal(id, investment.itemName)
     }
 
     quickSellLongTerm(id) {
@@ -2359,28 +2831,7 @@ export class InvestmentsPage {
             return
         }
 
-        const sellPrice = prompt(`Enter unit sell price for "${investment.itemName}":`, investment.unitBuyPrice.toFixed(2))
-        if (sellPrice !== null) {
-            const price = parseFloat(sellPrice)
-            if (price && price > 0) {
-                const updatedData = {
-                    unitSellPrice: price,
-                    totalSellPrice: price * investment.quantity,
-                    sellDate: new Date().toISOString().split('T')[0],
-                    status: 'sold',
-                    profit: (price - investment.unitBuyPrice) * investment.quantity,
-                    returnPercentage: ((price - investment.unitBuyPrice) / investment.unitBuyPrice) * 100
-                }
-                
-                this.store().updateLongTermInvestment(id, updatedData)
-                this.renderLongTermInvestments()
-                this.updateMetrics()
-                this.renderHoldingsChart()
-                this.showNotification(`Sold "${investment.itemName}" for $${price.toFixed(2)} per unit`, 'success')
-            } else {
-                this.showNotification('Please enter a valid sell price', 'error')
-            }
-        }
+        this.showSellModal(id, investment.itemName, investment.unitBuyPrice)
     }
 
     // Utility methods
@@ -2549,10 +3000,18 @@ export class InvestmentsPage {
     toggleSelectAll(isChecked) {
         const state = this.store()
         
-        // Get filtered investments for current category (same logic as renderLongTermInvestments)
-        const filteredInvestments = this.selectedCategoryId 
-            ? state.longTermInvestments.filter(inv => inv.categoryId === this.selectedCategoryId)
-            : state.longTermInvestments
+        // Get filtered investments (same logic as renderLongTermInvestments)
+        let filteredInvestments = state.longTermInvestments
+
+        // Apply category filter
+        if (this.selectedCategoryId) {
+            filteredInvestments = filteredInvestments.filter(inv => inv.categoryId === this.selectedCategoryId)
+        }
+
+        // Apply status filter
+        if (this.selectedStatusFilter) {
+            filteredInvestments = filteredInvestments.filter(inv => inv.status === this.selectedStatusFilter)
+        }
         
         // Only toggle checkboxes for investments in current category view
         const checkboxes = document.querySelectorAll('.investment-checkbox')
@@ -2636,10 +3095,18 @@ export class InvestmentsPage {
         const selectAllCheckbox = document.getElementById('selectAll')
         const state = this.store()
         
-        // Get filtered investments for current category (same logic as renderLongTermInvestments)
-        const filteredInvestments = this.selectedCategoryId 
-            ? state.longTermInvestments.filter(inv => inv.categoryId === this.selectedCategoryId)
-            : state.longTermInvestments
+        // Get filtered investments (same logic as renderLongTermInvestments)
+        let filteredInvestments = state.longTermInvestments
+
+        // Apply category filter
+        if (this.selectedCategoryId) {
+            filteredInvestments = filteredInvestments.filter(inv => inv.categoryId === this.selectedCategoryId)
+        }
+
+        // Apply status filter
+        if (this.selectedStatusFilter) {
+            filteredInvestments = filteredInvestments.filter(inv => inv.status === this.selectedStatusFilter)
+        }
         
         // Count only selections in current category
         const currentCategoryInvestmentIds = filteredInvestments.map(inv => inv.id)
@@ -2671,14 +3138,20 @@ export class InvestmentsPage {
         const count = this.selectedInvestments.size
         
         if (removeBtn) {
-            removeBtn.innerHTML = `
+            removeBtn.innerHTML = count === 0 ? `
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                 <span>Remove Selected (${count})</span>
+            ` : `
+                <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-red-500 to-red-600 p-0.5">
+                    <div class="w-full h-full bg-gray-900 rounded-xl group-hover:bg-transparent transition-colors duration-300"></div>
+                </div>
+                <i data-lucide="trash-2" class="w-4 h-4 relative z-10"></i>
+                <span class="relative z-10">Remove Selected (${count})</span>
             `
             removeBtn.disabled = count === 0
             removeBtn.className = count === 0 
-                ? "bg-gray-600 text-gray-400 px-4 py-2 rounded-lg transition items-center gap-2 cursor-not-allowed" 
-                : "bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition items-center gap-2"
+                ? "group relative bg-gray-900 text-gray-400 px-4 py-2 rounded-xl transition-all duration-300 flex items-center gap-2 cursor-not-allowed border border-gray-600" 
+                : "group relative bg-gray-900 hover:bg-gradient-to-r hover:from-red-500 hover:to-red-600 text-gray-300 hover:text-white px-4 py-2 rounded-xl transition-all duration-300 flex items-center gap-2 overflow-hidden"
         }
     }
 
@@ -2780,9 +3253,10 @@ export class InvestmentsPage {
 
         // Populate categories
         categoryList.innerHTML = state.categories.map(category => `
-            <button class="w-full text-left px-3 py-2 hover:bg-gray-700 rounded text-gray-300 hover:text-white transition" 
+            <button class="group w-full text-left px-4 py-3 hover:bg-gray-800 rounded-lg text-gray-300 hover:text-white transition-all duration-200 flex items-center gap-3 border border-transparent hover:border-gray-600" 
                     onclick="window.investmentsPage?.moveSelectedInvestments('${category.id}')">
-                ${category.name}
+                <i data-lucide="folder" class="w-4 h-4 text-gray-500 group-hover:text-blue-400 transition-colors duration-200"></i>
+                <span class="font-medium">${category.name}</span>
             </button>
         `).join('')
 

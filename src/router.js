@@ -65,6 +65,15 @@ class CS2Router {
             } else if (hash === '#/cases') {
                 console.log('🗺️ Cases hash - showing cases')
                 this.showPage('cases')
+            } else if (hash === '#/inventory') {
+                console.log('🗺️ Inventory hash - showing inventory')
+                this.showPage('inventory')
+            } else if (hash === '#/skin-explorer') {
+                console.log('🗺️ Skin Explorer hash - showing skin-explorer')
+                this.showPage('skin-explorer')
+            } else if (hash === '#/profile') {
+                console.log('🗺️ Profile hash - showing profile')
+                this.showPage('profile')
             } else if (hash === '#/analytics') {
                 console.log('🗺️ Analytics hash - showing analytics')
                 this.showPage('analytics')
@@ -129,6 +138,9 @@ class CS2Router {
             'trading-content', 
             'investments-content',
             'cases-content',
+            'inventory-content',
+            'skin-explorer-content',
+            'profile-content',
             'analytics-content'
         ]
         
@@ -184,6 +196,27 @@ class CS2Router {
                     console.log('📦 Loading Cases page...')
                     const { CasesPage } = await import('./pages/Cases/Cases.js')
                     this.pages.cases = new CasesPage()
+                    break
+
+                case 'inventory':
+                    // Load Inventory page
+                    console.log('📦 Loading Inventory page...')
+                    const { InventoryPage } = await import('./pages/Inventory/Inventory.js')
+                    this.pages.inventory = new InventoryPage()
+                    break
+
+                case 'skin-explorer':
+                    // Load Skin Explorer page
+                    console.log('📦 Loading Skin Explorer page...')
+                    const { SkinExplorerPage } = await import('./pages/SkinExplorer/SkinExplorer.js')
+                    this.pages['skin-explorer'] = new SkinExplorerPage()
+                    break
+
+                case 'profile':
+                    // Load Profile page
+                    console.log('📦 Loading Profile page...')
+                    const { ProfilePage } = await import('./pages/Profile/Profile.js')
+                    this.pages.profile = new ProfilePage()
                     break
                     
                 case 'analytics':
@@ -346,6 +379,9 @@ class CS2Router {
             trading: 'Trading Performance',
             investments: 'Long Term Investments',
             cases: 'Case Drop Analytics',
+            inventory: 'Inventory Management',
+            'skin-explorer': 'Skin Explorer',
+            profile: 'User Profile',
             analytics: 'Advanced Analytics'
         }
         

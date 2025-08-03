@@ -17,11 +17,6 @@ export class DashboardPage {
 
     async render(container, params = {}) {
         try {
-            // Debug store
-            console.log('🔍 Dashboard store:', this.store)
-            console.log('🔍 Store has getState?', typeof this.store.getState)
-            console.log('🔍 Store type:', typeof this.store)
-            console.log('🔍 Store keys:', Object.keys(this.store))
             
             // Get latest data - Zustand stores are called directly, no getState needed
             const metrics = this.store.calculateTradingMetrics()
