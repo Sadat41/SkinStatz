@@ -537,9 +537,17 @@ const useAppStore = create((set, get) => ({
     // ============================================================================================
 
     addCaseDrop: (caseDrop) => set((state) => {
+        // Generate unique ID if not provided
+        let newId = caseDrop.id
+        if (!newId) {
+            do {
+                newId = Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9)
+            } while (state.caseDrops.some(drop => drop.id === newId))
+        }
+        
         const newCaseDrops = [...state.caseDrops, {
             ...caseDrop,
-            id: caseDrop.id || Date.now().toString(),
+            id: newId,
             date: new Date().toISOString()
         }]
         
@@ -551,7 +559,8 @@ const useAppStore = create((set, get) => ({
         localStorage.setItem('caseDropsHierarchical', JSON.stringify(caseDropsData))
         
         return {
-            caseDrops: newCaseDrops
+            caseDrops: newCaseDrops,
+            years: state.years
         }
     }),
 
@@ -562,33 +571,22 @@ const useAppStore = create((set, get) => ({
             return state
         }
         
-        // Helper function to generate weeks for a month with proper Wednesday-Tuesday cycle
+        // Helper function to generate weeks for a month with simple 1-7, 8-14, 15-21, 22-28, 29-31 structure
         const generateWeeksForMonth = (year, monthIndex) => {
             const weeks = []
             const firstDay = new Date(year, monthIndex, 1)
             const lastDay = new Date(year, monthIndex + 1, 0)
+            const daysInMonth = lastDay.getDate()
             
-            // Generate 4-5 weeks per month with proper date ranges
             let weekNum = 1
-            let currentDate = new Date(firstDay)
+            let startDay = 1
             
-            while (currentDate <= lastDay && weekNum <= 5) {
-                // Find next Wednesday or start of month
-                let weekStart = new Date(currentDate)
-                while (weekStart.getDay() !== 3 && weekStart <= lastDay) { // 3 = Wednesday
-                    weekStart.setDate(weekStart.getDate() + 1)
-                }
+            // Generate weeks using simple day ranges: 1-7, 8-14, 15-21, 22-28, 29-31
+            while (startDay <= daysInMonth) {
+                let endDay = Math.min(startDay + 6, daysInMonth) // 7 days per week, or end of month
                 
-                if (weekStart > lastDay) break
-                
-                // Week ends on following Tuesday
-                let weekEnd = new Date(weekStart)
-                weekEnd.setDate(weekEnd.getDate() + 6) // Add 6 days to get Tuesday
-                
-                // Don't go past end of month
-                if (weekEnd > lastDay) {
-                    weekEnd = new Date(lastDay)
-                }
+                const weekStart = new Date(year, monthIndex, startDay)
+                const weekEnd = new Date(year, monthIndex, endDay)
                 
                 weeks.push({
                     id: `${year}-${monthIndex}-w${weekNum}`,
@@ -599,8 +597,7 @@ const useAppStore = create((set, get) => ({
                 })
                 
                 weekNum++
-                currentDate = new Date(weekEnd)
-                currentDate.setDate(currentDate.getDate() + 1)
+                startDay += 7 // Move to next week
             }
             
             return weeks
@@ -627,7 +624,8 @@ const useAppStore = create((set, get) => ({
         localStorage.setItem('caseDropsHierarchical', JSON.stringify(caseDropsData))
         
         return {
-            years: newYears
+            years: newYears,
+            caseDrops: state.caseDrops
         }
     }),
 
@@ -644,7 +642,8 @@ const useAppStore = create((set, get) => ({
         localStorage.setItem('caseDropsHierarchical', JSON.stringify(caseDropsData))
         
         return {
-            caseDrops: updatedCaseDrops
+            caseDrops: updatedCaseDrops,
+            years: state.years
         }
     }),
 
@@ -659,7 +658,8 @@ const useAppStore = create((set, get) => ({
         localStorage.setItem('caseDropsHierarchical', JSON.stringify(caseDropsData))
         
         return {
-            caseDrops: filteredCaseDrops
+            caseDrops: filteredCaseDrops,
+            years: state.years
         }
     }),
 
@@ -840,7 +840,40 @@ const useAppStore = create((set, get) => ({
             // Load case drops from 'caseDropsHierarchical' key
             let caseDropsData = safeJSONParse('caseDropsHierarchical', { years: [], caseDrops: [] })
             
-            // If no case drops data exists, create demo data for testing
+            // Check if we need to regenerate weeks due to structure change
+            // Only regenerate if we detect TRULY old structure (Wednesday-Tuesday cycle)
+            // Be more conservative to avoid accidentally clearing user data
+            const needsWeekRegeneration = false // Disable automatic regeneration to preserve user data
+            
+            // Only regenerate in very specific cases where we're absolutely sure it's old structure
+            // const needsWeekRegeneration = caseDropsData.years.length > 0 && 
+            //     caseDropsData.years.some(year => 
+            //         year.months && year.months.some(month => 
+            //             month.weeks && month.weeks.some(week => {
+            //                 // Only regenerate if we find clear indicators of Wednesday-Tuesday structure
+            //                 if (week.startDate && week.endDate) {
+            //                     const startDate = new Date(week.startDate)
+            //                     const endDate = new Date(week.endDate)
+            //                     const startDay = startDate.getDay() // 0=Sunday, 1=Monday, etc.
+            //                     const endDay = endDate.getDay()
+            //                     
+            //                     // Old structure: Wednesday (3) to Tuesday (2)
+            //                     // Only regenerate if we find this specific pattern
+            //                     return startDay === 3 && endDay === 2
+            //                 }
+            //                 return false
+            //             })
+            //         )
+            //     )
+            
+            if (needsWeekRegeneration) {
+                console.log('📦 Detected old week structure, regenerating with new 1-7, 8-14, 15-21 format...')
+                caseDropsData = { years: [], caseDrops: [] }
+                // Clear localStorage to force regeneration
+                localStorage.removeItem('caseDropsHierarchical')
+            }
+            
+            // If no case drops data exists or needs regeneration, create demo data for testing
             if (caseDropsData.years.length === 0 && caseDropsData.caseDrops.length === 0) {
                 console.log('📦 No case drop data found, creating demo structure')
                 
@@ -851,17 +884,11 @@ const useAppStore = create((set, get) => ({
                         month: monthIndex,
                         name: ['January', 'February', 'March', 'April', 'May', 'June',
                                'July', 'August', 'September', 'October', 'November', 'December'][monthIndex],
-                        weeks: Array.from({ length: 4 }, (_, weekIndex) => ({
-                            id: `2025-${monthIndex}-w${weekIndex + 1}`,
-                            week: weekIndex + 1,
-                            name: `Week ${weekIndex + 1}`,
-                            startDate: new Date(2025, monthIndex, (weekIndex * 7) + 1).toISOString().split('T')[0],
-                            endDate: new Date(2025, monthIndex, (weekIndex + 1) * 7).toISOString().split('T')[0]
-                        }))
+                        weeks: generateWeeksForMonth(2025, monthIndex)
                     }))
                 }
                 
-                // Create demo case drops
+                // Create demo case drops with correct week assignments
                 const demoCaseDrops = [
                     {
                         id: 'demo-case-1',
@@ -869,7 +896,7 @@ const useAppStore = create((set, get) => ({
                         dropDate: '2025-01-15',
                         price: 2.50,
                         account: 'Main Account',
-                        weekId: '2025-0-w3',
+                        weekId: '2025-0-w3', // Jan 15 is in Week 3 (15-21)
                         year: 2025,
                         month: 0,
                         dateAdded: new Date().toISOString()
@@ -880,7 +907,7 @@ const useAppStore = create((set, get) => ({
                         dropDate: '2025-01-20',
                         price: 3.25,
                         account: 'Alt Account',
-                        weekId: '2025-0-w3',
+                        weekId: '2025-0-w3', // Jan 20 is in Week 3 (15-21)
                         year: 2025,
                         month: 0,
                         dateAdded: new Date().toISOString()
@@ -891,7 +918,7 @@ const useAppStore = create((set, get) => ({
                         dropDate: '2025-07-28',
                         price: 1.80,
                         account: 'Main Account',
-                        weekId: '2025-6-w4',
+                        weekId: '2025-6-w4', // July 28 is in Week 4 (22-28)
                         year: 2025,
                         month: 6,
                         dateAdded: new Date().toISOString()
@@ -958,8 +985,8 @@ const useAppStore = create((set, get) => ({
             let finalInvestments = investments
             let finalAccountBalance = accountBalance
             
-            // Force demo data loading for testing (remove this condition to always load demo data)
-            if (true || (investments.length === 0 && longTermInvestments.length === 0 && accountBalance === 0)) {
+            // Only create demo data if absolutely no data exists
+            if (investments.length === 0 && longTermInvestments.length === 0 && accountBalance === 0) {
                 console.log('📝 No existing data found, creating demo data')
                 finalInvestments = [
                     // Active Holdings
