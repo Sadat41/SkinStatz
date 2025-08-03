@@ -26,9 +26,9 @@ SkinStatz/
 │   │   ├── Trading/            # Trade history & holdings
 │   │   ├── Investments/        # Long-term investment tracking
 │   │   ├── Cases/              # Weekly drop tracking
-│   │   ├── Inventory/          # 📋 Planned - Steam inventory sync
-│   │   ├── Profile/            # 📋 Planned - User settings & stats
-│   │   └── SkinExplorer/       # 📋 Planned - Market browser
+│   │   ├── Inventory/          # Planned - Steam inventory sync
+│   │   ├── Profile/            # Planned - User settings & stats
+│   │   └── SkinExplorer/       # Planned - Market browser
 │   ├── components/             # Reusable UI components
 │   ├── services/               # API integration & data fetching
 │   ├── main.js                 # Application entry point
@@ -41,7 +41,7 @@ SkinStatz/
 
 ## Implementation Status
 
-### ✅ Fully Implemented
+### Fully Implemented
 - **Dashboard** - Complete portfolio overview with real-time metrics and P&L charts
 - **Trading** - Holdings management, trade history, quick sell functionality, account tracking
 - **Investments** - Regular and long-term investment tracking with categories and enhanced modal system
@@ -49,11 +49,11 @@ SkinStatz/
 - **Core System** - SPA routing, LocalStorage persistence, responsive design, modal infrastructure
 - **API Integration** - Real-time price fetching from CSFloat and Buff163 APIs
 
-### 🏗️ In Development
+### In Development
 - **Advanced Charts** - TradingChart, MarketHeatmap, WaterfallChart integration
 - **Real-time Updates** - Live price data streaming and notifications
 
-### 📋 Planned Features (Not Started)
+### Planned Features (Not Started)
 - **Inventory** - Steam inventory synchronization and management
 - **Profile** - User settings, statistics dashboard, and account preferences  
 - **Skin Explorer** - Market browser with advanced filtering and search capabilities
