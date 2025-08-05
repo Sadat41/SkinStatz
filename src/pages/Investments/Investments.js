@@ -103,7 +103,7 @@ export class InvestmentsPage {
 
                 <div class="investments-dashboard p-6">
                     <!-- Add New Investment Form -->
-                    <section class="bg-gradient-to-br from-gray-900 to-gray-950 border border-gray-700 rounded-xl p-8 mb-8 shadow-2xl">
+                    <section class="bg-gray-900 border border-gray-700 rounded-xl p-8 mb-8 shadow-2xl">
                     <div class="flex items-center justify-between mb-8">
                         <div class="flex items-center gap-3">
                             <div class="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg">
@@ -118,16 +118,16 @@ export class InvestmentsPage {
                     
                     <!-- Investment Form -->
                     <form id="investmentForm">
-                        <!-- First Row - Item Details -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <!-- Row 1: Item Name, Category, Quantity -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                             <!-- Item Name -->
                             <div class="group">
                                 <label class="block text-gray-300 text-sm font-medium mb-3 flex items-center gap-2">
-                                    <i data-lucide="tag" class="w-4 h-4 text-blue-400"></i>
+                                    <i data-lucide="tag" class="w-4 h-4 text-purple-400"></i>
                                     Item Name
                                 </label>
                                 <div class="relative">
-                                    <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 p-0.5 opacity-50 group-focus-within:opacity-100 transition-opacity duration-200">
+                                    <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500 to-violet-600 p-0.5 opacity-60 group-focus-within:opacity-100 transition-opacity duration-300">
                                         <div class="w-full h-full bg-gray-900 rounded-xl"></div>
                                     </div>
                                     <input type="text" id="itemName" placeholder="AK-47 | Redline (FT)" 
@@ -138,11 +138,11 @@ export class InvestmentsPage {
                             <!-- Category -->
                             <div class="group">
                                 <label class="block text-gray-300 text-sm font-medium mb-3 flex items-center gap-2">
-                                    <i data-lucide="folder" class="w-4 h-4 text-amber-400"></i>
+                                    <i data-lucide="folder" class="w-4 h-4 text-blue-400"></i>
                                     Category
                                 </label>
                                 <div class="relative">
-                                    <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 p-0.5 opacity-50 group-focus-within:opacity-100 transition-opacity duration-200">
+                                    <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 p-0.5 opacity-60 group-focus-within:opacity-100 transition-opacity duration-300">
                                         <div class="w-full h-full bg-gray-900 rounded-xl"></div>
                                     </div>
                                     <select id="categorySelect" class="relative z-10 w-full bg-gray-900 text-white px-4 py-3 rounded-xl focus:outline-none transition-colors duration-200" style="color-scheme: dark;">
@@ -159,7 +159,7 @@ export class InvestmentsPage {
                                     Quantity
                                 </label>
                                 <div class="relative">
-                                    <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 p-0.5 opacity-50 group-focus-within:opacity-100 transition-opacity duration-200">
+                                    <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-600 p-0.5 opacity-60 group-focus-within:opacity-100 transition-opacity duration-300">
                                         <div class="w-full h-full bg-gray-900 rounded-xl"></div>
                                     </div>
                                     <input type="number" id="quantity" placeholder="1" min="1" step="1" value="1"
@@ -168,8 +168,8 @@ export class InvestmentsPage {
                             </div>
                         </div>
                         
-                        <!-- Second Row - Transaction Details -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <!-- Row 2: Buy Price, Sell Price -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                             <!-- Buy Price -->
                             <div class="group">
                                 <label class="block text-gray-300 text-sm font-medium mb-3 flex items-center gap-2">
@@ -177,7 +177,7 @@ export class InvestmentsPage {
                                     Buy Price
                                 </label>
                                 <div class="relative">
-                                    <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 p-0.5 opacity-50 group-focus-within:opacity-100 transition-opacity duration-200">
+                                    <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 p-0.5 opacity-60 group-focus-within:opacity-100 transition-opacity duration-300">
                                         <div class="w-full h-full bg-gray-900 rounded-xl"></div>
                                     </div>
                                     <input type="number" id="buyPrice" placeholder="0.00" step="0.01" min="0"
@@ -185,47 +185,50 @@ export class InvestmentsPage {
                                 </div>
                             </div>
 
-                            <!-- Buy Date -->
-                            <div class="group">
-                                <label class="block text-gray-300 text-sm font-medium mb-3 flex items-center gap-2">
-                                    <i data-lucide="calendar" class="w-4 h-4 text-purple-400"></i>
-                                    Buy Date
-                                </label>
-                                <div class="relative">
-                                    <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500 to-pink-600 p-0.5 opacity-50 group-focus-within:opacity-100 transition-opacity duration-200">
-                                        <div class="w-full h-full bg-gray-900 rounded-xl"></div>
-                                    </div>
-                                    <input type="date" id="buyDate" 
-                                            class="relative z-10 w-full bg-transparent text-white px-4 py-3 rounded-xl focus:outline-none transition-colors duration-200" required>
-                                </div>
-                            </div>
-
                             <!-- Sell Price -->
                             <div class="group">
                                 <label class="block text-gray-300 text-sm font-medium mb-3 flex items-center gap-2">
-                                    <i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i>
+                                    <i data-lucide="trending-up" class="w-4 h-4 text-orange-400"></i>
                                     Sell Price <span class="text-gray-500 font-normal">(Optional)</span>
                                 </label>
                                 <div class="relative">
-                                    <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 p-0.5 opacity-50 group-focus-within:opacity-100 transition-opacity duration-200">
+                                    <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 p-0.5 opacity-60 group-focus-within:opacity-100 transition-opacity duration-300">
                                         <div class="w-full h-full bg-gray-900 rounded-xl"></div>
                                     </div>
                                     <input type="number" id="sellPrice" placeholder="0.00" step="0.01" min="0"
                                             class="relative z-10 w-full bg-transparent text-white px-4 py-3 rounded-xl focus:outline-none transition-colors duration-200">
                                 </div>
                             </div>
+                        </div>
+                        
+                        <!-- Row 3: Buy Date, Sell Date -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <!-- Buy Date -->
+                            <div class="group">
+                                <label class="block text-gray-300 text-sm font-medium mb-3 flex items-center gap-2">
+                                    <i data-lucide="calendar" class="w-4 h-4 text-red-400"></i>
+                                    Buy Date
+                                </label>
+                                <div class="relative">
+                                    <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-red-500 to-rose-600 p-0.5 opacity-60 group-focus-within:opacity-100 transition-opacity duration-300">
+                                        <div class="w-full h-full bg-gray-900 rounded-xl"></div>
+                                    </div>
+                                    <input type="date" id="buyDate" value="${this.getTodayISO()}"
+                                            class="relative z-10 w-full bg-transparent text-white px-4 py-3 rounded-xl focus:outline-none transition-colors duration-200" required>
+                                </div>
+                            </div>
 
                             <!-- Sell Date -->
                             <div class="group">
                                 <label class="block text-gray-300 text-sm font-medium mb-3 flex items-center gap-2">
-                                    <i data-lucide="calendar-check" class="w-4 h-4 text-rose-400"></i>
+                                    <i data-lucide="calendar-check" class="w-4 h-4 text-pink-400"></i>
                                     Sell Date <span class="text-gray-500 font-normal">(Optional)</span>
                                 </label>
                                 <div class="relative">
-                                    <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-rose-500 to-pink-600 p-0.5 opacity-50 group-focus-within:opacity-100 transition-opacity duration-200">
+                                    <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-pink-500 to-rose-600 p-0.5 opacity-60 group-focus-within:opacity-100 transition-opacity duration-300">
                                         <div class="w-full h-full bg-gray-900 rounded-xl"></div>
                                     </div>
-                                    <input type="date" id="sellDate" 
+                                    <input type="date" id="sellDate"
                                             class="relative z-10 w-full bg-transparent text-white px-4 py-3 rounded-xl focus:outline-none transition-colors duration-200">
                                 </div>
                             </div>
@@ -233,7 +236,7 @@ export class InvestmentsPage {
                         
                         <!-- Submit Button Row -->
                         <div class="flex justify-center">
-                            <button type="submit" class="group relative bg-gray-900 hover:bg-gradient-to-r hover:from-green-500 hover:to-emerald-600 text-gray-300 hover:text-white font-semibold py-2 px-6 rounded-xl transition-all duration-300 flex items-center gap-2 overflow-hidden">
+                            <button type="submit" class="group relative bg-gray-900 hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-600 text-gray-300 hover:text-white font-semibold py-3 px-8 rounded-xl transition-all duration-300 flex items-center gap-2 overflow-hidden border border-gray-700 hover:border-transparent">
                                 <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 p-0.5">
                                     <div class="w-full h-full bg-gray-900 rounded-xl group-hover:bg-transparent transition-colors duration-300"></div>
                                 </div>
@@ -821,7 +824,7 @@ export class InvestmentsPage {
                                             </svg>
                                             Buy Date
                                         </label>
-                                        <input type="date" id="editLongTermBuyDate" 
+                                        <input type="date" id="editLongTermBuyDate"
                                                class="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-xl text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200" 
                                                required>
                                     </div>
@@ -833,7 +836,7 @@ export class InvestmentsPage {
                                             Sell Date
                                             <span class="text-xs text-gray-500 ml-1">(optional)</span>
                                         </label>
-                                        <input type="date" id="editLongTermSellDate" 
+                                        <input type="date" id="editLongTermSellDate"
                                                class="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-xl text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200">
                                     </div>
                                 </div>
@@ -1045,7 +1048,7 @@ export class InvestmentsPage {
 
     initializeInvestmentForm() {
         // Set today's date as default
-        const today = new Date().toISOString().split('T')[0]
+        const today = this.getTodayISO()
         const buyDateField = document.getElementById('buyDate')
         if (buyDateField && !buyDateField.value) {
             buyDateField.value = today
@@ -1121,9 +1124,9 @@ export class InvestmentsPage {
             quantity: parseInt(document.getElementById('quantity').value) || 1,
             categoryId: document.getElementById('categorySelect').value,
             buyPrice: parseFloat(document.getElementById('buyPrice').value) || 0,
-            buyDate: document.getElementById('buyDate').value,
+            buyDate: this.convertISOToFormattedDate(document.getElementById('buyDate').value),
             sellPrice: sellPriceValue ? parseFloat(sellPriceValue) : null,
-            sellDate: sellDateValue || null
+            sellDate: sellDateValue ? this.convertISOToFormattedDate(sellDateValue) : null
         }
     }
 
@@ -1394,7 +1397,7 @@ export class InvestmentsPage {
                         
                         <!-- Buy Date -->
                         <div class="flex-none w-24 text-center text-gray-400 text-sm">
-                            ${new Date(investment.date).toLocaleDateString()}
+                            ${this.formatDate(investment.date)}
                         </div>
                         
                         <!-- Unit Sell Price -->
@@ -1416,7 +1419,7 @@ export class InvestmentsPage {
                         <!-- Sell Date -->
                         <div class="flex-none w-24 text-center">
                             ${investment.sellDate ? 
-                                `<span class="text-gray-400 text-sm">${new Date(investment.sellDate).toLocaleDateString()}</span>` :
+                                `<span class="text-gray-400 text-sm">${this.formatDate(investment.sellDate)}</span>` :
                                 `<span class="text-gray-500">-</span>`
                             }
                         </div>
@@ -1675,8 +1678,8 @@ export class InvestmentsPage {
             switch (this.selectedSortOption) {
                 case 'recent':
                     // Sort by date - newest first
-                    const dateA = new Date(a.date)
-                    const dateB = new Date(b.date)
+                    const dateA = this.parseDateForSorting(a.date)
+                    const dateB = this.parseDateForSorting(b.date)
                     return dateB - dateA
                     
                 case 'ascending':
@@ -1691,6 +1694,25 @@ export class InvestmentsPage {
                     return 0
             }
         })
+    }
+
+    /**
+     * Parse date string in dd/mm/yyyy format for sorting
+     */
+    parseDateForSorting(dateString) {
+        if (!dateString) return new Date(0) // Very old date for undefined dates
+        
+        // Handle dd/mm/yyyy format
+        const parts = dateString.split('/')
+        if (parts.length === 3) {
+            const day = parseInt(parts[0], 10)
+            const month = parseInt(parts[1], 10) - 1 // JavaScript months are 0-indexed
+            const year = parseInt(parts[2], 10)
+            return new Date(year, month, day)
+        }
+        
+        // Fallback to default Date parsing
+        return new Date(dateString)
     }
 
     toggleSortDropdown() {
@@ -1752,8 +1774,8 @@ export class InvestmentsPage {
         document.getElementById('editItemName').value = investment.itemName
         document.getElementById('editBuyPrice').value = investment.buyPrice
         document.getElementById('editSellPrice').value = investment.sellPrice || ''
-        document.getElementById('editBuyDate').value = investment.date
-        document.getElementById('editSellDate').value = investment.sellDate || ''
+        document.getElementById('editBuyDate').value = this.convertFormattedToISODate(investment.date)
+        document.getElementById('editSellDate').value = investment.sellDate ? this.convertFormattedToISODate(investment.sellDate) : ''
 
         // Show modal
         document.getElementById('editModal').classList.remove('hidden')
@@ -1773,8 +1795,8 @@ export class InvestmentsPage {
             itemName: document.getElementById('editItemName').value.trim(),
             buyPrice: parseFloat(document.getElementById('editBuyPrice').value),
             sellPrice: parseFloat(document.getElementById('editSellPrice').value) || null,
-            date: document.getElementById('editBuyDate').value,
-            sellDate: document.getElementById('editSellDate').value || null
+            date: this.convertISOToFormattedDate(document.getElementById('editBuyDate').value),
+            sellDate: document.getElementById('editSellDate').value ? this.convertISOToFormattedDate(document.getElementById('editSellDate').value) : null
         }
 
         this.store().updateInvestment(this.editingInvestment.id, updatedData)
@@ -1833,7 +1855,7 @@ export class InvestmentsPage {
         document.getElementById('investmentForm').reset()
         
         // Reset to today's date
-        const today = new Date().toISOString().split('T')[0]
+        const today = this.getTodayISO()
         document.getElementById('buyDate').value = today
         
         // Reset quantity to 1
@@ -2612,8 +2634,8 @@ export class InvestmentsPage {
         document.getElementById('editLongTermCategory').value = investment.categoryId || ''
         document.getElementById('editLongTermBuyPrice').value = investment.unitBuyPrice
         document.getElementById('editLongTermSellPrice').value = investment.unitSellPrice || ''
-        document.getElementById('editLongTermBuyDate').value = investment.date
-        document.getElementById('editLongTermSellDate').value = investment.sellDate || ''
+        document.getElementById('editLongTermBuyDate').value = this.convertFormattedToISODate(investment.date)
+        document.getElementById('editLongTermSellDate').value = investment.sellDate ? this.convertFormattedToISODate(investment.sellDate) : ''
 
         // Show modal with animation
         const modal = document.getElementById('editLongTermModal')
@@ -2649,8 +2671,8 @@ export class InvestmentsPage {
             categoryId: document.getElementById('editLongTermCategory').value,
             unitBuyPrice: parseFloat(document.getElementById('editLongTermBuyPrice').value),
             unitSellPrice: parseFloat(document.getElementById('editLongTermSellPrice').value) || null,
-            date: document.getElementById('editLongTermBuyDate').value,
-            sellDate: document.getElementById('editLongTermSellDate').value || null
+            date: this.convertISOToFormattedDate(document.getElementById('editLongTermBuyDate').value),
+            sellDate: document.getElementById('editLongTermSellDate').value ? this.convertISOToFormattedDate(document.getElementById('editLongTermSellDate').value) : null
         }
 
         // Recalculate derived fields
@@ -3042,7 +3064,7 @@ export class InvestmentsPage {
         // Set today's date as default for buy date
         const buyDateInput = document.getElementById('buyDate')
         if (buyDateInput && !buyDateInput.value) {
-            const today = new Date().toISOString().split('T')[0]
+            const today = this.getTodayISO()
             buyDateInput.value = today
         }
 
@@ -3368,6 +3390,78 @@ export class InvestmentsPage {
         this.priceCache.clear()
         this.pricePromises.clear()
         this.selectedInvestments.clear()
+    }
+
+    /**
+     * Format date as dd/mm/yyyy
+     */
+    formatDate(date) {
+        if (!date) return ''
+        const d = new Date(date)
+        const day = d.getDate().toString().padStart(2, '0')
+        const month = (d.getMonth() + 1).toString().padStart(2, '0')
+        const year = d.getFullYear()
+        return `${day}/${month}/${year}`
+    }
+
+    /**
+     * Get today's date in dd/mm/yyyy format
+     */
+    getTodayFormatted() {
+        return this.formatDate(new Date())
+    }
+
+    /**
+     * Get today's date in yyyy-mm-dd format (for HTML date inputs)
+     */
+    getTodayISO() {
+        const today = new Date()
+        return today.toISOString().split('T')[0]
+    }
+
+    /**
+     * Convert yyyy-mm-dd format to dd/mm/yyyy format
+     */
+    convertISOToFormattedDate(isoDate) {
+        if (!isoDate) return ''
+        const parts = isoDate.split('-')
+        if (parts.length === 3) {
+            const [year, month, day] = parts
+            return `${day}/${month}/${year}`
+        }
+        return isoDate
+    }
+
+    /**
+     * Convert dd/mm/yyyy format to yyyy-mm-dd format
+     */
+    convertFormattedToISODate(formattedDate) {
+        if (!formattedDate) return ''
+        const parts = formattedDate.split('/')
+        if (parts.length === 3) {
+            const [day, month, year] = parts
+            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+        }
+        return formattedDate
+    }
+
+    /**
+     * Validate dd/mm/yyyy date format
+     */
+    isValidDate(dateString) {
+        if (!dateString) return false
+        const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/
+        const match = dateString.match(regex)
+        if (!match) return false
+        
+        const day = parseInt(match[1], 10)
+        const month = parseInt(match[2], 10)
+        const year = parseInt(match[3], 10)
+        
+        const date = new Date(year, month - 1, day)
+        return date.getFullYear() === year && 
+               date.getMonth() === month - 1 && 
+               date.getDate() === day
     }
 }
 
