@@ -41,6 +41,23 @@ body {
     backdrop-filter: blur(24px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 8px 32px rgba(102, 126, 234, 0.15);
+    position: relative;
+}
+
+/* Enhanced glassmorphism with subtle inner glow */
+.glass-card::after {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.01) 100%);
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.glass-card:hover::after {
+    opacity: 1;
 }
 
 /* Glass card top highlight effect */
@@ -56,8 +73,10 @@ body {
 
 /* Glass card hover effects */
 .glass-card:hover {
-    border-color: rgba(102, 126, 234, 0.3);
-    animation: pulse-glow 2s ease-in-out infinite;
+    border-color: rgba(102, 126, 234, 0.25);
+    transform: translateY(-1px);
+    box-shadow: 0 12px 40px rgba(102, 126, 234, 0.12);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ================================ */
@@ -1376,12 +1395,32 @@ table tbody tr:hover {
     background: rgba(255, 255, 255, 0.04);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.6), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 .metric-card:hover {
     background: rgba(255, 255, 255, 0.06);
     border-color: rgba(102, 126, 234, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.1);
+}
+
+.metric-card:hover::before {
+    opacity: 1;
 }
 
 .metric-value {
@@ -1593,6 +1632,466 @@ table tbody tr:hover {
 .notification-enhanced {
     backdrop-filter: blur(16px);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* ================================ */
+/* ENHANCED STAT CARDS FOR DASHBOARD */
+/* ================================ */
+
+/* Enhanced stat cards with better visual hierarchy */
+.stat-card {
+    background: rgba(17, 24, 39, 0.8) !important;
+    border: 1px solid rgba(55, 65, 81, 0.6) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.4), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.stat-card:hover {
+    border-color: rgba(75, 85, 99, 0.8) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.stat-card:hover::before {
+    opacity: 1;
+}
+
+/* Enhanced metric values with better typography */
+.stat-card .text-4xl {
+    font-weight: 700;
+    letter-spacing: -0.015em;
+}
+
+/* Icon containers in stat cards */
+.stat-card .bg-blue-500\/10 {
+    background: rgba(59, 130, 246, 0.1) !important;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover .bg-blue-500\/10 {
+    background: rgba(59, 130, 246, 0.15) !important;
+    transform: scale(1.05);
+}
+
+.stat-card .bg-green-500\/10 {
+    background: rgba(34, 197, 94, 0.1) !important;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover .bg-green-500\/10 {
+    background: rgba(34, 197, 94, 0.15) !important;
+    transform: scale(1.05);
+}
+
+.stat-card .bg-purple-500\/10 {
+    background: rgba(168, 85, 247, 0.1) !important;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover .bg-purple-500\/10 {
+    background: rgba(168, 85, 247, 0.15) !important;
+    transform: scale(1.05);
+}
+
+.stat-card .bg-yellow-500\/10 {
+    background: rgba(234, 179, 8, 0.1) !important;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover .bg-yellow-500\/10 {
+    background: rgba(234, 179, 8, 0.15) !important;
+    transform: scale(1.05);
+}
+
+/* ================================ */
+/* ENHANCED WEEKLY BREAKDOWN CARDS */
+/* ================================ */
+
+/* Weekly breakdown card enhancements */
+.bg-gray-900 {
+    background: rgba(17, 24, 39, 0.9) !important;
+    border: 1px solid rgba(55, 65, 81, 0.4) !important;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.bg-gray-900:hover {
+    border-color: rgba(75, 85, 99, 0.6) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Enhanced P&L displays */
+.text-green-400 {
+    color: #4ade80 !important;
+    font-weight: 500;
+}
+
+.text-red-400 {
+    color: #f87171 !important;
+    font-weight: 500;
+}
+
+/* Enhanced progress indicators */
+.progress-bar {
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.3), rgba(59, 130, 246, 0.6));
+    height: 3px;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+/* Week status indicators */
+.status-holding {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.status-completed {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* ================================ */
+/* TRADING ACTIVITY & INSIGHTS ENHANCEMENTS */
+/* ================================ */
+
+/* Trading Activity section spacing fix */
+.trading-activity-section {
+    margin-bottom: 3rem;
+    position: relative;
+    z-index: 1;
+}
+
+/* Current Holdings section */
+.holdings-card {
+    background: rgba(17, 24, 39, 0.9);
+    border: 1px solid rgba(55, 65, 81, 0.4);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.holdings-card:hover {
+    border-color: rgba(75, 85, 99, 0.6);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Holdings item styling */
+.holding-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.holding-item:hover {
+    background: rgba(55, 65, 81, 0.2);
+    border-color: rgba(75, 85, 99, 0.3);
+}
+
+/* Trading Insights section spacing */
+.trading-insights-section {
+    margin-top: 3rem;
+    position: relative;
+    z-index: 1;
+    clear: both;
+}
+
+/* Trading insights cards */
+.insight-card {
+    background: rgba(17, 24, 39, 0.85);
+    border: 1px solid rgba(55, 65, 81, 0.4);
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.insight-card:hover {
+    border-color: rgba(75, 85, 99, 0.6);
+    background: rgba(17, 24, 39, 0.95);
+}
+
+/* Pattern analysis metrics */
+.pattern-metric {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(55, 65, 81, 0.2);
+}
+
+.pattern-metric:last-child {
+    border-bottom: none;
+}
+
+.pattern-value {
+    font-weight: 500;
+    color: #e5e7eb;
+}
+
+/* Momentum indicators */
+.momentum-positive {
+    color: #4ade80;
+    background: rgba(74, 222, 128, 0.1);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.momentum-negative {
+    color: #f87171;
+    background: rgba(248, 113, 113, 0.1);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.momentum-neutral {
+    color: #9ca3af;
+    background: rgba(156, 163, 175, 0.1);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* ================================ */
+/* SUBTLE ANIMATIONS AND MICRO-INTERACTIONS */
+/* ================================ */
+
+/* Smooth fade-in for dynamic content */
+@keyframes smoothFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-smooth-fade {
+    animation: smoothFadeIn 0.4s ease-out;
+}
+
+/* Enhanced number counter animation */
+@keyframes countUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.animate-count-up {
+    animation: countUp 0.6s ease-out;
+}
+
+/* Subtle pulse for important metrics */
+@keyframes subtlePulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.9;
+    }
+}
+
+.pulse-subtle {
+    animation: subtlePulse 3s ease-in-out infinite;
+}
+
+/* ================================ */
+/* LAYOUT ENHANCEMENTS - BETTER SPACING AND FLOW */
+/* ================================ */
+
+/* Enhanced grid layouts with better spacing */
+.dashboard-grid {
+    display: grid;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Improved card spacing and padding */
+.enhanced-card-spacing {
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+}
+
+/* Better section headers */
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(55, 65, 81, 0.2);
+}
+
+.section-header h3 {
+    font-weight: 600;
+    color: #f9fafb;
+    margin: 0;
+}
+
+.section-header .icon-wrapper {
+    padding: 0.5rem;
+    background: rgba(55, 65, 81, 0.3);
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Enhanced content spacing */
+.content-section {
+    margin-bottom: 2.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.content-section:last-child {
+    margin-bottom: 0;
+}
+
+/* Specific section spacing fixes */
+.mb-10 {
+    margin-bottom: 3rem !important;
+}
+
+/* Ensure proper clearfix for floating elements */
+.content-section::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+/* Better visual hierarchy for stats */
+.stat-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: #9ca3af;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.stat-value {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #f9fafb;
+}
+
+/* Improved weekly card layout */
+.week-card-enhanced {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.25rem;
+}
+
+.week-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.week-title {
+    font-weight: 600;
+    color: #f9fafb;
+    font-size: 1rem;
+}
+
+.week-status-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+}
+
+/* Better metric row layout */
+.metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+}
+
+.metric-row:not(:last-child) {
+    border-bottom: 1px solid rgba(55, 65, 81, 0.15);
+}
+
+.metric-label {
+    font-size: 0.875rem;
+    color: #9ca3af;
+    font-weight: 400;
+}
+
+.metric-value-enhanced {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #e5e7eb;
+}
+
+/* Enhanced responsive design */
+@media (max-width: 768px) {
+    .dashboard-grid {
+        gap: 1rem;
+    }
+    
+    .enhanced-card-spacing {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .section-header {
+        margin-bottom: 1rem;
+    }
+    
+    .content-section {
+        margin-bottom: 1.5rem;
+    }
 }
 
 /* ================================ */

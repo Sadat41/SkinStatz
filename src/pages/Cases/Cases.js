@@ -338,7 +338,7 @@ export class CasesPage {
                                 <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 p-0.5 opacity-50 group-focus-within:opacity-100 transition-opacity duration-200">
                                     <div class="w-full h-full bg-gray-900 rounded-xl"></div>
                                 </div>
-                                <input type="date" id="drop-date" 
+                                <input type="date" id="drop-date" value="${this.getTodayISO()}"
                                         class="relative z-10 w-full bg-transparent text-white px-4 py-3 rounded-xl focus:outline-none transition-colors duration-200" required>
                             </div>
                         </div>
@@ -722,30 +722,30 @@ export class CasesPage {
 
     getCaseDropsTableHTML(caseDrops, state) {
         return `
-            <div class="bg-gray-900 border border-gray-700 rounded-xl overflow-hidden">
+            <div class="bg-gray-900 border border-gray-700 rounded-xl overflow-hidden w-full">
                 <!-- Table Header -->
                 <div class="p-4 border-b border-gray-700 bg-gray-800/50">
-                    <div class="grid grid-cols-8 gap-4 text-gray-400 text-sm font-medium">
-                        <div class="flex items-center justify-center">
+                    <div class="flex items-center gap-12 text-gray-400 text-sm font-medium w-full">
+                        <div class="flex items-center justify-center w-12 flex-shrink-0">
                             <span class="px-2 py-1 rounded text-xs font-medium bg-gray-800 text-gray-400 border border-gray-600">#</span>
                         </div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2 w-16 flex-shrink-0">
                             <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                             </svg>
                             <span class="text-blue-400">Image</span>
                         </div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex-1 flex items-center gap-2">
                             <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
                             </svg>
                             <span class="text-purple-400">Item Name</span>
                         </div>
-                        <div class="text-green-400">Price</div>
-                        <div class="text-orange-400">Drop Date</div>
-                        <div class="text-cyan-400">Account</div>
-                        <div class="text-emerald-400">Status</div>
-                        <div class="text-gray-400">Actions</div>
+                        <div class="text-green-400 w-20 flex-shrink-0">Price</div>
+                        <div class="text-orange-400 w-24 flex-shrink-0">Drop Date</div>
+                        <div class="text-cyan-400 w-20 flex-shrink-0">Account</div>
+                        <div class="text-emerald-400 w-24 flex-shrink-0 text-center">Status</div>
+                        <div class="text-gray-400 w-20 flex-shrink-0 text-center">Actions</div>
                     </div>
                 </div>
                 
@@ -753,23 +753,23 @@ export class CasesPage {
                 <div class="divide-y divide-gray-700">
                     ${caseDrops.map((caseDrop, index) => `
                         <div class="group hover:bg-gray-800/50 transition-all duration-300">
-                            <div class="grid grid-cols-8 gap-4 items-center p-4">
+                            <div class="flex items-center gap-12 p-3 w-full">
                                 <!-- Row Number -->
-                                <div class="flex items-center justify-center">
+                                <div class="flex items-center justify-center w-12 flex-shrink-0">
                                     <div class="w-8 h-8 bg-gradient-to-br from-gray-700 to-gray-800 border border-gray-600 rounded-lg flex items-center justify-center text-gray-300 text-sm font-bold">
                                         ${index + 1}
                                     </div>
                                 </div>
                                 
-                                <!-- Image Placeholder -->
-                                <div class="flex items-center justify-start pl-2">
+                                <!-- Image -->
+                                <div class="flex items-center justify-center w-16 flex-shrink-0">
                                     <div class="w-12 h-12 bg-gray-800/30 border-2 border-dashed border-gray-600/50 rounded-lg flex items-center justify-center group-hover:bg-gray-700/30 transition-all duration-300">
                                         <i data-lucide="image" class="w-4 h-4 text-gray-500 group-hover:text-gray-400 transition-colors duration-300"></i>
                                     </div>
                                 </div>
                                 
-                                <!-- Item Name with Enhanced Price Badge Container -->
-                                <div class="relative flex items-center gap-4 p-3 rounded-lg transition-all duration-500 group-hover:bg-slate-800/30 group-hover:shadow-lg group-hover:shadow-slate-700/20 group-hover:transform group-hover:scale-[1.02]">
+                                <!-- Item Name - flex-1 for more space -->
+                                <div class="flex-1 relative flex items-center gap-3 p-2 rounded-lg transition-all duration-500 group-hover:bg-slate-800/30 mr-2">
                                     <!-- Accent Bar with Animation -->
                                     <div class="relative">
                                         <div class="w-1 h-12 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full transition-all duration-500 group-hover:h-14 group-hover:w-1.5 group-hover:shadow-lg group-hover:shadow-purple-500/50"></div>
@@ -780,7 +780,7 @@ export class CasesPage {
                                     <div class="flex-1 min-w-0 space-y-2">
                                         <!-- Item Name -->
                                         <div class="relative">
-                                            <div class="text-white font-bold text-base leading-tight truncate bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent group-hover:from-blue-100 group-hover:to-purple-200 transition-all duration-500">
+                                            <div class="text-white font-bold text-base leading-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent group-hover:from-blue-100 group-hover:to-purple-200 transition-all duration-500">
                                                 ${this.escapeHtml(caseDrop.caseName || 'Unknown Item')}
                                             </div>
                                             
@@ -815,29 +815,29 @@ export class CasesPage {
                                 </div>
                                 
                                 <!-- Price -->
-                                <div class="text-green-400 font-semibold text-sm">
+                                <div class="text-green-400 font-semibold text-sm truncate w-20 flex-shrink-0">
                                     $${this.formatNumber(caseDrop.price || 0)}
                                 </div>
                                 
                                 <!-- Drop Date -->
-                                <div class="text-orange-400 font-medium text-sm">
-                                    ${caseDrop.dropDate ? this.formatDateSafely(caseDrop.dropDate) : 'N/A'}
+                                <div class="text-orange-400 font-medium text-sm truncate w-24 flex-shrink-0">
+                                    ${caseDrop.dropDate || 'N/A'}
                                 </div>
                                 
                                 <!-- Account -->
-                                <div class="text-cyan-400 font-medium text-sm">
+                                <div class="text-cyan-400 font-medium text-sm truncate w-20 flex-shrink-0">
                                     ${this.escapeHtml(caseDrop.account || 'N/A')}
                                 </div>
                                 
                                 <!-- Status -->
-                                <div>
+                                <div class="w-24 flex-shrink-0 flex justify-center">
                                     <span class="px-2 py-1 rounded-full text-xs font-medium bg-blue-900 text-blue-400 border border-gray-600">
                                         Received
                                     </span>
                                 </div>
                                 
                                 <!-- Actions -->
-                                <div class="flex gap-2">
+                                <div class="w-20 flex-shrink-0 flex gap-1 justify-center">
                                     <button data-action="edit" data-id="${caseDrop.id}"
                                             class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg transition-all duration-200 flex items-center justify-center case-action-btn shadow-md hover:shadow-lg transform hover:scale-105 border border-blue-400/20">
                                         <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
@@ -1435,7 +1435,7 @@ export class CasesPage {
         if (!dropDateElement) return
         
         // Set default date to today or current week start date
-        let defaultDate = new Date().toISOString().split('T')[0]
+        let defaultDate = this.getTodayFormatted()
         
         const currentWeek = this.getCurrentWeek()
         if (currentWeek && currentWeek.startDate) {
@@ -1445,16 +1445,11 @@ export class CasesPage {
             const weekEnd = new Date(currentWeek.endDate)
             
             if (today < weekStart || today > weekEnd) {
-                defaultDate = currentWeek.startDate
+                defaultDate = this.formatDate(currentWeek.startDate)
             }
         }
         
         dropDateElement.value = defaultDate
-        
-        // Set reasonable year-based date bounds
-        const currentYear = new Date().getFullYear()
-        dropDateElement.min = `${currentYear}-01-01`
-        dropDateElement.max = `${currentYear}-12-31`
         
         console.log(`📅 Default date set to: ${defaultDate}`)
     }
@@ -2087,7 +2082,7 @@ export class CasesPage {
         
         return {
             caseName: caseNameEl.value.trim(),
-            dropDate: dropDateEl.value,
+            dropDate: this.convertISOToFormattedDate(dropDateEl.value),
             casePrice: parseFloat(casePriceEl.value),
             caseAccount: caseAccountEl.value.trim()
         }
@@ -2103,6 +2098,13 @@ export class CasesPage {
             this.showNotification('Please fill in all required fields with valid values', 'error')
             return false
         }
+
+        // Validate date format
+        if (!this.isValidDate(caseDropData.dropDate)) {
+            this.showNotification('Please enter drop date in dd/mm/yyyy format', 'error')
+            return false
+        }
+
         return true
     }
 
@@ -2118,7 +2120,7 @@ export class CasesPage {
         
         const dropDateElement = document.getElementById('drop-date')
         if (dropDateElement) {
-            dropDateElement.value = new Date().toISOString().split('T')[0]
+            dropDateElement.value = this.getTodayISO()
         }
     }
 
@@ -2502,7 +2504,7 @@ export class CasesPage {
         
         // Populate edit form
         document.getElementById('edit-case-name').value = caseDrop.caseName || ''
-        document.getElementById('edit-drop-date').value = caseDrop.dropDate || ''
+        document.getElementById('edit-drop-date').value = this.convertFormattedToISODate(caseDrop.dropDate) || ''
         document.getElementById('edit-case-price').value = caseDrop.price || ''
         document.getElementById('edit-case-account').value = caseDrop.account || ''
 
@@ -2523,7 +2525,7 @@ export class CasesPage {
 
         const editData = {
             caseName: document.getElementById('edit-case-name').value.trim(),
-            dropDate: document.getElementById('edit-drop-date').value,
+            dropDate: this.convertISOToFormattedDate(document.getElementById('edit-drop-date').value),
             price: parseFloat(document.getElementById('edit-case-price').value),
             account: document.getElementById('edit-case-account').value.trim()
         }
@@ -2532,6 +2534,12 @@ export class CasesPage {
             !editData.price || editData.price <= 0 || 
             !editData.account) {
             this.showNotification('Please fill in all required fields with valid values', 'error')
+            return
+        }
+
+        // Validate date format
+        if (!this.isValidDate(editData.dropDate)) {
+            this.showNotification('Please enter drop date in dd/mm/yyyy format', 'error')
             return
         }
 
@@ -3413,5 +3421,77 @@ export class CasesPage {
         
         await Promise.allSettled(pricePromises)
         this.showNotification('Prices refreshed successfully!', 'success')
+    }
+
+    /**
+     * Format date as dd/mm/yyyy
+     */
+    formatDate(date) {
+        if (!date) return ''
+        const d = new Date(date)
+        const day = d.getDate().toString().padStart(2, '0')
+        const month = (d.getMonth() + 1).toString().padStart(2, '0')
+        const year = d.getFullYear()
+        return `${day}/${month}/${year}`
+    }
+
+    /**
+     * Get today's date in dd/mm/yyyy format
+     */
+    getTodayFormatted() {
+        return this.formatDate(new Date())
+    }
+
+    /**
+     * Get today's date in yyyy-mm-dd format (for HTML date inputs)
+     */
+    getTodayISO() {
+        const today = new Date()
+        return today.toISOString().split('T')[0]
+    }
+
+    /**
+     * Convert yyyy-mm-dd format to dd/mm/yyyy format
+     */
+    convertISOToFormattedDate(isoDate) {
+        if (!isoDate) return ''
+        const parts = isoDate.split('-')
+        if (parts.length === 3) {
+            const [year, month, day] = parts
+            return `${day}/${month}/${year}`
+        }
+        return isoDate
+    }
+
+    /**
+     * Convert dd/mm/yyyy format to yyyy-mm-dd format
+     */
+    convertFormattedToISODate(formattedDate) {
+        if (!formattedDate) return ''
+        const parts = formattedDate.split('/')
+        if (parts.length === 3) {
+            const [day, month, year] = parts
+            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+        }
+        return formattedDate
+    }
+
+    /**
+     * Validate dd/mm/yyyy date format
+     */
+    isValidDate(dateString) {
+        if (!dateString) return false
+        const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/
+        const match = dateString.match(regex)
+        if (!match) return false
+        
+        const day = parseInt(match[1], 10)
+        const month = parseInt(match[2], 10)
+        const year = parseInt(match[3], 10)
+        
+        const date = new Date(year, month - 1, day)
+        return date.getFullYear() === year && 
+               date.getMonth() === month - 1 && 
+               date.getDate() === day
     }
 }
