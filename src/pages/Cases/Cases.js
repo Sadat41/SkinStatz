@@ -36,6 +36,7 @@ export class CasesPage {
         this.currentMonth = null
         this.currentWeek = null
         this.editingCaseDrop = null
+        this.pendingDeleteId = null
         
         // Chart colors from old tracker
         this.chartColors = {
@@ -91,6 +92,9 @@ export class CasesPage {
                 const stats = this.calculateCaseDropStats(state)
                 this.updateHeaderStats(stats)
                 console.log('🔄 Forced header stats update on page load')
+                
+                // Fix any corrupted dates on page load
+                this.fixCorruptedDates()
             }, 1000)
             
             
@@ -677,44 +681,134 @@ export class CasesPage {
             </div>
 
             <!-- Edit Case Drop Modal -->
-            <div id="edit-case-drop-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-                <div class="glass-card rounded-2xl p-6 max-w-md w-full mx-4">
-                    <h3 class="text-xl font-bold gradient-text mb-4">Edit Case Drop</h3>
-                    <form id="edit-case-drop-form">
+            <div id="editCaseDropModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+                <div class="glass-card rounded-2xl p-6 w-full max-w-md">
+                    <div class="bg-gradient-to-r from-blue-500 to-purple-600 p-4 rounded-t-2xl -m-6 mb-6">
+                        <h3 class="text-2xl font-bold text-white">Edit Case Drop</h3>
+                        <p class="text-blue-100 text-sm">Update your case drop details</p>
+                    </div>
+                    <form id="editCaseDropForm">
                         <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-2">Item Name</label>
-                                <input type="text" id="edit-case-name" class="input-field w-full px-3 py-2 rounded-lg text-white outline-none" required>
+                            <!-- Item Name -->
+                            <div class="group">
+                                <label class="block text-sm font-semibold text-gray-300 mb-2 group-focus-within:text-blue-400 transition-colors">
+                                    <i data-lucide="package" class="w-4 h-4 inline mr-2"></i>
+                                    Item Name
+                                </label>
+                                <input type="text" id="editCaseItemName" 
+                                       class="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200" 
+                                       placeholder="Enter case name" required>
                             </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
-                                        <i data-lucide="calendar" class="w-4 h-4 text-green-300"></i>
-                                        Drop Date
-                                    </label>
-                                    <input type="text" id="edit-drop-date" placeholder="dd/mm/yyyy" pattern="\\d{2}/\\d{2}/\\d{4}" class="input-field w-full px-3 py-2 rounded-lg text-white outline-none" required readonly>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-300 mb-2">Price ($)</label>
-                                    <input type="number" id="edit-case-price" step="0.01" min="0" class="input-field w-full px-3 py-2 rounded-lg text-white outline-none" required>
+                            
+                            <!-- Drop Date -->
+                            <div class="group">
+                                <label class="block text-sm font-semibold text-gray-300 mb-2 group-focus-within:text-blue-400 transition-colors">
+                                    <i data-lucide="calendar" class="w-4 h-4 inline mr-2"></i>
+                                    Drop Date
+                                </label>
+                                <div class="relative">
+                                    <input type="text" id="editCaseDropDate" 
+                                           placeholder="dd/mm/yyyy" pattern="\\d{2}/\\d{2}/\\d{4}"
+                                           class="w-full px-4 py-3 pr-12 bg-gray-800 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200" 
+                                           required>
+                                    <input type="date" id="editCaseDropDatePicker"
+                                           class="absolute opacity-0 pointer-events-none" tabindex="-1">
+                                    <button type="button" onclick="document.getElementById('editCaseDropDatePicker').showPicker(); event.preventDefault();"
+                                            class="absolute right-3 top-1/2 transform -translate-y-1/2 p-2 text-gray-400 hover:text-white transition-colors duration-200" title="Open calendar">
+                                        <i data-lucide="calendar" class="w-4 h-4"></i>
+                                    </button>
                                 </div>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-2">Account</label>
-                                <input type="text" id="edit-case-account" class="input-field w-full px-3 py-2 rounded-lg text-white outline-none" required>
+                            
+                            <!-- Price -->
+                            <div class="group">
+                                <label class="block text-sm font-semibold text-gray-300 mb-2 group-focus-within:text-blue-400 transition-colors">
+                                    <i data-lucide="dollar-sign" class="w-4 h-4 inline mr-2"></i>
+                                    Price ($)
+                                </label>
+                                <input type="number" id="editCasePrice" step="0.01" min="0"
+                                       class="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200" 
+                                       placeholder="0.00" required>
+                            </div>
+                            
+                            <!-- Account -->
+                            <div class="group">
+                                <label class="block text-sm font-semibold text-gray-300 mb-2 group-focus-within:text-blue-400 transition-colors">
+                                    <i data-lucide="user" class="w-4 h-4 inline mr-2"></i>
+                                    Account
+                                </label>
+                                <input type="text" id="editCaseAccount" 
+                                       class="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200" 
+                                       placeholder="Enter account name" required>
                             </div>
                         </div>
+                        
                         <div class="flex space-x-4 mt-6">
-                            <button type="submit" class="btn-success flex-1 text-white font-semibold py-2 px-4 rounded-lg">
-                                Save Changes
-                            </button>
-                            <button type="button" id="cancel-edit-case-drop" class="bg-gray-600 hover:bg-gray-700 flex-1 text-white font-semibold py-2 px-4 rounded-lg transition">
+                            <button type="button" id="cancelEditCaseDrop" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-3 rounded-xl font-medium transition-all duration-200">
                                 Cancel
+                            </button>
+                            <button type="submit" class="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-4 py-3 rounded-xl font-medium transition-all duration-200">
+                                Save Changes
                             </button>
                         </div>
                     </form>
                 </div>
             </div>
+
+            <!-- Delete Case Drop Confirmation Modal -->
+            <div id="deleteCaseDropModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center" style="display: none;">
+                <div class="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-95">
+                    <!-- Modal Header -->
+                    <div class="bg-gradient-to-r from-red-600 to-pink-600 rounded-t-2xl p-6">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                <i data-lucide="trash-2" class="w-6 h-6 text-white"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-white">Delete Case Drop</h3>
+                                <p class="text-red-100 text-sm">Permanently remove this case drop</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal Body -->
+                    <div class="p-6">
+                        <div class="text-center mb-6">
+                            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i data-lucide="alert-triangle" class="w-8 h-8 text-red-600"></i>
+                            </div>
+                            
+                            <p class="text-gray-300 mb-2 text-lg">
+                                Are you sure you want to delete
+                            </p>
+                            <p class="text-white font-bold text-xl mb-4">
+                                "<span id="deleteCaseDropName"></span>"?
+                            </p>
+
+                            <!-- Warning Box -->
+                            <div class="bg-red-900/20 border border-red-700/50 rounded-lg p-4 mb-6">
+                                <div class="flex items-center gap-2 text-red-400">
+                                    <i data-lucide="alert-triangle" class="w-4 h-4 flex-shrink-0"></i>
+                                    <span class="font-medium">Warning: This action cannot be undone</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex space-x-4">
+                            <button id="cancelDeleteCaseDrop" type="button" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2">
+                                <i data-lucide="x" class="w-4 h-4"></i>
+                                Cancel
+                            </button>
+                            <button id="confirmDeleteCaseDrop" type="button" class="flex-1 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                Delete Case Drop
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         `
     }
 
@@ -1047,16 +1141,17 @@ export class CasesPage {
             }
         }, 100)
 
+        
         // Edit case drop form
-        const editForm = document.getElementById('edit-case-drop-form')
+        const editForm = document.getElementById('editCaseDropForm')
         if (editForm) {
             editForm.addEventListener('submit', (e) => {
                 e.preventDefault()
                 this.saveCaseDropEdit()
             })
         }
-        
-        const cancelEditBtn = document.getElementById('cancel-edit-case-drop')
+
+        const cancelEditBtn = document.getElementById('cancelEditCaseDrop')
         if (cancelEditBtn) {
             cancelEditBtn.addEventListener('click', () => this.closeCaseDropEditModal())
         }
@@ -1095,9 +1190,11 @@ export class CasesPage {
             }
             
             // Cancel edit button - event delegation
-            if (e.target.id === 'cancel-edit-case-drop') {
+            if (e.target.id === 'cancelEditCaseDrop') {
+                console.log('❌ Cancel edit button clicked (via delegation)')
                 e.preventDefault()
                 this.closeCaseDropEditModal()
+                return
             }
             
             // Add Case Drop button - event delegation as backup
@@ -1140,6 +1237,58 @@ export class CasesPage {
                 })
                 addYearBtn.setAttribute('data-listener-added', 'true')
             }
+
+            // Setup edit modal event listeners with delay
+            const editForm = document.getElementById('editCaseDropForm')
+            if (editForm && !editForm.hasAttribute('data-listener-added')) {
+                editForm.addEventListener('submit', (e) => {
+                    e.preventDefault()
+                    this.saveCaseDropEdit()
+                })
+                editForm.setAttribute('data-listener-added', 'true')
+            }
+
+            const cancelEditBtn = document.getElementById('cancelEditCaseDrop')
+            if (cancelEditBtn && !cancelEditBtn.hasAttribute('data-listener-added')) {
+                cancelEditBtn.addEventListener('click', () => {
+                    console.log('❌ Cancel edit button clicked')
+                    this.closeCaseDropEditModal()
+                })
+                cancelEditBtn.setAttribute('data-listener-added', 'true')
+            }
+
+            // Setup delete modal event listeners
+            const cancelDeleteBtn = document.getElementById('cancelDeleteCaseDrop')
+            if (cancelDeleteBtn && !cancelDeleteBtn.hasAttribute('data-listener-added')) {
+                cancelDeleteBtn.addEventListener('click', () => {
+                    console.log('❌ Cancel delete button clicked')
+                    this.hideDeleteModal(true)
+                })
+                cancelDeleteBtn.setAttribute('data-listener-added', 'true')
+            }
+
+            const confirmDeleteBtn = document.getElementById('confirmDeleteCaseDrop')
+            if (confirmDeleteBtn && !confirmDeleteBtn.hasAttribute('data-listener-added')) {
+                confirmDeleteBtn.addEventListener('click', () => {
+                    console.log('✅ Confirm delete button clicked')
+                    this.executeDelete()
+                })
+                confirmDeleteBtn.setAttribute('data-listener-added', 'true')
+            }
+
+            // Click outside modal to close
+            const deleteModal = document.getElementById('deleteCaseDropModal')
+            if (deleteModal && !deleteModal.hasAttribute('data-listener-added')) {
+                deleteModal.addEventListener('click', (e) => {
+                    if (e.target === deleteModal) {
+                        this.hideDeleteModal(true)
+                    }
+                })
+                deleteModal.setAttribute('data-listener-added', 'true')
+            }
+
+            // Setup edit modal date picker synchronization
+            this.setupDatePickerSync('editCaseDropDate', 'editCaseDropDatePicker')
         }, 200)
     }
 
@@ -2777,16 +2926,41 @@ export class CasesPage {
         this.editingCaseDrop = caseDrop
         
         // Populate edit form
-        document.getElementById('edit-case-name').value = caseDrop.caseName || ''
-        document.getElementById('edit-drop-date').value = caseDrop.dropDate || ''
-        document.getElementById('edit-case-price').value = caseDrop.price || ''
-        document.getElementById('edit-case-account').value = caseDrop.account || ''
+        document.getElementById('editCaseItemName').value = caseDrop.caseName || ''
+        document.getElementById('editCasePrice').value = caseDrop.price || ''
+        document.getElementById('editCaseAccount').value = caseDrop.account || ''
+
+        // Handle date formatting properly
+        const dateInput = document.getElementById('editCaseDropDate')
+        const datePicker = document.getElementById('editCaseDropDatePicker')
+        
+        if (caseDrop.dropDate) {
+            // Check if the stored date is in ISO format (yyyy-mm-dd) or dd/mm/yyyy format
+            let formattedDate = caseDrop.dropDate
+            let isoDate = null
+            
+            if (caseDrop.dropDate.includes('-') && caseDrop.dropDate.length === 10) {
+                // It's in ISO format, convert to dd/mm/yyyy
+                isoDate = caseDrop.dropDate
+                formattedDate = this.convertISOToFormattedDate(caseDrop.dropDate)
+            } else if (caseDrop.dropDate.includes('/')) {
+                // It's already in dd/mm/yyyy format
+                formattedDate = caseDrop.dropDate
+                isoDate = this.convertFormattedToISODate(caseDrop.dropDate)
+            }
+            
+            // Set the text input to dd/mm/yyyy format
+            dateInput.value = formattedDate
+            
+            // Set the hidden date picker to ISO format if available
+            if (datePicker && isoDate) {
+                datePicker.value = isoDate
+            }
+        }
 
         // Show modal
-        const modal = document.getElementById('edit-case-drop-modal')
+        const modal = document.getElementById('editCaseDropModal')
         if (modal) modal.classList.remove('hidden')
-        
-        // Note: Edit modal uses readonly input - users should edit via main form
         
         console.log('✅ Edit case drop modal opened for:', caseDrop.caseName)
     }
@@ -2801,10 +2975,10 @@ export class CasesPage {
         }
 
         const editData = {
-            caseName: document.getElementById('edit-case-name').value.trim(),
-            dropDate: document.getElementById('edit-drop-date').value.trim(),
-            price: parseFloat(document.getElementById('edit-case-price').value),
-            account: document.getElementById('edit-case-account').value.trim()
+            caseName: document.getElementById('editCaseItemName').value.trim(),
+            dropDate: document.getElementById('editCaseDropDate').value.trim(),
+            price: parseFloat(document.getElementById('editCasePrice').value),
+            account: document.getElementById('editCaseAccount').value.trim()
         }
         
         if (!editData.caseName || !editData.dropDate || 
@@ -2826,7 +3000,7 @@ export class CasesPage {
         this.closeCaseDropEditModal()
         this.renderCurrentWeek()
         this.refreshCaseDropsDisplay()
-        this.refreshAnalytics() // Update analytics after editing case drop
+        this.refreshAnalytics()
         this.showNotification(`Updated "${editData.caseName}" successfully`, 'success')
     }
 
@@ -2834,7 +3008,7 @@ export class CasesPage {
      * Closes case drop edit modal
      */
     closeCaseDropEditModal() {
-        const modal = document.getElementById('edit-case-drop-modal')
+        const modal = document.getElementById('editCaseDropModal')
         if (modal) modal.classList.add('hidden')
         this.editingCaseDrop = null
     }
@@ -2853,13 +3027,63 @@ export class CasesPage {
             return
         }
 
-        if (confirm(`Are you sure you want to remove "${caseDrop.caseName}" from your case drops?`)) {
-            this.getStore().deleteCaseDrop(id)
+        // Store the ID for deletion and show modal
+        this.pendingDeleteId = id
+        document.getElementById('deleteCaseDropName').textContent = caseDrop.caseName
+        this.showDeleteModal()
+    }
+
+    /**
+     * Shows delete confirmation modal
+     */
+    showDeleteModal() {
+        const modal = document.getElementById('deleteCaseDropModal')
+        modal.style.display = 'flex'
+        const modalContent = modal.querySelector('.bg-gray-900')
+        modalContent.classList.remove('scale-95')
+        modalContent.classList.add('scale-100')
+    }
+
+    /**
+     * Hides delete confirmation modal
+     */
+    hideDeleteModal(instant = false) {
+        const modal = document.getElementById('deleteCaseDropModal')
+        const modalContent = modal.querySelector('.bg-gray-900')
+        
+        if (instant) {
+            // Instant close for cancel actions
+            modal.style.display = 'none'
+            this.pendingDeleteId = null
+        } else {
+            // Animate out for successful actions
+            modalContent.classList.remove('scale-100')
+            modalContent.classList.add('scale-95')
+            
+            // Hide after animation
+            setTimeout(() => {
+                modal.style.display = 'none'
+                this.pendingDeleteId = null
+            }, 200)
+        }
+    }
+
+    /**
+     * Executes the case drop deletion
+     */
+    executeDelete() {
+        if (this.pendingDeleteId) {
+            const state = this.getStore()
+            const caseDrop = state.caseDrops.find(drop => drop.id === this.pendingDeleteId)
+            const caseDropName = caseDrop ? caseDrop.caseName : 'Unknown'
+            
+            this.getStore().deleteCaseDrop(this.pendingDeleteId)
             this.renderCurrentWeek()
             this.refreshCaseDropsDisplay()
             this.refreshAnalytics() // Update analytics after deleting case drop
-            this.showNotification(`Removed "${caseDrop.caseName}" from case drops`, 'success')
-            console.log('✅ Case drop removed:', caseDrop.caseName)
+            this.showNotification(`Removed "${caseDropName}" from case drops`, 'success')
+            console.log('✅ Case drop removed:', caseDropName)
+            this.hideDeleteModal()
         }
     }
 
@@ -3839,17 +4063,57 @@ export class CasesPage {
             // Ensure we pad with zeros and parse as integers to avoid leading zero issues
             const paddedMonth = parseInt(month, 10).toString().padStart(2, '0')
             const paddedDay = parseInt(day, 10).toString().padStart(2, '0')
-            const result = `${year}-${paddedMonth}-${paddedDay}`
-            console.log('📅 Date conversion:', { 
-                input: formattedDate, 
-                parts: parts, 
-                output: result 
-            })
-            return result
+            return `${year}-${paddedMonth}-${paddedDay}`
         }
         return formattedDate
     }
 
+    /**
+     * Fix corrupted NaN dates in the database
+     */
+    fixCorruptedDates() {
+        const state = this.getStore()
+        let fixedCount = 0
+        
+        console.log('🔧 Checking for corrupted dates...')
+        
+        const updatedCaseDrops = state.caseDrops.map(caseDrop => {
+            if (caseDrop.dropDate && caseDrop.dropDate.includes('NaN')) {
+                console.log('🚫 Found corrupted date:', caseDrop.dropDate, 'in case:', caseDrop.caseName)
+                fixedCount++
+                
+                // Set to today's date as fallback
+                const today = new Date()
+                const fixedDate = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`
+                
+                return {
+                    ...caseDrop,
+                    dropDate: fixedDate
+                }
+            }
+            return caseDrop
+        })
+        
+        if (fixedCount > 0) {
+            // Update the store with fixed data
+            const caseDropsData = {
+                years: state.years,
+                caseDrops: updatedCaseDrops
+            }
+            localStorage.setItem('caseDropsHierarchical', JSON.stringify(caseDropsData))
+            
+            // Force a state update
+            this.getStore().setState({ caseDrops: updatedCaseDrops })
+            
+            console.log(`✅ Fixed ${fixedCount} corrupted dates`)
+            this.showNotification(`Fixed ${fixedCount} corrupted dates`, 'success')
+            
+            // Refresh the display
+            this.renderCurrentWeek()
+            this.refreshCaseDropsDisplay()
+            this.refreshAnalytics()
+        }
+    }
 
     /**
      * Normalize date to dd/mm/yyyy format (handles both ISO and formatted dates)

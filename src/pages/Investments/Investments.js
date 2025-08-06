@@ -42,6 +42,12 @@ export class InvestmentsPage {
                     this.updateSortButtonText()
                     this.updateMetrics()
                     this.initializeHoldingsChart()
+                    
+                    // Fix any corrupted dates on page load
+                    setTimeout(() => {
+                        this.fixCorruptedDates()
+                    }, 1000)
+                    
                     console.log('💼 Investments page initialized')
                 } catch (initError) {
                     console.error('❌ Failed to initialize investments page:', initError)
@@ -1909,8 +1915,64 @@ export class InvestmentsPage {
         document.getElementById('editItemName').value = investment.itemName
         document.getElementById('editBuyPrice').value = investment.buyPrice
         document.getElementById('editSellPrice').value = investment.sellPrice || ''
-        document.getElementById('editBuyDate').value = investment.date
-        document.getElementById('editSellDate').value = investment.sellDate || ''
+
+        // Handle buy date formatting properly
+        const buyDateInput = document.getElementById('editBuyDate')
+        const buyDatePicker = document.getElementById('editBuyDatePicker')
+        
+        if (investment.date) {
+            // Check if the stored date is in ISO format (yyyy-mm-dd) or dd/mm/yyyy format
+            let formattedBuyDate = investment.date
+            let isoBuyDate = null
+            
+            if (investment.date.includes('-') && investment.date.length === 10) {
+                // It's in ISO format, convert to dd/mm/yyyy
+                isoBuyDate = investment.date
+                formattedBuyDate = this.convertISOToFormattedDate(investment.date)
+            } else if (investment.date.includes('/')) {
+                // It's already in dd/mm/yyyy format
+                formattedBuyDate = investment.date
+                isoBuyDate = this.convertFormattedToISODate(investment.date)
+            }
+            
+            // Set the text input to dd/mm/yyyy format
+            buyDateInput.value = formattedBuyDate
+            
+            // Set the hidden date picker to ISO format if available
+            if (buyDatePicker && isoBuyDate) {
+                buyDatePicker.value = isoBuyDate
+            }
+        }
+
+        // Handle sell date formatting properly
+        const sellDateInput = document.getElementById('editSellDate')
+        const sellDatePicker = document.getElementById('editSellDatePicker')
+        
+        if (investment.sellDate) {
+            // Check if the stored date is in ISO format (yyyy-mm-dd) or dd/mm/yyyy format
+            let formattedSellDate = investment.sellDate
+            let isoSellDate = null
+            
+            if (investment.sellDate.includes('-') && investment.sellDate.length === 10) {
+                // It's in ISO format, convert to dd/mm/yyyy
+                isoSellDate = investment.sellDate
+                formattedSellDate = this.convertISOToFormattedDate(investment.sellDate)
+            } else if (investment.sellDate.includes('/')) {
+                // It's already in dd/mm/yyyy format
+                formattedSellDate = investment.sellDate
+                isoSellDate = this.convertFormattedToISODate(investment.sellDate)
+            }
+            
+            // Set the text input to dd/mm/yyyy format
+            sellDateInput.value = formattedSellDate
+            
+            // Set the hidden date picker to ISO format if available
+            if (sellDatePicker && isoSellDate) {
+                sellDatePicker.value = isoSellDate
+            }
+        } else {
+            sellDateInput.value = ''
+        }
 
         // Show modal
         document.getElementById('editModal').classList.remove('hidden')
@@ -2769,8 +2831,64 @@ export class InvestmentsPage {
         document.getElementById('editLongTermCategory').value = investment.categoryId || ''
         document.getElementById('editLongTermBuyPrice').value = investment.unitBuyPrice
         document.getElementById('editLongTermSellPrice').value = investment.unitSellPrice || ''
-        document.getElementById('editLongTermBuyDate').value = investment.date
-        document.getElementById('editLongTermSellDate').value = investment.sellDate || ''
+
+        // Handle buy date formatting properly
+        const longTermBuyDateInput = document.getElementById('editLongTermBuyDate')
+        const longTermBuyDatePicker = document.getElementById('editLongTermBuyDatePicker')
+        
+        if (investment.date) {
+            // Check if the stored date is in ISO format (yyyy-mm-dd) or dd/mm/yyyy format
+            let formattedBuyDate = investment.date
+            let isoBuyDate = null
+            
+            if (investment.date.includes('-') && investment.date.length === 10) {
+                // It's in ISO format, convert to dd/mm/yyyy
+                isoBuyDate = investment.date
+                formattedBuyDate = this.convertISOToFormattedDate(investment.date)
+            } else if (investment.date.includes('/')) {
+                // It's already in dd/mm/yyyy format
+                formattedBuyDate = investment.date
+                isoBuyDate = this.convertFormattedToISODate(investment.date)
+            }
+            
+            // Set the text input to dd/mm/yyyy format
+            longTermBuyDateInput.value = formattedBuyDate
+            
+            // Set the hidden date picker to ISO format if available
+            if (longTermBuyDatePicker && isoBuyDate) {
+                longTermBuyDatePicker.value = isoBuyDate
+            }
+        }
+
+        // Handle sell date formatting properly
+        const longTermSellDateInput = document.getElementById('editLongTermSellDate')
+        const longTermSellDatePicker = document.getElementById('editLongTermSellDatePicker')
+        
+        if (investment.sellDate) {
+            // Check if the stored date is in ISO format (yyyy-mm-dd) or dd/mm/yyyy format
+            let formattedSellDate = investment.sellDate
+            let isoSellDate = null
+            
+            if (investment.sellDate.includes('-') && investment.sellDate.length === 10) {
+                // It's in ISO format, convert to dd/mm/yyyy
+                isoSellDate = investment.sellDate
+                formattedSellDate = this.convertISOToFormattedDate(investment.sellDate)
+            } else if (investment.sellDate.includes('/')) {
+                // It's already in dd/mm/yyyy format
+                formattedSellDate = investment.sellDate
+                isoSellDate = this.convertFormattedToISODate(investment.sellDate)
+            }
+            
+            // Set the text input to dd/mm/yyyy format
+            longTermSellDateInput.value = formattedSellDate
+            
+            // Set the hidden date picker to ISO format if available
+            if (longTermSellDatePicker && isoSellDate) {
+                longTermSellDatePicker.value = isoSellDate
+            }
+        } else {
+            longTermSellDateInput.value = ''
+        }
 
         // Show modal with animation
         const modal = document.getElementById('editLongTermModal')
@@ -3583,7 +3701,35 @@ export class InvestmentsPage {
      */
     formatDate(date) {
         if (!date) return ''
+        
+        // If date is already in dd/mm/yyyy format, return as is
+        if (typeof date === 'string' && date.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+            return date
+        }
+        
+        // If date is in dd/mm/yyyy format, parse it properly
+        if (typeof date === 'string' && date.includes('/')) {
+            const parts = date.split('/')
+            if (parts.length === 3) {
+                const day = parseInt(parts[0], 10)
+                const month = parseInt(parts[1], 10)
+                const year = parseInt(parts[2], 10)
+                
+                // Validate the parsed values
+                if (isNaN(day) || isNaN(month) || isNaN(year)) {
+                    return date // Return original if parsing failed
+                }
+                
+                return `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${year}`
+            }
+        }
+        
+        // Try to parse as a standard date
         const d = new Date(date)
+        if (isNaN(d.getTime())) {
+            return date // Return original if invalid date
+        }
+        
         const day = d.getDate().toString().padStart(2, '0')
         const month = (d.getMonth() + 1).toString().padStart(2, '0')
         const year = d.getFullYear()
@@ -3678,6 +3824,79 @@ export class InvestmentsPage {
         return date.getFullYear() === year && 
                date.getMonth() === month - 1 && 
                date.getDate() === day
+    }
+
+    /**
+     * Fix corrupted NaN dates in the investments database
+     */
+    fixCorruptedDates() {
+        const state = this.store()
+        let fixedCount = 0
+        
+        console.log('🔧 Checking investments for corrupted dates...')
+        
+        // Fix regular investments
+        const updatedInvestments = state.investments.map(investment => {
+            let needsUpdate = false
+            const updated = { ...investment }
+            
+            // Check buy date
+            if (investment.date && investment.date.includes('NaN')) {
+                console.log('🚫 Found corrupted buy date:', investment.date, 'in investment:', investment.itemName)
+                const today = new Date()
+                updated.date = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`
+                needsUpdate = true
+                fixedCount++
+            }
+            
+            // Check sell date
+            if (investment.sellDate && investment.sellDate.includes('NaN')) {
+                console.log('🚫 Found corrupted sell date:', investment.sellDate, 'in investment:', investment.itemName)
+                updated.sellDate = null // Clear corrupted sell date
+                needsUpdate = true
+                fixedCount++
+            }
+            
+            return needsUpdate ? updated : investment
+        })
+        
+        // Fix long-term investments
+        const updatedLongTermInvestments = state.longTermInvestments.map(investment => {
+            let needsUpdate = false
+            const updated = { ...investment }
+            
+            // Check buy date
+            if (investment.date && investment.date.includes('NaN')) {
+                console.log('🚫 Found corrupted buy date:', investment.date, 'in long-term investment:', investment.itemName)
+                const today = new Date()
+                updated.date = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`
+                needsUpdate = true
+                fixedCount++
+            }
+            
+            // Check sell date
+            if (investment.sellDate && investment.sellDate.includes('NaN')) {
+                console.log('🚫 Found corrupted sell date:', investment.sellDate, 'in long-term investment:', investment.itemName)
+                updated.sellDate = null // Clear corrupted sell date
+                needsUpdate = true
+                fixedCount++
+            }
+            
+            return needsUpdate ? updated : investment
+        })
+        
+        if (fixedCount > 0) {
+            // Update both stores
+            state.setInvestments(updatedInvestments)
+            state.setLongTermInvestments(updatedLongTermInvestments)
+            
+            console.log(`✅ Fixed ${fixedCount} corrupted dates in investments`)
+            this.showNotification(`Fixed ${fixedCount} corrupted dates`, 'success')
+            
+            // Refresh the display
+            this.renderLongTermInvestments()
+            this.updateMetrics()
+        }
     }
 }
 
