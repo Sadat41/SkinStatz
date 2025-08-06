@@ -378,14 +378,14 @@ class CS2Router {
             dashboard: 'CS2 Trading Dashboard',
             trading: 'Trading Performance',
             investments: 'Long Term Investments',
-            cases: 'Case Drop Analytics',
+            cases: 'Track Weekly Drops',
             inventory: 'Inventory Management',
             'skin-explorer': 'Skin Explorer',
             profile: 'User Profile',
             analytics: 'Advanced Analytics'
         }
         
-        document.title = `${titles[pageName] || 'CS2 Tracker'} | Empire Enhanced`
+        document.title = `${titles[pageName] || 'Dashboard'} | SkinStatz`
     }
 
     showErrorPage(error) {

@@ -87,36 +87,6 @@ export class TradingPage {
         return today.toISOString().split('T')[0]
     }
 
-    /**
-     * Convert dd/mm/yyyy to yyyy-mm-dd (for HTML date inputs)
-     */
-    convertToISODate(ddmmyyyy) {
-        if (!ddmmyyyy) return ''
-        if (ddmmyyyy.match(/^\d{4}-\d{2}-\d{2}$/)) return ddmmyyyy // Already in ISO format
-        
-        const parts = ddmmyyyy.split('/')
-        if (parts.length === 3) {
-            const [day, month, year] = parts
-            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
-        }
-        return ''
-    }
-
-    /**
-     * Convert yyyy-mm-dd to dd/mm/yyyy (for display)
-     */
-    convertFromISODate(yyyymmdd) {
-        if (!yyyymmdd) return ''
-        if (yyyymmdd.match(/^\d{2}\/\d{2}\/\d{4}$/)) return yyyymmdd // Already in dd/mm/yyyy format
-        
-        const parts = yyyymmdd.split('-')
-        if (parts.length === 3) {
-            const [year, month, day] = parts
-            return `${day}/${month}/${year}`
-        }
-        return ''
-    }
-
 
     /**
      * Convert yyyy-mm-dd format to dd/mm/yyyy format
@@ -254,10 +224,7 @@ export class TradingPage {
             if (!this.store.formatNumber) {
                 this.store.formatNumber = (num, decimals = 2) => {
                     if (num === null || num === undefined || isNaN(num)) return '0.00'
-                    return parseFloat(num).toLocaleString('en-US', {
-                        minimumFractionDigits: decimals,
-                        maximumFractionDigits: decimals
-                    })
+                    return parseFloat(num).toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
                 }
             }
             
@@ -270,7 +237,6 @@ export class TradingPage {
             setTimeout(() => {
                 this.switchTab(this.currentTab)
                 this.updateTradingStatsCards()
-                this.updateHeaderMetrics()
                 // Set initial filter button state
                 this.updateStatusFilterButtons()
                 // Update monthly dashboard with real values
@@ -308,91 +274,83 @@ export class TradingPage {
     getHTML(metrics, state) {
         return `
             <!-- Professional Trading Dashboard -->
-            <div class="professional-trading-dashboard min-h-full bg-gray-950">
+            <div class="professional-trading-dashboard h-full bg-gray-950">
                 
                 <!-- Top Navigation Bar -->
-                <div class="trading-header bg-gray-900 border-b border-gray-700 py-4">
-                    <div class="px-6">
-                        <div class="flex items-center justify-between">
-                            <!-- Left: Logo and Main Metrics -->
-                            <div class="flex items-center gap-6" style="overflow: hidden;">
-                                <div class="flex items-center gap-3" style="min-width: 250px;">
-                                    <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                                        <i data-lucide="trending-up" class="w-5 h-5 text-white"></i>
-                                    </div>
-                                    <h1 class="text-xl font-bold text-white">CS2 Trading Pro</h1>
-                                    <span class="bg-gradient-to-r from-green-500 to-blue-600 text-white text-xs px-2 py-1 rounded-full">
-                                        Live
-                                    </span>
+                <div class="trading-header bg-gray-900 border-b border-gray-700 px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <!-- Left: Logo and Main Metrics -->
+                        <div class="flex items-center gap-6" style="overflow: hidden;">
+                            <div class="flex items-center gap-3" style="max-width: 200px; overflow: hidden; gap: 0.5rem;">
+                                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="trending-up" class="w-5 h-5 text-white"></i>
                                 </div>
-                                
-                                <!-- Real-time Trading Metrics -->
-                                <div class="flex items-center gap-6 text-sm">
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-gray-400">Holdings:</span>
-                                        <span class="text-white font-semibold" id="portfolio-value">$${this.store.formatNumber(metrics.portfolioValue || 0)}</span>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-gray-400">Positions:</span>
-                                        <span class="text-blue-400 font-semibold" id="open-positions">${metrics.activePositions || 0}</span>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-gray-400">Today:</span>
-                                        <span class="text-green-400 font-semibold" id="daily-pnl">$0.00</span>
-                                        <span class="text-green-400 text-xs" id="daily-pnl-percent">0.0%</span>
-                                    </div>
-                                    <!-- Trading Gains Card -->
-                                    <div class="bg-gray-800 border border-gray-600 rounded-lg px-3 py-1">
-                                        <div class="flex items-center gap-3 text-xs">
-                                            <span class="text-gray-400">7d</span>
-                                            <span class="text-green-400 font-medium" id="header-gains-7d">$0</span>
-                                            <span class="text-gray-400">30d</span>
-                                            <span class="text-green-400 font-medium" id="header-gains-30d">$0</span>
-                                            <span class="text-gray-400">60d</span>
-                                            <span class="text-green-400 font-medium" id="header-gains-60d">$0</span>
-                                        </div>
-                                    </div>
-                                </div>
+                                <h1 class="text-xl font-bold text-white" style="max-width: 120px !important; overflow: hidden !important; text-overflow: ellipsis !important; font-size: 1rem !important; white-space: nowrap !important;">CS2 Trading Pro</h1>
+                                <span class="bg-gradient-to-r from-green-500 to-blue-600 text-white text-xs px-2 py-1 rounded-full">
+                                    Live
+                                </span>
                             </div>
                             
-                            <!-- Right: Controls and Settings -->
-                            <div class="flex items-center gap-3">
-                                <div class="trading-status flex items-center gap-2 bg-green-900/30 px-3 py-1 rounded-lg">
-                                    <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                                    <span class="text-green-400 text-sm">Market Open</span>
+                            <!-- Real-time Portfolio Metrics -->
+                            <div class="flex items-center gap-6 text-sm">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-gray-400">Portfolio:</span>
+                                    <span class="text-white font-semibold" id="portfolio-value">$${this.store.formatNumber(metrics.totalCapital || 0)}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-gray-400">Today:</span>
+                                    <span class="text-green-400 font-semibold" id="daily-pnl">+$127.45</span>
+                                    <span class="text-green-400 text-xs">+2.31%</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-gray-400">Positions:</span>
+                                    <span class="text-blue-400 font-semibold" id="open-positions">${metrics.activeHoldings?.length || 0}</span>
                                 </div>
                             </div>
+                        </div>
+                        
+                        <!-- Right: Controls and Settings -->
+                        <div class="flex items-center gap-3">
+                            <div class="trading-status flex items-center gap-2 bg-green-900/30 px-3 py-1 rounded-lg">
+                                <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                                <span class="text-green-400 text-sm">Market Open</span>
+                            </div>
+                            <button class="layout-toggle bg-gray-800 hover:bg-gray-700 p-2 rounded-lg transition">
+                                <i data-lucide="layout-grid" class="w-4 h-4 text-gray-400"></i>
+                            </button>
+                            <button class="alerts-btn bg-gray-800 hover:bg-gray-700 p-2 rounded-lg transition relative">
+                                <i data-lucide="bell" class="w-4 h-4 text-gray-400"></i>
+                                <div class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">3</div>
+                            </button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Main Navigation Tabs -->
-                <div class="main-navigation bg-gray-950 pt-6">
-                    <div class="px-6">
-                        <div class="flex">
-                            <button id="tab-overview" class="trading-tab active flex-1 px-2 py-3 text-sm font-semibold text-white bg-blue-600 border-r border-gray-950 hover:bg-blue-950 transition">
-                                <i data-lucide="pie-chart" class="w-4 h-4 mr-2 inline"></i>
-                                Overview
-                            </button>
-                            <button id="tab-positions" class="trading-tab flex-1 px-2 py-3 text-sm font-semibold text-gray-300 bg-gray-950 hover:bg-gray-950 border-r border-gray-950 transition">
-                                <i data-lucide="briefcase" class="w-4 h-4 mr-2 inline"></i>
-                                Positions
-                            </button>
-                            <button id="tab-analytics" class="trading-tab flex-1 px-2 py-3 text-sm font-semibold text-gray-300 bg-gray-950 hover:bg-gray-950 transition">
-                                <i data-lucide="bar-chart-3" class="w-4 h-4 mr-2 inline"></i>
-                                Analytics
-                            </button>
-                        </div>
+                <div class="main-navigation bg-gray-900 border-b border-gray-700 px-6">
+                    <div class="flex">
+                        <button id="tab-overview" class="trading-tab active flex-1 px-2 py-3 text-sm font-semibold text-white bg-blue-600 border-r border-gray-600 hover:bg-blue-700 transition">
+                            <i data-lucide="pie-chart" class="w-4 h-4 mr-2 inline"></i>
+                            Overview
+                        </button>
+                        <button id="tab-positions" class="trading-tab flex-1 px-2 py-3 text-sm font-semibold text-gray-300 bg-gray-800 hover:bg-gray-700 border-r border-gray-600 transition">
+                            <i data-lucide="briefcase" class="w-4 h-4 mr-2 inline"></i>
+                            Positions
+                        </button>
+                        <button id="tab-analytics" class="trading-tab flex-1 px-2 py-3 text-sm font-semibold text-gray-300 bg-gray-800 hover:bg-gray-700 transition">
+                            <i data-lucide="bar-chart-3" class="w-4 h-4 mr-2 inline"></i>
+                            Analytics
+                        </button>
                     </div>
                 </div>
 
                 <!-- Main Tab Content Area -->
-                <div class="main-content-area flex-1 bg-gray-950 min-h-screen px-6">
+                <div class="main-content-area flex-1 bg-gray-950 min-h-screen">
                     <!-- Overview Tab Content - Monthly Trading Dashboard -->
                     <div id="content-overview" class="tab-content active">
-                        <div class="overview-dashboard py-4">
+                        <div class="overview-dashboard px-6 py-4">
                             <!-- Monthly Dashboard + Weekly Breakdown Card -->
-                            <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 hover:border-gray-600 transition-all duration-200 mb-8">
+                            <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 hover:border-gray-600 transition-all duration-200 mb-8 mx-0">
                                     <!-- Month Navigation Header -->
                                     <div class="flex items-center justify-between mb-6">
                                         <div class="flex items-center gap-4">
@@ -670,10 +628,12 @@ export class TradingPage {
                     <div id="content-positions" class="tab-content hidden relative z-10">
                         <div class="positions-dashboard px-6 py-4">
                             <!-- Add New Trade Form -->
-                            <section class="bg-gray-900 border border-gray-700 rounded-2xl p-10 mb-8 shadow-2xl backdrop-blur-sm">
-                                <div class="flex items-center justify-between mb-10">
+                            <section class="bg-gray-900 border border-gray-700 rounded-xl p-8 mb-8 shadow-2xl">
+                                <div class="flex items-center justify-between mb-8">
                                     <div class="flex items-center gap-3">
-                                        <i data-lucide="plus-circle" class="w-6 h-6 text-green-400"></i>
+                                        <div class="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg">
+                                            <i data-lucide="plus-circle" class="w-6 h-6 text-white"></i>
+                                        </div>
                                         <div>
                                             <h2 class="text-white font-bold text-xl">Add New Trade</h2>
                                             <p class="text-gray-400 text-sm">Track your CS2 trading with precision</p>
@@ -682,12 +642,12 @@ export class TradingPage {
                                 </div>
                                 
                                 <!-- Trade Form -->
-                                <form id="tradeForm" class="space-y-8">
+                                <form id="tradeForm">
                                     <!-- Row 1: Item Name and Category -->
-                                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                         <div class="group">
                                             <label class="block text-gray-300 text-sm font-medium mb-3 flex items-center gap-2">
-                                                <i data-lucide="package" class="w-4 h-4 text-purple-400"></i>
+                                                <i data-lucide="tag" class="w-4 h-4 text-purple-400"></i>
                                                 Item Name
                                             </label>
                                             <div class="relative">
@@ -772,16 +732,8 @@ export class TradingPage {
                                                 <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 p-0.5 opacity-80 group-focus-within:opacity-100 transition-opacity duration-300">
                                                     <div class="w-full h-full bg-gray-900 rounded-xl"></div>
                                                 </div>
-                                                <div class="flex items-center gap-2">
-                                                    <input type="text" id="buyDate" placeholder="dd/mm/yyyy" value="${this.getTodayFormatted()}"
-                                                            class="relative z-10 flex-1 bg-transparent text-white px-4 py-3 rounded-xl focus:outline-none transition-colors duration-200" required>
-                                                    <input type="date" id="buyDatePicker" value="${this.getTodayISO()}"
-                                                            class="absolute opacity-0 pointer-events-none" tabindex="-1">
-                                                    <button type="button" onclick="document.getElementById('buyDatePicker').showPicker(); event.preventDefault();"
-                                                            class="relative z-10 p-2 text-gray-400 hover:text-white transition-colors duration-200" title="Open calendar">
-                                                        <i data-lucide="calendar" class="w-5 h-5"></i>
-                                                    </button>
-                                                </div>
+                                                <input type="text" id="buyDate" placeholder="dd/mm/yyyy"
+                                                        class="relative z-10 w-full bg-transparent text-white px-4 py-3 rounded-xl focus:outline-none transition-colors duration-200" required>
                                             </div>
                                         </div>
                                         <!-- Sell Date -->
@@ -794,23 +746,15 @@ export class TradingPage {
                                                 <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-red-500 to-pink-500/60 p-0.5 opacity-60 group-focus-within:opacity-100 transition-opacity duration-300">
                                                     <div class="w-full h-full bg-gray-900 rounded-xl"></div>
                                                 </div>
-                                                <div class="flex items-center gap-2">
-                                                    <input type="text" id="sellDate" placeholder="dd/mm/yyyy (optional)"
-                                                            class="relative z-10 flex-1 bg-transparent text-white px-4 py-3 rounded-xl focus:outline-none transition-colors duration-200">
-                                                    <input type="date" id="sellDatePicker"
-                                                            class="absolute opacity-0 pointer-events-none" tabindex="-1">
-                                                    <button type="button" onclick="document.getElementById('sellDatePicker').showPicker(); event.preventDefault();"
-                                                            class="relative z-10 p-2 text-gray-400 hover:text-white transition-colors duration-200" title="Open calendar">
-                                                        <i data-lucide="calendar" class="w-5 h-5"></i>
-                                                    </button>
-                                                </div>
+                                                <input type="text" id="sellDate" placeholder="dd/mm/yyyy (optional)"
+                                                        class="relative z-10 w-full bg-transparent text-white px-4 py-3 rounded-xl focus:outline-none transition-colors duration-200">
                                             </div>
                                         </div>
                                     </div>
                                     
                                     <!-- Action Button -->
                                     <div class="flex justify-center">
-                                        <button type="button" onclick="window.tradingPage?.safeAddTrade()" class="group relative bg-gray-900 hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-600 text-gray-300 hover:text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 flex items-center gap-2 overflow-hidden border border-gray-700 hover:border-transparent">
+                                        <button type="button" onclick="window.tradingPage?.safeAddTrade()" class="group relative bg-gray-900 hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-600 text-gray-300 hover:text-white font-semibold py-3 px-8 rounded-xl transition-all duration-300 flex items-center gap-2 overflow-hidden border border-gray-700 hover:border-transparent">
                                             <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 p-0.5">
                                                 <div class="w-full h-full bg-gray-900 rounded-xl group-hover:bg-transparent transition-colors duration-300"></div>
                                             </div>
@@ -823,34 +767,6 @@ export class TradingPage {
 
                             <!-- Trading Portfolio Dashboard Card -->
                             <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 mb-6">
-                                <!-- Trading Activity Header -->
-                                <div class="flex items-center justify-between mb-6">
-                                    <h2 class="text-2xl font-bold text-white">Trading Activity</h2>
-                                    <div class="flex items-center gap-3">
-                                        <button id="exportCsvBtn" class="group relative bg-gray-900 hover:bg-gradient-to-r hover:from-emerald-500 hover:to-teal-600 text-gray-300 hover:text-white px-4 py-3 rounded-xl transition-all duration-300 flex items-center gap-2 overflow-hidden">
-                                            <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 p-0.5">
-                                                <div class="w-full h-full bg-gray-900 rounded-xl group-hover:bg-transparent transition-colors duration-300"></div>
-                                            </div>
-                                            <i data-lucide="download" class="w-4 h-4 relative z-10"></i>
-                                            <span class="relative z-10">CSV</span>
-                                        </button>
-                                        <button id="exportExcelBtn" class="group relative bg-gray-900 hover:bg-gradient-to-r hover:from-green-500 hover:to-emerald-600 text-gray-300 hover:text-white px-4 py-3 rounded-xl transition-all duration-300 flex items-center gap-2 overflow-hidden">
-                                            <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 p-0.5">
-                                                <div class="w-full h-full bg-gray-900 rounded-xl group-hover:bg-transparent transition-colors duration-300"></div>
-                                            </div>
-                                            <i data-lucide="file-spreadsheet" class="w-4 h-4 relative z-10"></i>
-                                            <span class="relative z-10">Excel</span>
-                                        </button>
-                                        <input type="file" id="importCsvFile" accept=".csv" class="hidden">
-                                        <button id="importCsvBtn" class="group relative bg-gray-900 hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-600 text-gray-300 hover:text-white px-4 py-3 rounded-xl transition-all duration-300 flex items-center gap-2 overflow-hidden">
-                                            <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 p-0.5">
-                                                <div class="w-full h-full bg-gray-900 rounded-xl group-hover:bg-transparent transition-colors duration-300"></div>
-                                            </div>
-                                            <i data-lucide="upload" class="w-4 h-4 relative z-10"></i>
-                                            <span class="relative z-10">Import</span>
-                                        </button>
-                                    </div>
-                                </div>
                                 <!-- Trading Statistics Cards -->
                             <section class="trading-stats-cards mb-8">
                                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -954,6 +870,9 @@ export class TradingPage {
                                 </div>
                             </section>
 
+                            <div class="flex items-center justify-between mb-6">
+                                <h2 class="text-2xl font-bold text-white">Trading History</h2>
+                            </div>
                             
                             
                             <!-- Trading Table -->
@@ -1154,7 +1073,7 @@ export class TradingPage {
                     
                     <!-- Analytics Tab Content -->
                     <div id="content-analytics" class="tab-content hidden relative z-20">
-                        <div class="analytics-dashboard py-4">
+                        <div class="analytics-dashboard px-6 py-4">
                             <!-- Enhanced Header with Time Period Controls -->
                             <div class="flex flex-col lg:flex-row lg:items-center justify-between mb-6 gap-4">
                                 <div>
@@ -1430,13 +1349,7 @@ export class TradingPage {
                                         <div class="absolute inset-0 rounded bg-gradient-to-r from-orange-500 to-red-600 p-0.5 opacity-60 group-focus-within:opacity-100 transition-opacity duration-300">
                                             <div class="w-full h-full bg-gray-800 rounded"></div>
                                         </div>
-                                        <div class="flex items-center gap-2 relative z-10">
-                                            <input type="text" id="edit-buy-date" placeholder="dd/mm/yyyy" class="flex-1 bg-transparent text-white px-3 py-2 rounded focus:outline-none transition-colors duration-200" required>
-                                            <input type="date" id="edit-buy-date-picker" class="absolute opacity-0 pointer-events-none" tabindex="-1">
-                                            <button type="button" onclick="document.getElementById('edit-buy-date-picker').showPicker(); event.preventDefault();" class="p-1 text-gray-400 hover:text-white transition-colors duration-200" title="Open calendar">
-                                                <i data-lucide="calendar" class="w-4 h-4"></i>
-                                            </button>
-                                        </div>
+                                        <input type="text" id="edit-buy-date" placeholder="dd/mm/yyyy" class="relative z-10 w-full bg-transparent text-white px-3 py-2 rounded focus:outline-none transition-colors duration-200" required>
                                     </div>
                                 </div>
                                 <div>
@@ -1445,13 +1358,7 @@ export class TradingPage {
                                 </div>
                                 <div>
                                     <label class="block text-gray-400 text-sm mb-2">Sell Date <span class="text-gray-500">(Optional)</span></label>
-                                    <div class="flex items-center gap-2">
-                                        <input type="text" id="edit-sell-date" placeholder="dd/mm/yyyy (optional)" class="flex-1 bg-gray-800 text-white px-3 py-2 rounded border border-gray-600 focus:border-blue-500 focus:outline-none">
-                                        <input type="date" id="edit-sell-date-picker" class="absolute opacity-0 pointer-events-none" tabindex="-1">
-                                        <button type="button" onclick="document.getElementById('edit-sell-date-picker').showPicker(); event.preventDefault();" class="p-1 text-gray-400 hover:text-white transition-colors duration-200" title="Open calendar">
-                                            <i data-lucide="calendar" class="w-4 h-4"></i>
-                                        </button>
-                                    </div>
+                                    <input type="text" id="edit-sell-date" placeholder="dd/mm/yyyy (optional)" class="w-full bg-gray-800 text-white px-3 py-2 rounded border border-gray-600 focus:border-blue-500 focus:outline-none">
                                 </div>
                                 <div class="md:col-span-2 flex gap-3 pt-4">
                                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition">
@@ -1543,17 +1450,9 @@ export class TradingPage {
                                             <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 p-0.5 opacity-60 group-focus-within:opacity-100 transition-opacity duration-300">
                                                 <div class="w-full h-full bg-gray-800 rounded-xl"></div>
                                             </div>
-                                            <div class="flex items-center gap-2 relative z-10">
-                                                <input type="text" id="editTradeBuyDate" placeholder="dd/mm/yyyy"
-                                                       class="flex-1 px-4 py-3 bg-transparent text-white rounded-xl focus:outline-none transition-all duration-200" 
-                                                       required>
-                                                <input type="date" id="editTradeBuyDatePicker"
-                                                       class="absolute opacity-0 pointer-events-none" tabindex="-1">
-                                                <button type="button" onclick="document.getElementById('editTradeBuyDatePicker').showPicker(); event.preventDefault();"
-                                                        class="p-2 text-gray-400 hover:text-white transition-colors duration-200" title="Open calendar">
-                                                    <i data-lucide="calendar" class="w-4 h-4"></i>
-                                                </button>
-                                            </div>
+                                            <input type="text" id="editTradeBuyDate" placeholder="dd/mm/yyyy"
+                                                   class="relative z-10 w-full px-4 py-3 bg-transparent text-white rounded-xl focus:outline-none transition-all duration-200" 
+                                                   required>
                                         </div>
                                     </div>
                                     <div class="group">
@@ -1564,18 +1463,8 @@ export class TradingPage {
                                             Sell Date
                                             <span class="text-xs text-gray-500 ml-1">(optional)</span>
                                         </label>
-                                        <div class="relative">
-                                            <div class="flex items-center gap-2">
-                                                <input type="text" id="editTradeSellDate" placeholder="dd/mm/yyyy (optional)"
-                                                       class="flex-1 px-4 py-3 pr-12 bg-gray-800 border border-gray-600 rounded-xl text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200">
-                                                <input type="date" id="editTradeSellDatePicker"
-                                                       class="absolute opacity-0 pointer-events-none" tabindex="-1">
-                                                <button type="button" onclick="document.getElementById('editTradeSellDatePicker').showPicker(); event.preventDefault();"
-                                                        class="absolute right-3 top-1/2 transform -translate-y-1/2 p-2 text-gray-400 hover:text-white transition-colors duration-200" title="Open calendar">
-                                                    <i data-lucide="calendar" class="w-4 h-4"></i>
-                                                </button>
-                                            </div>
-                                        </div>
+                                        <input type="text" id="editTradeSellDate" placeholder="dd/mm/yyyy (optional)"
+                                               class="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-xl text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200">
                                     </div>
                                 </div>
 
@@ -1636,61 +1525,24 @@ export class TradingPage {
 
             <!-- Delete Confirmation Modal -->
             <div id="deleteTradeModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center" style="display: none;">
-                <div class="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-95">
-                    <!-- Modal Header -->
-                    <div class="bg-gradient-to-r from-red-600 to-pink-600 rounded-t-2xl p-6">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <h3 class="text-2xl font-bold text-white">Delete Trade</h3>
-                                <p class="text-red-100 text-sm">Permanently remove this trade</p>
-                            </div>
+                <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
                         </div>
-                    </div>
-
-                    <!-- Modal Body -->
-                    <div class="p-6">
-                        <div class="text-center mb-6">
-                            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                                </svg>
-                            </div>
-                            
-                            <p class="text-gray-300 mb-2 text-lg">
-                                Are you sure you want to delete
-                            </p>
-                            <p class="text-white font-bold text-xl mb-4">
-                                "<span id="deleteTradeItemName"></span>"?
-                            </p>
-                            
-                            <div class="bg-red-900/20 border border-red-700/50 rounded-lg p-4">
-                                <div class="flex items-center gap-2 text-red-400 text-sm">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                                    </svg>
-                                    <span class="font-medium">Warning: This action cannot be undone</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Action Buttons -->
-                        <div class="flex gap-4 mt-8 pt-6 border-t border-gray-700">
-                            <button id="cancelTradeDelete" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 flex items-center justify-center gap-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                </svg>
+                        <h3 class="text-lg font-semibold text-white mb-2">Delete Trade</h3>
+                        <p class="text-gray-400 mb-6">
+                            Are you sure you want to delete "<span id="deleteTradeItemName" class="text-white font-medium"></span>"?
+                            <br><span class="text-sm text-gray-500">This action cannot be undone.</span>
+                        </p>
+                        <div class="flex gap-3">
+                            <button id="cancelTradeDelete" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors duration-200">
                                 Cancel
                             </button>
-                            <button id="confirmTradeDelete" class="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                </svg>
-                                Delete Trade
+                            <button id="confirmTradeDelete" class="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105">
+                                Delete
                             </button>
                         </div>
                     </div>
@@ -1699,63 +1551,31 @@ export class TradingPage {
 
             <!-- Sell Trade Modal -->
             <div id="sellTradeModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center" style="display: none;">
-                <div class="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-95">
-                    <!-- Modal Header -->
-                    <div class="bg-gradient-to-r from-green-600 to-emerald-600 rounded-t-2xl p-6">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <h3 class="text-2xl font-bold text-white">Sell Trade</h3>
-                                <p class="text-green-100 text-sm">Complete your trade transaction</p>
-                            </div>
+                <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                            </svg>
                         </div>
-                    </div>
-
-                    <!-- Modal Body -->
-                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-white mb-2">Sell Trade</h3>
+                        <p class="text-gray-400 mb-4">
+                            Enter sell price for "<span id="sellTradeItemName" class="text-white font-medium"></span>"
+                        </p>
                         <div class="mb-6">
-                            <p class="text-gray-400 mb-4 text-center">
-                                Enter sell price for "<span id="sellTradeItemName" class="text-white font-semibold"></span>"
-                            </p>
-                            
-                            <div class="space-y-4">
-                                <div class="group">
-                                    <label class="block text-sm font-semibold text-gray-400 mb-2 group-focus-within:text-green-400 transition-colors">
-                                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
-                                        </svg>
-                                        Sell Price ($)
-                                    </label>
-                                    <input type="number" id="sellTradePrice" step="0.01" min="0" 
-                                           class="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition-all duration-200 text-lg font-semibold"
-                                           placeholder="0.00">
-                                </div>
-                                
-                                <div class="bg-gray-800 rounded-lg p-3 border border-gray-600">
-                                    <div class="flex justify-between items-center text-sm">
-                                        <span class="text-gray-400">Original Buy Price:</span>
-                                        <span class="text-white font-semibold">$<span id="originalTradeBuyPrice">0.00</span></span>
-                                    </div>
-                                </div>
+                            <label class="block text-sm font-medium text-gray-400 mb-2">Sell Price ($)</label>
+                            <input type="number" id="sellTradePrice" step="0.01" min="0" 
+                                   class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                   placeholder="0.00">
+                            <div class="mt-2 text-sm text-gray-500">
+                                Buy price: $<span id="originalTradeBuyPrice">0.00</span>
                             </div>
                         </div>
-                        
-                        <!-- Action Buttons -->
-                        <div class="flex gap-4 mt-8 pt-6 border-t border-gray-700">
-                            <button id="cancelTradeSell" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 flex items-center justify-center gap-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                </svg>
+                        <div class="flex gap-3">
+                            <button id="cancelTradeSell" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors duration-200">
                                 Cancel
                             </button>
-                            <button id="confirmTradeSell" class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                </svg>
+                            <button id="confirmTradeSell" class="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105">
                                 Confirm Sale
                             </button>
                         </div>
@@ -1841,16 +1661,8 @@ export class TradingPage {
                                             <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 p-0.5 opacity-60 group-focus-within:opacity-100 transition-opacity duration-300">
                                                 <div class="w-full h-full bg-gray-900 rounded-xl"></div>
                                             </div>
-                                            <div class="flex items-center gap-2 relative z-10">
-                                                <input type="text" id="addTradeBuyDate" placeholder="dd/mm/yyyy" value="${this.getTodayFormatted()}"
-                                                       class="flex-1 bg-transparent text-white px-4 py-3 rounded-xl focus:outline-none transition-colors duration-200" required>
-                                                <input type="date" id="addTradeBuyDatePicker" value="${this.getTodayISO()}"
-                                                       class="absolute opacity-0 pointer-events-none" tabindex="-1">
-                                                <button type="button" onclick="document.getElementById('addTradeBuyDatePicker').showPicker(); event.preventDefault();"
-                                                        class="p-2 text-gray-400 hover:text-white transition-colors duration-200" title="Open calendar">
-                                                    <i data-lucide="calendar" class="w-4 h-4"></i>
-                                                </button>
-                                            </div>
+                                            <input type="text" id="addTradeBuyDate" placeholder="dd/mm/yyyy" value="${this.getTodayFormatted()}"
+                                                class="relative z-10 w-full bg-transparent text-white px-4 py-3 rounded-xl focus:outline-none transition-colors duration-200" required>
                                         </div>
                                     </div>
                                     <div class="group">
@@ -1862,16 +1674,8 @@ export class TradingPage {
                                             <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500 to-pink-600 p-0.5 opacity-50 group-focus-within:opacity-100 transition-opacity duration-200">
                                                 <div class="w-full h-full bg-gray-900 rounded-xl"></div>
                                             </div>
-                                            <div class="flex items-center gap-2 relative z-10">
-                                                <input type="text" id="addTradeSellDate" placeholder="dd/mm/yyyy (optional)"
-                                                       class="flex-1 bg-transparent text-white px-4 py-3 rounded-xl focus:outline-none transition-colors duration-200">
-                                                <input type="date" id="addTradeSellDatePicker"
-                                                       class="absolute opacity-0 pointer-events-none" tabindex="-1">
-                                                <button type="button" onclick="document.getElementById('addTradeSellDatePicker').showPicker(); event.preventDefault();"
-                                                        class="p-2 text-gray-400 hover:text-white transition-colors duration-200" title="Open calendar">
-                                                    <i data-lucide="calendar" class="w-4 h-4"></i>
-                                                </button>
-                                            </div>
+                                            <input type="text" id="addTradeSellDate" placeholder="dd/mm/yyyy (optional)"
+                                                class="relative z-10 w-full bg-transparent text-white px-4 py-3 rounded-xl focus:outline-none transition-colors duration-200">
                                         </div>
                                     </div>
                                 </div>
@@ -3044,9 +2848,8 @@ export class TradingPage {
                     <span class="text-gray-400">Avg Hold Time:</span>
                     <span class="text-white">${Math.round(avgHoldTime)}d</span>
                 </div>
-                <div class="pt-3 mt-3 border-t border-gray-700">
-                    <div class="text-sm font-medium text-blue-400 bg-blue-500/10 px-3 py-2 rounded-lg flex items-center gap-2">
-                        <i data-lucide="lightbulb" class="w-4 h-4"></i>
+                <div class="pt-2 border-t border-gray-700">
+                    <div class="text-xs text-gray-500">
                         ${largeTradesCount > completedTrades.length / 2 ? 'Focus: High-value trading' : 'Focus: Consistent small gains'}
                     </div>
                 </div>
@@ -3091,9 +2894,8 @@ export class TradingPage {
                     <span class="text-gray-400">Momentum:</span>
                     <span class="${momentumColor}">${momentumDirection}</span>
                 </div>
-                <div class="pt-3 mt-3 border-t border-gray-700">
-                    <div class="text-sm font-medium text-green-400 bg-green-500/10 px-3 py-2 rounded-lg flex items-center gap-2">
-                        <i data-lucide="trending-up" class="w-4 h-4"></i>
+                <div class="pt-2 border-t border-gray-700">
+                    <div class="text-xs text-gray-500">
                         ${momentum > 1 ? 'Your trading is improving!' : momentum < -1 ? 'Consider reviewing strategy' : 'Consistent performance'}
                     </div>
                 </div>
@@ -3147,9 +2949,8 @@ export class TradingPage {
                     <span class="text-gray-400">Active Holdings:</span>
                     <span class="text-white">${holdings.length}</span>
                 </div>
-                <div class="pt-3 mt-3 border-t border-gray-700">
-                    <div class="text-sm font-medium text-yellow-400 bg-yellow-500/10 px-3 py-2 rounded-lg flex items-center gap-2">
-                        <i data-lucide="shield-check" class="w-4 h-4"></i>
+                <div class="pt-2 border-t border-gray-700">
+                    <div class="text-xs text-gray-500">
                         ${concentrationRisk > 50 ? 'Consider diversifying' : holdings.length > 3 ? 'Monitor hold times' : 'Good risk management'}
                     </div>
                 </div>
@@ -4530,74 +4331,7 @@ export class TradingPage {
                     this.refreshSpecificChart(chart, period)
                 })
             })
-
-            // Import/Export listeners
-            const exportCsvBtn = document.getElementById('exportCsvBtn')
-            const exportExcelBtn = document.getElementById('exportExcelBtn')
-            const importCsvBtn = document.getElementById('importCsvBtn')
-            const importCsvFile = document.getElementById('importCsvFile')
-
-            if (exportCsvBtn) {
-                exportCsvBtn.addEventListener('click', () => {
-                    this.exportToCsv()
-                })
-            }
-
-            if (exportExcelBtn) {
-                exportExcelBtn.addEventListener('click', () => {
-                    this.exportToExcel()
-                })
-            }
-
-            if (importCsvBtn) {
-                importCsvBtn.addEventListener('click', () => {
-                    document.getElementById('importCsvFile').click()
-                })
-            }
-
-            if (importCsvFile) {
-                importCsvFile.addEventListener('change', (e) => {
-                    this.handleImport(e)
-                })
-            }
-
-            // Date picker sync functionality
-            this.setupDatePickerSync('buyDate', 'buyDatePicker')
-            this.setupDatePickerSync('sellDate', 'sellDatePicker')
-            this.setupDatePickerSync('edit-buy-date', 'edit-buy-date-picker')
-            this.setupDatePickerSync('edit-sell-date', 'edit-sell-date-picker')
-            this.setupDatePickerSync('editTradeBuyDate', 'editTradeBuyDatePicker')
-            this.setupDatePickerSync('editTradeSellDate', 'editTradeSellDatePicker')
-            this.setupDatePickerSync('addTradeBuyDate', 'addTradeBuyDatePicker')
-            this.setupDatePickerSync('addTradeSellDate', 'addTradeSellDatePicker')
         }, 300)
-    }
-
-    /**
-     * Setup date picker synchronization between text input and hidden date picker
-     */
-    setupDatePickerSync(textInputId, datePickerId) {
-        setTimeout(() => {
-            const textInput = document.getElementById(textInputId)
-            const datePicker = document.getElementById(datePickerId)
-            
-            if (textInput && datePicker) {
-                // When date picker changes, update text input
-                datePicker.addEventListener('change', () => {
-                    if (datePicker.value) {
-                        textInput.value = this.convertFromISODate(datePicker.value)
-                    }
-                })
-                
-                // When text input changes, update date picker
-                textInput.addEventListener('blur', () => {
-                    const isoDate = this.convertToISODate(textInput.value)
-                    if (isoDate) {
-                        datePicker.value = isoDate
-                    }
-                })
-            }
-        }, 100)
     }
 
     updateAnalyticsDisplay(timePeriod = 'current') {
@@ -4824,124 +4558,6 @@ export class TradingPage {
         }
     }
 
-    // Update the header metrics with current data
-    updateHeaderMetrics() {
-        try {
-            const stats = this.calculateTradingStatsForCards()
-            
-            // Update Holdings (Available to Trade)
-            const holdingsElement = document.getElementById('portfolio-value')
-            if (holdingsElement) {
-                holdingsElement.textContent = '$' + this.store.formatNumber(stats.portfolioValue)
-            }
-            
-            // Update Positions count
-            const positionsElement = document.getElementById('open-positions')
-            if (positionsElement) {
-                positionsElement.textContent = stats.activePositions
-            }
-            
-            // Update Today's P&L (calculate from trades sold today)
-            const dailyPnlElement = document.getElementById('daily-pnl')
-            const dailyPnlPercentElement = document.getElementById('daily-pnl-percent')
-            if (dailyPnlElement) {
-                const todayData = this.calculateTodayPnL()
-                const todayText = (todayData.amount >= 0 ? '+' : '') + '$' + this.store.formatNumber(Math.abs(todayData.amount))
-                dailyPnlElement.textContent = todayText
-                dailyPnlElement.className = dailyPnlElement.className.replace(/text-(red|green)-400/, '')
-                dailyPnlElement.classList.add(todayData.amount >= 0 ? 'text-green-400' : 'text-red-400')
-                
-                // Update percentage
-                if (dailyPnlPercentElement) {
-                    const percentText = (todayData.percent >= 0 ? '+' : '') + todayData.percent.toFixed(1) + '%'
-                    dailyPnlPercentElement.textContent = percentText
-                    dailyPnlPercentElement.className = dailyPnlPercentElement.className.replace(/text-(red|green)-400/, '')
-                    dailyPnlPercentElement.classList.add(todayData.amount >= 0 ? 'text-green-400' : 'text-red-400')
-                }
-            }
-            
-            
-        } catch (error) {
-            console.error('❌ Error updating header metrics:', error)
-        }
-    }
-
-    // Calculate P&L for today specifically (5th August 2025)
-    calculateTodayPnL() {
-        const trades = this.getTradingData()
-        const today = new Date()
-        const todayStr = this.formatDateForComparison(today) // e.g., "05/08/2025"
-        
-        console.log(`📅 Calculating today's P&L for: ${todayStr}`)
-        
-        let todayPnl = 0
-        let todayInvestment = 0
-        
-        // Find all trades sold today
-        const todayTrades = trades.filter(trade => {
-            if (!trade.sellDate || !trade.sellPrice) return false
-            
-            // Direct string comparison - sellDate should already be in DD/MM/YYYY format
-            const sellDate = trade.sellDate.trim()
-            const isToday = sellDate === todayStr
-            
-            console.log(`🔍 Checking trade ${trade.itemName}: sellDate="${sellDate}" vs today="${todayStr}" = ${isToday}`)
-            
-            if (isToday) {
-                console.log(`📈 Found today's trade: ${trade.itemName}, sold for $${trade.sellPrice}`)
-            }
-            
-            return isToday
-        })
-        
-        // Calculate total P&L and investment for today's trades
-        todayTrades.forEach(trade => {
-            const buyPrice = parseFloat(trade.buyPrice) || 0
-            const sellPrice = parseFloat(trade.sellPrice) || 0
-            const profit = sellPrice - buyPrice
-            todayPnl += profit
-            todayInvestment += buyPrice
-            
-            console.log(`💰 ${trade.itemName}: Buy $${buyPrice}, Sell $${sellPrice}, Profit: $${profit.toFixed(2)}`)
-        })
-        
-        // Calculate percentage return
-        const todayPercent = todayInvestment > 0 ? (todayPnl / todayInvestment * 100) : 0
-        
-        console.log(`📊 Total today's P&L: $${todayPnl.toFixed(2)} (${todayPercent.toFixed(1)}%) from ${todayTrades.length} trades`)
-        
-        return {
-            amount: todayPnl,
-            percent: todayPercent
-        }
-    }
-    
-    // Helper function to format date for comparison (DD/MM/YYYY)
-    formatDateForComparison(date) {
-        if (!date) return ''
-        const day = String(date.getDate()).padStart(2, '0')
-        const month = String(date.getMonth() + 1).padStart(2, '0')
-        const year = date.getFullYear()
-        return `${day}/${month}/${year}`
-    }
-    
-    // Helper function to parse date string (handles DD/MM/YYYY format)
-    parseDate(dateString) {
-        if (!dateString) return null
-        
-        // Handle DD/MM/YYYY format
-        const parts = dateString.split('/')
-        if (parts.length === 3) {
-            const day = parseInt(parts[0])
-            const month = parseInt(parts[1]) - 1 // Month is 0-indexed
-            const year = parseInt(parts[2])
-            return new Date(year, month, day)
-        }
-        
-        // Fallback to standard date parsing
-        return new Date(dateString)
-    }
-
     // Update the trading statistics cards with current data
     updateTradingStatsCards() {
         try {
@@ -5046,33 +4662,6 @@ export class TradingPage {
                 console.error('Error updating gains for period:', period, error)
             }
         })
-        
-        // Sync header gains with Trading Activity section - MOVED HERE AFTER ACTIVITY UPDATE
-        try {
-            const headerGains7d = document.getElementById('header-gains-7d')
-            const headerGains30d = document.getElementById('header-gains-30d') 
-            const headerGains60d = document.getElementById('header-gains-60d')
-            
-            const activityGains7d = document.getElementById('tradingGains7d')
-            const activityGains30d = document.getElementById('tradingGains30d')
-            const activityGains60d = document.getElementById('tradingGains60d')
-            
-            if (headerGains7d && activityGains7d) {
-                headerGains7d.textContent = activityGains7d.textContent
-                headerGains7d.className = activityGains7d.className.replace('text-sm font-bold', 'text-green-400 font-medium')
-            }
-            if (headerGains30d && activityGains30d) {
-                headerGains30d.textContent = activityGains30d.textContent
-                headerGains30d.className = activityGains30d.className.replace('text-sm font-bold', 'text-green-400 font-medium')
-            }
-            if (headerGains60d && activityGains60d) {
-                headerGains60d.textContent = activityGains60d.textContent
-                headerGains60d.className = activityGains60d.className.replace('text-sm font-bold', 'text-green-400 font-medium')
-            }
-        } catch (error) {
-            console.error('Error syncing header gains:', error)
-        }
-        
         } catch (error) {
             console.error('Error updating trading stats cards:', error)
             // Fail silently to prevent page crash
@@ -5105,7 +4694,6 @@ export class TradingPage {
             let sellDate = sellDateElement?.value || null
             
             // Dates are already in dd/mm/yyyy format from text inputs
-            // No conversion needed
             
             console.log('📝 Form data:', { itemName, category, buyPrice, buyDate, sellPrice, sellDate })
             
@@ -5291,12 +4879,9 @@ export class TradingPage {
         const itemName = document.getElementById('edit-item-name').value
         const category = document.getElementById('edit-item-category').value || document.getElementById('editTradeCategory').value
         const buyPrice = parseFloat(document.getElementById('edit-buy-price').value)
-        let buyDate = document.getElementById('edit-buy-date').value
+        const buyDate = document.getElementById('edit-buy-date').value
         const sellPrice = document.getElementById('edit-sell-price').value
-        let sellDate = document.getElementById('edit-sell-date').value
-        
-        // Dates are already in dd/mm/yyyy format from text inputs
-        // No conversion needed
+        const sellDate = document.getElementById('edit-sell-date').value
         
         if (!itemName || !buyPrice || !buyDate) {
             alert('Please fill in required fields (Item Name, Buy Price, Buy Date)')
@@ -5345,7 +4930,6 @@ export class TradingPage {
         
         // Update trading stats cards
         this.updateTradingStatsCards()
-        this.updateHeaderMetrics()
     }
 
     initializeFlippingCharts(metrics) {
@@ -5969,11 +5553,8 @@ export class TradingPage {
         const categoryElement = document.getElementById('editTradeCategory')
         const category = categoryElement ? categoryElement.value : trades[this.currentEditIndex].category || 'Unknown'
         
-        let buyDate = document.getElementById('editTradeBuyDate').value
-        let sellDate = document.getElementById('editTradeSellDate').value
-        
-        // Dates are already in dd/mm/yyyy format from text inputs
-        // No conversion needed
+        const buyDate = document.getElementById('editTradeBuyDate').value
+        const sellDate = document.getElementById('editTradeSellDate').value
         
         const updatedTrade = {
             ...trades[this.currentEditIndex],
@@ -6377,16 +5958,7 @@ export class TradingPage {
             trades = trades.sort((a, b) => {
                 switch (this.selectedSortOption) {
                     case 'recent':
-                        // If filtering by "sold", sort by sell date; otherwise, sort by buy date
-                        if (this.selectedStatusFilter === 'sold') {
-                            // For sold items, sort by sell date (most recent sold first)
-                            const sellDateA = this.parseDateForSorting(a.sellDate)
-                            const sellDateB = this.parseDateForSorting(b.sellDate)
-                            return sellDateB - sellDateA
-                        } else {
-                            // For holding or all items, sort by buy date (most recent bought first)
-                            return this.parseDateForSorting(b.buyDate) - this.parseDateForSorting(a.buyDate)
-                        }
+                        return this.parseDateForSorting(b.buyDate) - this.parseDateForSorting(a.buyDate)
                     
                     case 'ascending':
                         return a.buyPrice - b.buyPrice
@@ -6395,14 +5967,7 @@ export class TradingPage {
                         return b.buyPrice - a.buyPrice
                     
                     default:
-                        // Default sorting behavior
-                        if (this.selectedStatusFilter === 'sold') {
-                            const sellDateA = this.parseDateForSorting(a.sellDate)
-                            const sellDateB = this.parseDateForSorting(b.sellDate)
-                            return sellDateB - sellDateA
-                        } else {
-                            return this.parseDateForSorting(b.buyDate) - this.parseDateForSorting(a.buyDate)
-                        }
+                        return this.parseDateForSorting(b.buyDate) - this.parseDateForSorting(a.buyDate)
                 }
             })
         }
@@ -6558,9 +6123,9 @@ export class TradingPage {
         const buyPrice = parseFloat(document.getElementById('addTradeBuyPrice').value)
         let buyDate = document.getElementById('addTradeBuyDate').value
         const sellPrice = document.getElementById('addTradeSellPrice').value
-        let sellDate = document.getElementById('addTradeSellDate').value
+        const sellDate = document.getElementById('addTradeSellDate').value
 
-        // Dates are already in dd/mm/yyyy format from text inputs
+        // Set default buy date if not provided
         if (!buyDate) {
             buyDate = this.getTodayFormatted()
         }
@@ -6622,313 +6187,5 @@ export class TradingPage {
         }
         
         console.log('✅ Trading page cleanup complete')
-    }
-
-    /**
-     * Export trading data to CSV format
-     */
-    exportToCsv() {
-        const trades = this.getTradingData()
-        
-        if (!trades || trades.length === 0) {
-            this.showNotification('No trading data to export', 'warning')
-            return
-        }
-
-        const headers = [
-            'Item Name',
-            'Category',
-            'Buy Price',
-            'Sell Price',
-            'Buy Date',
-            'Sell Date',
-            'P&L',
-            'Return %',
-            'Status'
-        ]
-
-        const csvData = trades.map(trade => {
-            const buyPrice = parseFloat(trade.buyPrice) || 0
-            const sellPrice = parseFloat(trade.sellPrice) || 0
-            const isSold = trade.sellPrice && trade.sellPrice > 0
-            const profit = isSold ? (sellPrice - buyPrice) : 0
-            const returnPercent = isSold && buyPrice > 0 ? ((sellPrice - buyPrice) / buyPrice * 100) : 0
-            
-            return {
-                'Item Name': trade.itemName || '',
-                'Category': trade.category || 'Unknown',
-                'Buy Price': buyPrice,
-                'Sell Price': isSold ? sellPrice : '',
-                'Buy Date': this.formatDate(trade.buyDate) || '',
-                'Sell Date': isSold ? this.formatDate(trade.sellDate) : '',
-                'P&L': isSold ? profit.toFixed(2) : '',
-                'Return %': isSold ? returnPercent.toFixed(2) : '',
-                'Status': isSold ? 'sold' : 'holding'
-            }
-        })
-
-        // Convert to CSV string
-        const csvContent = [
-            headers.join(','),
-            ...csvData.map(row => 
-                headers.map(header => {
-                    const value = row[header]
-                    // Escape commas and quotes in CSV
-                    if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
-                        return `"${value.replace(/"/g, '""')}"`
-                    }
-                    return value
-                }).join(',')
-            )
-        ].join('\n')
-
-        // Create and download file
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `trading-data-${new Date().toISOString().split('T')[0]}.csv`
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        URL.revokeObjectURL(url)
-
-        this.showNotification('CSV export completed successfully', 'success')
-    }
-
-    /**
-     * Export trading data to Excel format
-     */
-    exportToExcel() {
-        // Check if XLSX library is available
-        if (typeof XLSX === 'undefined') {
-            this.showNotification('Excel export library not available', 'error')
-            return
-        }
-
-        const trades = this.getTradingData()
-        
-        if (!trades || trades.length === 0) {
-            this.showNotification('No trading data to export', 'warning')
-            return
-        }
-
-        const headers = [
-            'Item Name',
-            'Category',
-            'Buy Price',
-            'Sell Price',
-            'Buy Date',
-            'Sell Date',
-            'P&L',
-            'Return %',
-            'Status'
-        ]
-
-        const excelData = trades.map(trade => {
-            const buyPrice = parseFloat(trade.buyPrice) || 0
-            const sellPrice = parseFloat(trade.sellPrice) || 0
-            const isSold = trade.sellPrice && trade.sellPrice > 0
-            const profit = isSold ? (sellPrice - buyPrice) : 0
-            const returnPercent = isSold && buyPrice > 0 ? ((sellPrice - buyPrice) / buyPrice * 100) : 0
-            
-            return {
-                'Item Name': trade.itemName || '',
-                'Category': trade.category || 'Unknown',
-                'Buy Price': buyPrice,
-                'Sell Price': isSold ? sellPrice : '',
-                'Buy Date': this.formatDate(trade.buyDate) || '',
-                'Sell Date': isSold ? this.formatDate(trade.sellDate) : '',
-                'P&L': isSold ? profit : '',
-                'Return %': isSold ? returnPercent : '',
-                'Status': isSold ? 'sold' : 'holding'
-            }
-        })
-
-        const worksheet = XLSX.utils.json_to_sheet(excelData)
-        const workbook = XLSX.utils.book_new()
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Trading Data')
-
-        // Auto-size columns
-        const colWidths = headers.map(header => {
-            const maxLength = Math.max(
-                header.length,
-                ...excelData.map(row => String(row[header] || '').length)
-            )
-            return { wch: Math.min(maxLength + 2, 50) }
-        })
-        worksheet['!cols'] = colWidths
-
-        // Create and download file
-        XLSX.writeFile(workbook, `trading-data-${new Date().toISOString().split('T')[0]}.xlsx`)
-
-        this.showNotification('Excel export completed successfully', 'success')
-    }
-
-    /**
-     * Handle CSV import
-     */
-    handleImport(e) {
-        const file = e.target.files[0]
-        if (!file) {
-            return
-        }
-
-        if (!file.name.toLowerCase().endsWith('.csv')) {
-            this.showNotification('Please select a CSV file', 'error')
-            return
-        }
-
-        const reader = new FileReader()
-        reader.onload = (event) => {
-            try {
-                this.processCSVContent(event.target.result)
-            } catch (error) {
-                console.error('Error processing CSV:', error)
-                this.showNotification('Error processing CSV file', 'error')
-            }
-        }
-        
-        reader.readAsText(file)
-        
-        // Clear the file input so the same file can be selected again
-        e.target.value = ''
-    }
-
-    /**
-     * Process CSV content and import trading data
-     */
-    processCSVContent(csvContent) {
-        const lines = csvContent.split('\n').filter(line => line.trim())
-        
-        if (lines.length < 2) {
-            this.showNotification('CSV file appears to be empty or invalid', 'error')
-            return
-        }
-
-        const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''))
-        const expectedHeaders = ['Item Name', 'Category', 'Buy Price', 'Sell Price', 'Buy Date', 'Sell Date', 'P&L', 'Return %', 'Status']
-        
-        // Check if headers match expected format
-        const hasRequiredHeaders = ['Item Name', 'Buy Price', 'Buy Date'].every(header => 
-            headers.includes(header)
-        )
-        
-        if (!hasRequiredHeaders) {
-            this.showNotification('CSV file missing required headers: Item Name, Buy Price, Buy Date', 'error')
-            return
-        }
-
-        const importedTrades = []
-        let successCount = 0
-        let errorCount = 0
-
-        for (let i = 1; i < lines.length; i++) {
-            try {
-                const values = this.parseCSVLine(lines[i])
-                if (values.length < headers.length) continue
-
-                const tradeData = {}
-                headers.forEach((header, index) => {
-                    tradeData[header] = values[index] || ''
-                })
-
-                // Convert to internal format
-                const trade = {
-                    id: Date.now() + Math.random(),
-                    itemName: tradeData['Item Name'] || '',
-                    category: tradeData['Category'] || 'Unknown',
-                    buyPrice: parseFloat(tradeData['Buy Price']) || 0,
-                    sellPrice: tradeData['Sell Price'] ? parseFloat(tradeData['Sell Price']) : null,
-                    buyDate: this.parseDate(tradeData['Buy Date']),
-                    sellDate: tradeData['Sell Date'] ? this.parseDate(tradeData['Sell Date']) : null,
-                    status: tradeData['Status'] || 'holding'
-                }
-
-                // Validate required fields
-                if (!trade.itemName || !trade.buyPrice || !trade.buyDate) {
-                    errorCount++
-                    continue
-                }
-
-                importedTrades.push(trade)
-                successCount++
-            } catch (error) {
-                console.error('Error parsing line:', lines[i], error)
-                errorCount++
-            }
-        }
-
-        if (importedTrades.length === 0) {
-            this.showNotification('No valid trading data found in CSV file', 'error')
-            return
-        }
-
-        // Get existing trades and merge
-        const existingTrades = this.getTradingData()
-        const allTrades = [...existingTrades, ...importedTrades]
-        
-        // Save to localStorage
-        localStorage.setItem('tradingData', JSON.stringify(allTrades))
-        
-        // Refresh the display
-        this.refreshPositionsTab()
-        this.updateTradingStatsCards()
-        this.updateHeaderMetrics()
-        
-        this.showNotification(`Import completed: ${successCount} trades imported${errorCount > 0 ? `, ${errorCount} errors` : ''}`, 'success')
-    }
-
-    /**
-     * Parse CSV line handling quoted values
-     */
-    parseCSVLine(line) {
-        const result = []
-        let current = ''
-        let inQuotes = false
-        
-        for (let i = 0; i < line.length; i++) {
-            const char = line[i]
-            const nextChar = line[i + 1]
-            
-            if (char === '"' && inQuotes && nextChar === '"') {
-                current += '"'
-                i++ // Skip next quote
-            } else if (char === '"') {
-                inQuotes = !inQuotes
-            } else if (char === ',' && !inQuotes) {
-                result.push(current.trim())
-                current = ''
-            } else {
-                current += char
-            }
-        }
-        
-        result.push(current.trim())
-        return result
-    }
-
-    /**
-     * Parse date from various formats
-     */
-    parseDate(dateStr) {
-        if (!dateStr) return null
-        
-        // Handle dd/mm/yyyy format
-        if (dateStr.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
-            return dateStr
-        }
-        
-        // Handle other formats and convert to dd/mm/yyyy
-        const date = new Date(dateStr)
-        if (isNaN(date.getTime())) {
-            return null
-        }
-        
-        const day = String(date.getDate()).padStart(2, '0')
-        const month = String(date.getMonth() + 1).padStart(2, '0')
-        const year = date.getFullYear()
-        
-        return `${day}/${month}/${year}`
     }
 }
