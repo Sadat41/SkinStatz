@@ -6,7 +6,7 @@
     <title>SkinStatz | Professional CS2 Trading Tracker</title>
     
     <!-- Favicon and PWA Meta -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📊%3C/text%3E%3C/svg%3E">
     <meta name="theme-color" content="#1f2937">
     <meta name="description" content="SkinStatz - Professional CS2 skin trading dashboard with advanced analytics, portfolio management, and market insights.">
     
@@ -173,7 +173,7 @@
 
         /* Sidebar toggle functionality - SIMPLIFIED */
         .nav-sidebar {
-            transition: all 0.3s ease;
+            transition: width 0.3s ease;
             overflow: visible;
         }
 
@@ -217,10 +217,40 @@
             display: none;
         }
 
+        /* Hide text in support button specifically */
+        .nav-sidebar.collapsed #support-toggle span,
+        .nav-sidebar.collapsed #support-toggle .flex:first-child span {
+            display: none;
+        }
+
+
         /* Center nav items in collapsed state */
         .nav-sidebar.collapsed .nav-item {
             justify-content: center !important;
             padding: 0.75rem !important;
+        }
+
+        /* Fix support button in collapsed state - only center the heart icon */
+        .nav-sidebar.collapsed #support-toggle {
+            justify-content: center !important;
+            padding: 0.75rem !important;
+        }
+
+        /* Ensure all nav icons are visible and properly sized in collapsed state */
+        .nav-sidebar.collapsed .nav-icon {
+            flex-shrink: 0;
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        /* Hide contribute button in collapsed mode */
+        .nav-sidebar.collapsed a[href*="github"] {
+            display: none !important;
+        }
+
+        /* Hide external link icon in collapsed state */
+        .nav-sidebar.collapsed .nav-item i[data-lucide="external-link"] {
+            display: none;
         }
 
         /* Main content area flex behavior */
@@ -313,6 +343,171 @@
         @media (max-width: 767px) {
             #support-dropdown {
                 margin-left: 0.5rem;
+            }
+        }
+
+        /* ================================ */
+        /* ENHANCED NOTIFICATION STYLING */
+        /* ================================ */
+        
+        /* Success messages - enhanced green styling */
+        .notyf__toast--success {
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            box-shadow: 0 8px 32px rgba(34, 197, 94, 0.25), 
+                        0 4px 16px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(12px);
+        }
+
+        .notyf__toast--success .notyf__wrapper {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(8px);
+        }
+
+        .notyf__toast--success .notyf__message {
+            color: #ffffff;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .notyf__toast--success .notyf__icon--success {
+            background: rgba(255, 255, 255, 0.9);
+            color: #16a34a;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Error messages - enhanced red styling with high contrast */
+        .notyf__toast--error {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            box-shadow: 0 8px 32px rgba(239, 68, 68, 0.3), 
+                        0 4px 16px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(12px);
+        }
+
+        .notyf__toast--error .notyf__wrapper {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+        }
+
+        .notyf__toast--error .notyf__message {
+            color: #ffffff;
+            font-weight: 600;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+            font-size: 14px;
+        }
+
+        .notyf__toast--error .notyf__icon--error {
+            background: rgba(255, 255, 255, 0.95);
+            color: #dc2626;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* General toast enhancements */
+        .notyf__toast {
+            border-radius: 12px;
+            min-width: 320px;
+            max-width: 420px;
+            backdrop-filter: blur(16px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .notyf__toast::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        }
+
+        .notyf__wrapper {
+            border-radius: 11px;
+            padding: 16px 20px;
+            position: relative;
+        }
+
+        .notyf__message {
+            line-height: 1.4;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .notyf__icon {
+            margin-right: 16px;
+            flex-shrink: 0;
+        }
+
+        .notyf__icon--success,
+        .notyf__icon--error {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* Dismiss button styling */
+        .notyf__dismiss-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .notyf__dismiss-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.05);
+        }
+
+        /* Animation improvements */
+        .notyf__toast {
+            animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .notyf__toast--disappear {
+            animation: slideOutRight 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+
+        /* Mobile responsive adjustments */
+        @media (max-width: 480px) {
+            .notyf__toast {
+                min-width: calc(100vw - 40px);
+                max-width: calc(100vw - 40px);
+                border-radius: 8px;
+            }
+            
+            .notyf__wrapper {
+                padding: 14px 16px;
+            }
+            
+            .notyf__message {
+                font-size: 13px;
             }
         }
 

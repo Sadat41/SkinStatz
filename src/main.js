@@ -265,14 +265,33 @@ class CS2TradingApp {
             lucide.createIcons()
         }
 
-        // Initialize Notyf notifications
+        // Initialize Notyf notifications with enhanced configuration
         if (typeof Notyf !== 'undefined') {
             window.notyf = new Notyf({
-                duration: 3000,
+                duration: 4000,
                 position: { x: 'right', y: 'top' },
-                dismissible: true
+                dismissible: true,
+                ripple: true,
+                types: [
+                    {
+                        type: 'success',
+                        background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+                        icon: {
+                            className: 'notyf__icon--success',
+                            tagName: 'span'
+                        }
+                    },
+                    {
+                        type: 'error',
+                        background: 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)',
+                        icon: {
+                            className: 'notyf__icon--error',
+                            tagName: 'span'
+                        }
+                    }
+                ]
             })
-            console.log('🔔 Notifications initialized')
+            console.log('🔔 Enhanced notifications initialized')
         }
 
         // Initialize tooltips and other UI components

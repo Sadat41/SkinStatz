@@ -664,13 +664,25 @@ const useAppStore = create((set, get) => ({
     }),
 
     deleteYear: (year) => set((state) => {
+        console.log('🗑️ Store deleteYear called for year:', year)
+        
         // Filter out the year to be deleted
         const filteredYears = state.years.filter(y => y.year !== year)
         
         // Also remove all case drops from this year
+        // Note: dropDate is in DD/MM/YYYY format, so we need to parse it correctly
         const filteredCaseDrops = state.caseDrops.filter(caseDrop => {
-            const dropDate = new Date(caseDrop.dropDate)
-            return dropDate.getFullYear() !== year
+            if (!caseDrop.dropDate) return true // Keep case drops without dates
+            
+            try {
+                const [day, month, yearValue] = caseDrop.dropDate.split('/').map(num => parseInt(num, 10))
+                const shouldKeep = yearValue !== year
+                console.log(`Case drop ${caseDrop.id} (${caseDrop.dropDate}): year=${yearValue}, deleteYear=${year}, keep=${shouldKeep}`)
+                return shouldKeep
+            } catch (error) {
+                console.warn('Failed to parse date for case drop:', caseDrop.dropDate, error)
+                return true // Keep case drops with invalid dates
+            }
         })
         
         // Save to localStorage

@@ -213,8 +213,16 @@ export class InvestmentsPage {
                                     <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-red-500 to-rose-600 p-0.5 opacity-60 group-focus-within:opacity-100 transition-opacity duration-300">
                                         <div class="w-full h-full bg-gray-900 rounded-xl"></div>
                                     </div>
-                                    <input type="date" id="buyDate" value="${this.getTodayISO()}"
-                                            class="relative z-10 w-full bg-transparent text-white px-4 py-3 rounded-xl focus:outline-none transition-colors duration-200" required>
+                                    <div class="flex items-center gap-2 relative z-10">
+                                        <input type="text" id="buyDate" placeholder="dd/mm/yyyy" value="${this.getTodayFormatted()}"
+                                                class="flex-1 bg-transparent text-white px-4 py-3 rounded-xl focus:outline-none transition-colors duration-200" required>
+                                        <input type="date" id="buyDatePicker" value="${this.getTodayISO()}"
+                                                class="absolute opacity-0 pointer-events-none" tabindex="-1">
+                                        <button type="button" onclick="document.getElementById('buyDatePicker').showPicker(); event.preventDefault();"
+                                                class="p-2 text-gray-400 hover:text-white transition-colors duration-200" title="Open calendar">
+                                            <i data-lucide="calendar" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -228,8 +236,16 @@ export class InvestmentsPage {
                                     <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-pink-500 to-rose-600 p-0.5 opacity-60 group-focus-within:opacity-100 transition-opacity duration-300">
                                         <div class="w-full h-full bg-gray-900 rounded-xl"></div>
                                     </div>
-                                    <input type="date" id="sellDate"
-                                            class="relative z-10 w-full bg-transparent text-white px-4 py-3 rounded-xl focus:outline-none transition-colors duration-200">
+                                    <div class="flex items-center gap-2 relative z-10">
+                                        <input type="text" id="sellDate" placeholder="dd/mm/yyyy (optional)"
+                                                class="flex-1 bg-transparent text-white px-4 py-3 rounded-xl focus:outline-none transition-colors duration-200">
+                                        <input type="date" id="sellDatePicker"
+                                                class="absolute opacity-0 pointer-events-none" tabindex="-1">
+                                        <button type="button" onclick="document.getElementById('sellDatePicker').showPicker(); event.preventDefault();"
+                                                class="p-2 text-gray-400 hover:text-white transition-colors duration-200" title="Open calendar">
+                                            <i data-lucide="calendar" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -438,18 +454,6 @@ export class InvestmentsPage {
                                     <i data-lucide="trash-2" class="w-4 h-4 relative z-10"></i>
                                     <span class="relative z-10">Remove Selected</span>
                                 </button>
-                                <!-- Move Category Dropdown - Enhanced Styling -->
-                                <div id="moveCategoryDropdown" class="absolute top-full left-0 mt-2 bg-gray-900 border-2 border-gray-600 rounded-xl shadow-2xl z-[100]" style="display: none; min-width: 220px; max-height: 320px; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);">
-                                    <div class="p-4">
-                                        <div class="flex items-center gap-2 text-white text-sm font-semibold mb-4">
-                                            <i data-lucide="folder-open" class="w-4 h-4 text-blue-400"></i>
-                                            Move to Category:
-                                        </div>
-                                        <div id="categoryDropdownList" class="space-y-2">
-                                            <!-- Categories will be populated here -->
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
 
@@ -712,6 +716,19 @@ export class InvestmentsPage {
                 </section>
             </div>
 
+            <!-- Move Category Dropdown - Enhanced Styling (Fixed Position) -->
+            <div id="moveCategoryDropdown" class="fixed bg-gray-900 border-2 border-gray-600 rounded-xl shadow-2xl z-[9999]" style="display: none; min-width: 220px; max-height: 320px; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);">
+                <div class="p-4">
+                    <div class="flex items-center gap-2 text-white text-sm font-semibold mb-4">
+                        <i data-lucide="folder-open" class="w-4 h-4 text-blue-400"></i>
+                        Move to Category:
+                    </div>
+                    <div id="categoryDropdownList" class="space-y-2">
+                        <!-- Categories will be populated here -->
+                    </div>
+                </div>
+            </div>
+
             <!-- Edit Investment Modal -->
             <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
                 <div class="glass-card rounded-2xl p-6 w-full max-w-md">
@@ -735,11 +752,23 @@ export class InvestmentsPage {
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-300 mb-2">Buy Date</label>
-                                    <input type="date" id="editBuyDate" class="input-field w-full px-3 py-2 rounded-lg text-white bg-gray-700 border border-gray-600 focus:border-blue-500 outline-none" required>
+                                    <div class="relative">
+                                        <input type="text" id="editBuyDate" placeholder="dd/mm/yyyy" class="input-field w-full px-3 py-2 pr-10 rounded-lg text-white bg-gray-700 border border-gray-600 focus:border-blue-500 outline-none" required>
+                                        <input type="date" id="editBuyDatePicker" class="absolute opacity-0 pointer-events-none" tabindex="-1">
+                                        <button type="button" onclick="document.getElementById('editBuyDatePicker').showPicker(); event.preventDefault();" class="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-white transition-colors duration-200" title="Open calendar">
+                                            <i data-lucide="calendar" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-300 mb-2">Sell Date</label>
-                                    <input type="date" id="editSellDate" class="input-field w-full px-3 py-2 rounded-lg text-white bg-gray-700 border border-gray-600 focus:border-blue-500 outline-none">
+                                    <div class="relative">
+                                        <input type="text" id="editSellDate" placeholder="dd/mm/yyyy (optional)" class="input-field w-full px-3 py-2 pr-10 rounded-lg text-white bg-gray-700 border border-gray-600 focus:border-blue-500 outline-none">
+                                        <input type="date" id="editSellDatePicker" class="absolute opacity-0 pointer-events-none" tabindex="-1">
+                                        <button type="button" onclick="document.getElementById('editSellDatePicker').showPicker(); event.preventDefault();" class="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-white transition-colors duration-200" title="Open calendar">
+                                            <i data-lucide="calendar" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -824,9 +853,17 @@ export class InvestmentsPage {
                                             </svg>
                                             Buy Date
                                         </label>
-                                        <input type="date" id="editLongTermBuyDate"
-                                               class="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-xl text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200" 
-                                               required>
+                                        <div class="relative">
+                                            <input type="text" id="editLongTermBuyDate" placeholder="dd/mm/yyyy"
+                                                   class="w-full px-4 py-3 pr-12 bg-gray-800 border border-gray-600 rounded-xl text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200" 
+                                                   required>
+                                            <input type="date" id="editLongTermBuyDatePicker"
+                                                   class="absolute opacity-0 pointer-events-none" tabindex="-1">
+                                            <button type="button" onclick="document.getElementById('editLongTermBuyDatePicker').showPicker(); event.preventDefault();"
+                                                    class="absolute right-3 top-1/2 transform -translate-y-1/2 p-2 text-gray-400 hover:text-white transition-colors duration-200" title="Open calendar">
+                                                <i data-lucide="calendar" class="w-4 h-4"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                     <div class="group">
                                         <label class="block text-sm font-semibold text-gray-400 mb-2 group-focus-within:text-blue-400 transition-colors">
@@ -836,8 +873,16 @@ export class InvestmentsPage {
                                             Sell Date
                                             <span class="text-xs text-gray-500 ml-1">(optional)</span>
                                         </label>
-                                        <input type="date" id="editLongTermSellDate"
-                                               class="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-xl text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200">
+                                        <div class="relative">
+                                            <input type="text" id="editLongTermSellDate" placeholder="dd/mm/yyyy (optional)"
+                                                   class="w-full px-4 py-3 pr-12 bg-gray-800 border border-gray-600 rounded-xl text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200">
+                                            <input type="date" id="editLongTermSellDatePicker"
+                                                   class="absolute opacity-0 pointer-events-none" tabindex="-1">
+                                            <button type="button" onclick="document.getElementById('editLongTermSellDatePicker').showPicker(); event.preventDefault();"
+                                                    class="absolute right-3 top-1/2 transform -translate-y-1/2 p-2 text-gray-400 hover:text-white transition-colors duration-200" title="Open calendar">
+                                                <i data-lucide="calendar" class="w-4 h-4"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                         
@@ -894,24 +939,61 @@ export class InvestmentsPage {
             <!-- Custom Modal Infrastructure -->
             <!-- Delete Confirmation Modal -->
             <div id="deleteConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center" style="display: none;">
-                <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
-                    <div class="text-center">
-                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
+                <div class="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-95">
+                    <!-- Modal Header -->
+                    <div class="bg-gradient-to-r from-red-600 to-pink-600 rounded-t-2xl p-6">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-white">Delete Investment</h3>
+                                <p class="text-red-100 text-sm">Permanently remove this investment</p>
+                            </div>
                         </div>
-                        <h3 class="text-lg font-semibold text-white mb-2">Delete Investment</h3>
-                        <p class="text-gray-400 mb-6">
-                            Are you sure you want to delete "<span id="deleteItemName" class="text-white font-medium"></span>"?
-                            <br><span class="text-sm text-gray-500">This action cannot be undone.</span>
-                        </p>
+                    </div>
+
+                    <!-- Modal Body -->
+                    <div class="p-6">
+                        <div class="text-center mb-6">
+                            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                </svg>
+                            </div>
+                            
+                            <p class="text-gray-300 mb-2 text-lg">
+                                Are you sure you want to delete
+                            </p>
+                            <p class="text-white font-bold text-xl mb-4">
+                                "<span id="deleteItemName"></span>"?
+                            </p>
+
+                            <!-- Warning Box -->
+                            <div class="bg-red-900/20 border border-red-700/50 rounded-lg p-4 mb-6">
+                                <div class="flex items-center gap-2 text-red-400">
+                                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                    </svg>
+                                    <span class="font-medium">Warning: This action cannot be undone</span>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="flex gap-3">
-                            <button id="cancelDelete" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors duration-200">
+                            <button id="cancelDelete" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
                                 Cancel
                             </button>
-                            <button id="confirmDelete" class="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105">
-                                Delete
+                            <button id="confirmDelete" class="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 flex items-center justify-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                                Delete Investment
                             </button>
                         </div>
                     </div>
@@ -920,31 +1002,62 @@ export class InvestmentsPage {
 
             <!-- Sell Price Input Modal -->
             <div id="sellPriceModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center" style="display: none;">
-                <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
-                    <div class="text-center">
-                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
-                            </svg>
-                        </div>
-                        <h3 class="text-lg font-semibold text-white mb-2">Sell Investment</h3>
-                        <p class="text-gray-400 mb-4">
-                            Enter sell price for "<span id="sellItemName" class="text-white font-medium"></span>"
-                        </p>
-                        <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-400 mb-2">Unit Sell Price ($)</label>
-                            <input type="number" id="sellPriceInput" step="0.01" min="0" 
-                                   class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                                   placeholder="0.00">
-                            <div class="mt-2 text-sm text-gray-500">
-                                Buy price: $<span id="originalBuyPrice">0.00</span>
+                <div class="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-95">
+                    <!-- Modal Header -->
+                    <div class="bg-gradient-to-r from-green-600 to-emerald-600 rounded-t-2xl p-6">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-white">Sell Investment</h3>
+                                <p class="text-green-100 text-sm">Complete your investment transaction</p>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Modal Body -->
+                    <div class="p-6">
+                        <div class="mb-6">
+                            <p class="text-gray-400 mb-4 text-center">
+                                Enter sell price for "<span id="sellItemName" class="text-white font-semibold"></span>"
+                            </p>
+                            
+                            <div class="space-y-4">
+                                <div class="group">
+                                    <label class="block text-sm font-semibold text-gray-400 mb-2 group-focus-within:text-green-400 transition-colors">
+                                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                                        </svg>
+                                        Sell Price ($)
+                                    </label>
+                                    <input type="number" id="sellPriceInput" step="0.01" min="0" 
+                                           class="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
+                                           placeholder="0.00">
+                                </div>
+
+                                <div class="bg-gray-800 border border-gray-700 rounded-lg p-4">
+                                    <div class="flex justify-between items-center text-sm">
+                                        <span class="text-gray-400">Original Buy Price:</span>
+                                        <span class="text-white font-semibold">$<span id="originalBuyPrice">0.00</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="flex gap-3">
-                            <button id="cancelSell" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors duration-200">
+                            <button id="cancelSell" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
                                 Cancel
                             </button>
-                            <button id="confirmSell" class="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105">
+                            <button id="confirmSell" class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 flex items-center justify-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
                                 Confirm Sale
                             </button>
                         </div>
@@ -1044,11 +1157,46 @@ export class InvestmentsPage {
                 }
             })
         }
+
+        // Date picker sync functionality
+        this.setupDatePickerSync('buyDate', 'buyDatePicker')
+        this.setupDatePickerSync('sellDate', 'sellDatePicker')
+        this.setupDatePickerSync('editBuyDate', 'editBuyDatePicker')
+        this.setupDatePickerSync('editSellDate', 'editSellDatePicker')
+        this.setupDatePickerSync('editLongTermBuyDate', 'editLongTermBuyDatePicker')
+        this.setupDatePickerSync('editLongTermSellDate', 'editLongTermSellDatePicker')
+    }
+
+    /**
+     * Setup date picker synchronization between text input and hidden date picker
+     */
+    setupDatePickerSync(textInputId, datePickerId) {
+        setTimeout(() => {
+            const textInput = document.getElementById(textInputId)
+            const datePicker = document.getElementById(datePickerId)
+            
+            if (textInput && datePicker) {
+                // When date picker changes, update text input
+                datePicker.addEventListener('change', () => {
+                    if (datePicker.value) {
+                        textInput.value = this.convertFromISODate(datePicker.value)
+                    }
+                })
+                
+                // When text input changes, update date picker
+                textInput.addEventListener('blur', () => {
+                    const isoDate = this.convertToISODate(textInput.value)
+                    if (isoDate) {
+                        datePicker.value = isoDate
+                    }
+                })
+            }
+        }, 100)
     }
 
     initializeInvestmentForm() {
         // Set today's date as default
-        const today = this.getTodayISO()
+        const today = this.getTodayFormatted()
         const buyDateField = document.getElementById('buyDate')
         if (buyDateField && !buyDateField.value) {
             buyDateField.value = today
@@ -1124,9 +1272,9 @@ export class InvestmentsPage {
             quantity: parseInt(document.getElementById('quantity').value) || 1,
             categoryId: document.getElementById('categorySelect').value,
             buyPrice: parseFloat(document.getElementById('buyPrice').value) || 0,
-            buyDate: this.convertISOToFormattedDate(document.getElementById('buyDate').value),
+            buyDate: document.getElementById('buyDate').value,
             sellPrice: sellPriceValue ? parseFloat(sellPriceValue) : null,
-            sellDate: sellDateValue ? this.convertISOToFormattedDate(sellDateValue) : null
+            sellDate: sellDateValue || null
         }
     }
 
@@ -1452,33 +1600,20 @@ export class InvestmentsPage {
                         </div>
                         
                         <!-- Actions -->
-                        <div class="flex-none w-32 text-center">
-                            <div class="inline-flex gap-1.5 justify-center">
-                                ${!investment.totalSellPrice ? 
-                                    `<button onclick="window.investmentsPage?.quickSellLongTerm('${investment.id}')" 
-                                            class="group relative bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-                                            title="Sell Investment">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
-                                        </svg>
-                                        <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Sell</div>
-                                    </button>` : ''
-                                }
-                                <button onclick="window.investmentsPage?.editLongTermInvestment('${investment.id}')" 
-                                        class="group relative bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-                                        title="Edit Investment">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                    </svg>
-                                    <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Edit</div>
+                        <div class="flex-none w-32 flex items-center justify-center">
+                            <div class="flex gap-1 items-center">
+                                ${!investment.totalSellPrice ? `
+                                    <button onclick="window.investmentsPage?.quickSellLongTerm('${investment.id}')" class="text-green-400 hover:text-green-300 transition-all duration-200 p-1 rounded hover:bg-green-900/20" title="Sell Investment">
+                                        <i data-lucide="trending-up" class="w-4 h-4"></i>
+                                    </button>
+                                ` : `
+                                    <div class="w-6"></div>
+                                `}
+                                <button onclick="window.investmentsPage?.editLongTermInvestment('${investment.id}')" class="text-blue-400 hover:text-blue-300 transition-all duration-200 p-1 rounded hover:bg-blue-900/20" title="Edit Investment">
+                                    <i data-lucide="edit" class="w-4 h-4"></i>
                                 </button>
-                                <button onclick="window.investmentsPage?.deleteLongTermInvestment('${investment.id}')" 
-                                        class="group relative bg-gradient-to-br from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white p-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-                                        title="Delete Investment">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                    </svg>
-                                    <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Delete</div>
+                                <button onclick="window.investmentsPage?.deleteLongTermInvestment('${investment.id}')" class="text-red-400 hover:text-red-300 transition-all duration-200 p-1 rounded hover:bg-red-900/20" title="Delete Investment">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
                                 </button>
                             </div>
                         </div>
@@ -1774,8 +1909,8 @@ export class InvestmentsPage {
         document.getElementById('editItemName').value = investment.itemName
         document.getElementById('editBuyPrice').value = investment.buyPrice
         document.getElementById('editSellPrice').value = investment.sellPrice || ''
-        document.getElementById('editBuyDate').value = this.convertFormattedToISODate(investment.date)
-        document.getElementById('editSellDate').value = investment.sellDate ? this.convertFormattedToISODate(investment.sellDate) : ''
+        document.getElementById('editBuyDate').value = investment.date
+        document.getElementById('editSellDate').value = investment.sellDate || ''
 
         // Show modal
         document.getElementById('editModal').classList.remove('hidden')
@@ -1795,8 +1930,8 @@ export class InvestmentsPage {
             itemName: document.getElementById('editItemName').value.trim(),
             buyPrice: parseFloat(document.getElementById('editBuyPrice').value),
             sellPrice: parseFloat(document.getElementById('editSellPrice').value) || null,
-            date: this.convertISOToFormattedDate(document.getElementById('editBuyDate').value),
-            sellDate: document.getElementById('editSellDate').value ? this.convertISOToFormattedDate(document.getElementById('editSellDate').value) : null
+            date: document.getElementById('editBuyDate').value,
+            sellDate: document.getElementById('editSellDate').value || null
         }
 
         this.store().updateInvestment(this.editingInvestment.id, updatedData)
@@ -2634,8 +2769,8 @@ export class InvestmentsPage {
         document.getElementById('editLongTermCategory').value = investment.categoryId || ''
         document.getElementById('editLongTermBuyPrice').value = investment.unitBuyPrice
         document.getElementById('editLongTermSellPrice').value = investment.unitSellPrice || ''
-        document.getElementById('editLongTermBuyDate').value = this.convertFormattedToISODate(investment.date)
-        document.getElementById('editLongTermSellDate').value = investment.sellDate ? this.convertFormattedToISODate(investment.sellDate) : ''
+        document.getElementById('editLongTermBuyDate').value = investment.date
+        document.getElementById('editLongTermSellDate').value = investment.sellDate || ''
 
         // Show modal with animation
         const modal = document.getElementById('editLongTermModal')
@@ -2671,8 +2806,8 @@ export class InvestmentsPage {
             categoryId: document.getElementById('editLongTermCategory').value,
             unitBuyPrice: parseFloat(document.getElementById('editLongTermBuyPrice').value),
             unitSellPrice: parseFloat(document.getElementById('editLongTermSellPrice').value) || null,
-            date: this.convertISOToFormattedDate(document.getElementById('editLongTermBuyDate').value),
-            sellDate: document.getElementById('editLongTermSellDate').value ? this.convertISOToFormattedDate(document.getElementById('editLongTermSellDate').value) : null
+            date: document.getElementById('editLongTermBuyDate').value,
+            sellDate: document.getElementById('editLongTermSellDate').value || null
         }
 
         // Recalculate derived fields
@@ -2700,7 +2835,7 @@ export class InvestmentsPage {
         const confirmDelete = document.getElementById('confirmDelete')
 
         if (cancelDelete) {
-            cancelDelete.addEventListener('click', () => this.hideDeleteModal())
+            cancelDelete.addEventListener('click', () => this.hideDeleteModal(true))
         }
 
         if (confirmDelete) {
@@ -2709,7 +2844,7 @@ export class InvestmentsPage {
 
         if (deleteModal) {
             deleteModal.addEventListener('click', (e) => {
-                if (e.target === deleteModal) this.hideDeleteModal()
+                if (e.target === deleteModal) this.hideDeleteModal(true)
             })
         }
 
@@ -2720,7 +2855,7 @@ export class InvestmentsPage {
         const sellPriceInput = document.getElementById('sellPriceInput')
 
         if (cancelSell) {
-            cancelSell.addEventListener('click', () => this.hideSellModal())
+            cancelSell.addEventListener('click', () => this.hideSellModal(true))
         }
 
         if (confirmSell) {
@@ -2729,7 +2864,7 @@ export class InvestmentsPage {
 
         if (sellModal) {
             sellModal.addEventListener('click', (e) => {
-                if (e.target === sellModal) this.hideSellModal()
+                if (e.target === sellModal) this.hideSellModal(true)
             })
         }
 
@@ -2742,8 +2877,8 @@ export class InvestmentsPage {
         // ESC key support
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                this.hideDeleteModal()
-                this.hideSellModal()
+                this.hideDeleteModal(true)
+                this.hideSellModal(true)
                 this.closeLongTermEditModal()
             }
         })
@@ -2761,12 +2896,34 @@ export class InvestmentsPage {
     showDeleteModal(id, itemName) {
         this.pendingDeleteId = id
         document.getElementById('deleteItemName').textContent = itemName
-        document.getElementById('deleteConfirmModal').style.display = 'flex'
+        
+        // Show modal with animation
+        const modal = document.getElementById('deleteConfirmModal')
+        modal.style.display = 'flex'
+        const modalContent = modal.querySelector('.bg-gray-900')
+        modalContent.classList.remove('scale-95')
+        modalContent.classList.add('scale-100')
     }
 
-    hideDeleteModal() {
-        document.getElementById('deleteConfirmModal').style.display = 'none'
-        this.pendingDeleteId = null
+    hideDeleteModal(instant = false) {
+        const modal = document.getElementById('deleteConfirmModal')
+        const modalContent = modal.querySelector('.bg-gray-900')
+        
+        if (instant) {
+            // Instant close for cancel actions
+            modal.style.display = 'none'
+            this.pendingDeleteId = null
+        } else {
+            // Animate out for successful actions
+            modalContent.classList.remove('scale-100')
+            modalContent.classList.add('scale-95')
+            
+            // Hide after animation
+            setTimeout(() => {
+                modal.style.display = 'none'
+                this.pendingDeleteId = null
+            }, 200)
+        }
     }
 
     executeDelete() {
@@ -2787,7 +2944,13 @@ export class InvestmentsPage {
         document.getElementById('sellItemName').textContent = itemName
         document.getElementById('originalBuyPrice').textContent = buyPrice.toFixed(2)
         document.getElementById('sellPriceInput').value = buyPrice.toFixed(2)
-        document.getElementById('sellPriceModal').style.display = 'flex'
+        
+        // Show modal with animation
+        const modal = document.getElementById('sellPriceModal')
+        modal.style.display = 'flex'
+        const modalContent = modal.querySelector('.bg-gray-900')
+        modalContent.classList.remove('scale-95')
+        modalContent.classList.add('scale-100')
         
         // Focus and select the input for quick editing
         setTimeout(() => {
@@ -2797,9 +2960,25 @@ export class InvestmentsPage {
         }, 100)
     }
 
-    hideSellModal() {
-        document.getElementById('sellPriceModal').style.display = 'none'
-        this.pendingSellId = null
+    hideSellModal(instant = false) {
+        const modal = document.getElementById('sellPriceModal')
+        const modalContent = modal.querySelector('.bg-gray-900')
+        
+        if (instant) {
+            // Instant close for cancel actions
+            modal.style.display = 'none'
+            this.pendingSellId = null
+        } else {
+            // Animate out for successful actions
+            modalContent.classList.remove('scale-100')
+            modalContent.classList.add('scale-95')
+            
+            // Hide after animation
+            setTimeout(() => {
+                modal.style.display = 'none'
+                this.pendingSellId = null
+            }, 200)
+        }
     }
 
     executeSell() {
@@ -3284,7 +3463,14 @@ export class InvestmentsPage {
 
         console.log('📝 Populated categories:', categoryList.innerHTML)
 
-        // Position and show dropdown
+        // Position dropdown relative to Move button
+        const moveButton = document.getElementById('moveSelectedBtn')
+        const buttonRect = moveButton.getBoundingClientRect()
+        
+        dropdown.style.top = `${buttonRect.bottom + 8}px`
+        dropdown.style.left = `${buttonRect.right - 220}px` // Align right edge with button
+        
+        // Show dropdown
         dropdown.style.display = 'block'
         console.log('👁️ Dropdown should be visible now')
 
@@ -3417,6 +3603,36 @@ export class InvestmentsPage {
     getTodayISO() {
         const today = new Date()
         return today.toISOString().split('T')[0]
+    }
+
+    /**
+     * Convert dd/mm/yyyy to yyyy-mm-dd (for HTML date inputs)
+     */
+    convertToISODate(ddmmyyyy) {
+        if (!ddmmyyyy) return ''
+        if (ddmmyyyy.match(/^\d{4}-\d{2}-\d{2}$/)) return ddmmyyyy // Already in ISO format
+        
+        const parts = ddmmyyyy.split('/')
+        if (parts.length === 3) {
+            const [day, month, year] = parts
+            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+        }
+        return ''
+    }
+
+    /**
+     * Convert yyyy-mm-dd to dd/mm/yyyy (for display)
+     */
+    convertFromISODate(yyyymmdd) {
+        if (!yyyymmdd) return ''
+        if (yyyymmdd.match(/^\d{2}\/\d{2}\/\d{4}$/)) return yyyymmdd // Already in dd/mm/yyyy format
+        
+        const parts = yyyymmdd.split('-')
+        if (parts.length === 3) {
+            const [year, month, day] = parts
+            return `${day}/${month}/${year}`
+        }
+        return ''
     }
 
     /**

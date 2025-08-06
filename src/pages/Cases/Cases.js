@@ -81,7 +81,9 @@ export class CasesPage {
             this.setDefaultDropDate()
             
             // Fetch prices for all case drops
-            this.fetchAllCaseDropPrices()
+            this.fetchAllCaseDropPrices().catch(error => {
+                console.error('Initial price fetching failed:', error)
+            })
             
             // Force update header stats after initial render  
             setTimeout(() => {
@@ -123,7 +125,10 @@ export class CasesPage {
         // Recent activity (last 30 days)
         const thirtyDaysAgo = new Date(Date.now() - (30 * 24 * 60 * 60 * 1000))
         const recentCases = caseDrops.filter(drop => {
-            const dropDate = new Date(drop.dropDate || drop.date)
+            const dateStr = drop.dropDate || drop.date
+            if (!dateStr) return false
+            const isoDate = this.convertFormattedToISODate(dateStr)
+            const dropDate = new Date(isoDate)
             return dropDate >= thirtyDaysAgo
         })
         
@@ -165,48 +170,49 @@ export class CasesPage {
         })
         
         return `
-            <!-- Track Weekly Drops Header -->
-            <div class="trading-header bg-gray-900/95 border-b border-gray-800/50 p-4 mb-6 backdrop-blur-sm">
+            <!-- Track Weekly Drops Card -->
+            <section class="bg-gray-900 border border-gray-700 p-4 mb-6">
                 <div class="flex items-center justify-between">
-                    <!-- Left: Logo and Main Title -->
                     <div class="flex items-center gap-6">
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+                            <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex items-center justify-center">
                                 <i data-lucide="package" class="w-5 h-5 text-white"></i>
                             </div>
-                            <h1 class="text-xl font-bold text-white">Track Weekly Drops</h1>
-                            <span class="bg-gradient-to-r from-purple-500 to-blue-600 text-white text-xs px-2 py-1 rounded-full shadow-sm">
-                                Active
+                            <h2 class="text-white font-semibold text-lg">Track Weekly Drops</h2>
+                            <span class="bg-gradient-to-r from-green-500 to-blue-600 text-white text-xs px-2 py-1 rounded-full">
+                                Live Tracking
                             </span>
                         </div>
                         
-                        <!-- Real-time Summary Metrics -->
+                        <!-- Summary Metrics -->
                         <div class="flex items-center gap-6 text-sm">
                             <div class="flex items-center gap-2">
-                                <span class="text-gray-500">Total Drops:</span>
-                                <span class="text-gray-200 font-semibold" id="header-total-drops">${stats.totalCases || 0}</span>
+                                <span class="text-gray-400">Total Drops:</span>
+                                <span class="text-white font-semibold" id="header-total-drops">${stats.totalCases || 0}</span>
                             </div>
                             <div class="flex items-center gap-2">
-                                <span class="text-gray-500">Total Value:</span>
+                                <span class="text-gray-400">Total Value:</span>
                                 <span class="text-green-400 font-semibold" id="header-total-value">$${this.formatNumber(stats.totalValue || 0)}</span>
                             </div>
                             <div class="flex items-center gap-2">
-                                <span class="text-gray-500">This Week:</span>
+                                <span class="text-gray-400">This Week:</span>
                                 <span class="text-blue-400 font-semibold" id="header-weekly-count">${stats.thisWeekActivity?.cases || 0}</span>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Right: Status -->
                     <div class="flex items-center gap-3">
-                        <!-- Status indicators removed -->
+                        <div class="flex items-center gap-2">
+                            <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                            <span class="text-green-400 text-sm font-medium">Active</span>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
             <!-- Main Navigation Tabs -->
             <div class="flex items-center px-6 mb-6">
-                <button id="overview-tab" class="trading-tab active flex-1 px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-600 border-r border-gray-600 hover:from-blue-600 hover:to-purple-700 transition flex items-center justify-center gap-2 rounded-l-lg">
+                <button id="overview-tab" class="trading-tab active flex-1 px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition flex items-center justify-center gap-2 rounded-l-lg">
                     <i data-lucide="grid-3x3" class="w-4 h-4"></i>
                     Overview
                 </button>
@@ -228,9 +234,12 @@ export class CasesPage {
                         </div>
                         <h3 class="text-lg font-semibold text-gray-100">Time Navigation</h3>
                     </div>
-                    <button id="add-new-year-btn" class="bg-green-600/80 hover:bg-green-600 border border-green-500/30 text-white px-4 py-2 rounded-lg transition flex items-center gap-2 text-sm font-medium shadow-sm">
-                        <i data-lucide="plus" class="w-4 h-4"></i>
-                        Add New Year
+                    <button id="add-new-year-btn" class="group relative bg-gray-900 hover:bg-gradient-to-r hover:from-green-500 hover:to-emerald-600 text-gray-300 hover:text-white px-4 py-2 rounded-xl transition-all duration-300 flex items-center gap-2 text-sm font-medium overflow-hidden">
+                        <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 p-0.5">
+                            <div class="w-full h-full bg-gray-900 rounded-xl group-hover:bg-transparent transition-colors duration-300"></div>
+                        </div>
+                        <i data-lucide="plus" class="w-4 h-4 relative z-10"></i>
+                        <span class="relative z-10">Add New Year</span>
                     </button>
                 </div>
                 
@@ -338,8 +347,16 @@ export class CasesPage {
                                 <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 p-0.5 opacity-50 group-focus-within:opacity-100 transition-opacity duration-200">
                                     <div class="w-full h-full bg-gray-900 rounded-xl"></div>
                                 </div>
-                                <input type="date" id="drop-date" value="${this.getTodayISO()}"
-                                        class="relative z-10 w-full bg-transparent text-white px-4 py-3 rounded-xl focus:outline-none transition-colors duration-200" required>
+                                <div class="flex items-center gap-2 relative z-10">
+                                    <input type="text" id="drop-date" placeholder="dd/mm/yyyy" value="${this.getTodayFormatted()}"
+                                            class="flex-1 bg-transparent text-white px-4 py-3 rounded-xl focus:outline-none transition-colors duration-200" required>
+                                    <input type="date" id="drop-date-picker" value="${this.getTodayISO()}"
+                                            class="absolute opacity-0 pointer-events-none" tabindex="-1">
+                                    <button type="button" onclick="document.getElementById('drop-date-picker').showPicker(); event.preventDefault();"
+                                            class="p-2 text-gray-400 hover:text-white transition-colors duration-200" title="Open calendar">
+                                        <i data-lucide="calendar" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         
@@ -363,9 +380,12 @@ export class CasesPage {
                 </form>
                 
                 <div class="mt-6 flex justify-center">
-                    <button id="save-case-drop" class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3 px-8 rounded-lg transition flex items-center gap-2 min-w-[180px] justify-center">
-                        <i data-lucide="plus" class="w-4 h-4"></i>
-                        Add Drop
+                    <button id="save-case-drop" class="group relative bg-gray-900 hover:bg-gradient-to-r hover:from-blue-600 hover:to-purple-600 text-gray-300 hover:text-white font-medium py-3 px-8 rounded-xl transition-all duration-300 flex items-center gap-2 min-w-[180px] justify-center overflow-hidden">
+                        <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 p-0.5">
+                            <div class="w-full h-full bg-gray-900 rounded-xl group-hover:bg-transparent transition-colors duration-300"></div>
+                        </div>
+                        <i data-lucide="plus" class="w-4 h-4 relative z-10"></i>
+                        <span class="relative z-10">Add Drop</span>
                     </button>
                 </div>
             </div>
@@ -426,9 +446,9 @@ export class CasesPage {
                 </div>
             </div>
 
-            <!-- Case Drops History -->
-            <div class="space-y-6">
-                <div class="flex items-center justify-between">
+            <!-- Case Drops History Card -->
+            <section class="bg-gray-900 border border-gray-700 rounded-2xl p-6 mb-6">
+                <div class="flex items-center justify-between mb-6">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 bg-gradient-to-br from-green-500 to-blue-600 rounded-lg flex items-center justify-center">
                             <i data-lucide="history" class="w-4 h-4 text-white"></i>
@@ -438,18 +458,34 @@ export class CasesPage {
                             <p class="text-gray-400 text-sm">All tracked Drops</p>
                         </div>
                     </div>
-                    <div class="flex items-center space-x-3">
-                        <button id="export-cases-csv-btn" class="bg-gray-700/80 hover:bg-gray-600 border border-gray-600/50 text-white px-3 py-2 rounded-lg transition flex items-center gap-2 text-sm font-medium">
-                            <i data-lucide="download" class="w-4 h-4"></i>
-                            CSV
+                    <div class="flex items-center gap-3">
+                        <button id="export-cases-csv-btn" class="group relative bg-gray-900 hover:bg-gradient-to-r hover:from-gray-500 hover:to-slate-600 text-gray-300 hover:text-white px-3 py-2 rounded-xl transition-all duration-300 flex items-center gap-2 overflow-hidden">
+                            <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-gray-500 to-slate-600 p-0.5">
+                                <div class="w-full h-full bg-gray-900 rounded-xl group-hover:bg-transparent transition-colors duration-300"></div>
+                            </div>
+                            <i data-lucide="download" class="w-4 h-4 relative z-10"></i>
+                            <span class="relative z-10">CSV</span>
                         </button>
-                        <button id="export-cases-excel-btn" class="bg-green-600/80 hover:bg-green-600 border border-green-500/50 text-white px-3 py-2 rounded-lg transition flex items-center gap-2 text-sm font-medium">
-                            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
-                            Excel
+                        <button id="export-cases-excel-btn" class="group relative bg-gray-900 hover:bg-gradient-to-r hover:from-green-500 hover:to-emerald-600 text-gray-300 hover:text-white px-3 py-2 rounded-xl transition-all duration-300 flex items-center gap-2 overflow-hidden">
+                            <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 p-0.5">
+                                <div class="w-full h-full bg-gray-900 rounded-xl group-hover:bg-transparent transition-colors duration-300"></div>
+                            </div>
+                            <i data-lucide="file-spreadsheet" class="w-4 h-4 relative z-10"></i>
+                            <span class="relative z-10">Excel</span>
                         </button>
-                        <button id="import-cases-csv-btn" class="bg-blue-600/80 hover:bg-blue-600 border border-blue-500/50 text-white px-3 py-2 rounded-lg transition flex items-center gap-2 text-sm font-medium">
-                            <i data-lucide="upload" class="w-4 h-4"></i>
-                            Import
+                        <button id="import-cases-csv-btn" class="group relative bg-gray-900 hover:bg-gradient-to-r hover:from-blue-500 hover:to-blue-600 text-gray-300 hover:text-white px-3 py-2 rounded-xl transition-all duration-300 flex items-center gap-2 overflow-hidden">
+                            <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 p-0.5">
+                                <div class="w-full h-full bg-gray-900 rounded-xl group-hover:bg-transparent transition-colors duration-300"></div>
+                            </div>
+                            <i data-lucide="upload" class="w-4 h-4 relative z-10"></i>
+                            <span class="relative z-10">Import</span>
+                        </button>
+                        <button id="clear-cases-btn" class="group relative bg-gray-900 hover:bg-gradient-to-r hover:from-red-500 hover:to-red-600 text-gray-300 hover:text-white px-3 py-2 rounded-xl transition-all duration-300 flex items-center gap-2 overflow-hidden">
+                            <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-red-500 to-red-600 p-0.5">
+                                <div class="w-full h-full bg-gray-900 rounded-xl group-hover:bg-transparent transition-colors duration-300"></div>
+                            </div>
+                            <i data-lucide="trash-2" class="w-4 h-4 relative z-10"></i>
+                            <span class="relative z-10">Clear</span>
                         </button>
                     </div>
                 </div>
@@ -457,7 +493,7 @@ export class CasesPage {
                 <div id="case-drops-content">
                     ${this.getFilteredCaseDropsTableHTML(stats, state)}
                 </div>
-            </div>
+            </section>
             </div>
 
             <!-- Analytics Tab Content -->
@@ -656,7 +692,7 @@ export class CasesPage {
                                         <i data-lucide="calendar" class="w-4 h-4 text-green-300"></i>
                                         Drop Date
                                     </label>
-                                    <input type="date" id="edit-drop-date" class="input-field w-full px-3 py-2 rounded-lg text-white outline-none" required>
+                                    <input type="text" id="edit-drop-date" placeholder="dd/mm/yyyy" pattern="\\d{2}/\\d{2}/\\d{4}" class="input-field w-full px-3 py-2 rounded-lg text-white outline-none" required readonly>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-300 mb-2">Price ($)</label>
@@ -695,17 +731,16 @@ export class CasesPage {
             // Medium specific: filter by month and year
             filteredCaseDrops = filteredCaseDrops.filter(caseDrop => {
                 if (!caseDrop.dropDate) return false
-                const dropDate = new Date(caseDrop.dropDate)
-                return dropDate.getFullYear() === this.currentYear && 
-                       dropDate.getMonth() === this.currentMonth
+                const [day, month, year] = caseDrop.dropDate.split('/').map(num => parseInt(num, 10))
+                return year === this.currentYear && (month - 1) === this.currentMonth
             })
             emptyMessage = 'month'
         } else if (this.currentYear) {
             // Least specific: filter by year only
             filteredCaseDrops = filteredCaseDrops.filter(caseDrop => {
                 if (!caseDrop.dropDate) return false
-                const dropDate = new Date(caseDrop.dropDate)
-                return dropDate.getFullYear() === this.currentYear
+                const [day, month, year] = caseDrop.dropDate.split('/').map(num => parseInt(num, 10))
+                return year === this.currentYear
             })
             emptyMessage = 'year'
         }
@@ -821,7 +856,7 @@ export class CasesPage {
                                 
                                 <!-- Drop Date -->
                                 <div class="text-orange-400 font-medium text-sm truncate w-24 flex-shrink-0">
-                                    ${caseDrop.dropDate || 'N/A'}
+                                    ${this.formatDropDate(caseDrop.dropDate)}
                                 </div>
                                 
                                 <!-- Account -->
@@ -839,12 +874,12 @@ export class CasesPage {
                                 <!-- Actions -->
                                 <div class="w-20 flex-shrink-0 flex gap-1 justify-center">
                                     <button data-action="edit" data-id="${caseDrop.id}"
-                                            class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg transition-all duration-200 flex items-center justify-center case-action-btn shadow-md hover:shadow-lg transform hover:scale-105 border border-blue-400/20">
-                                        <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+                                            class="text-blue-400 hover:text-blue-300 transition-all duration-200 p-1 rounded hover:bg-blue-900/20 case-action-btn" title="Edit Case Drop">
+                                        <i data-lucide="edit" class="w-4 h-4"></i>
                                     </button>
                                     <button data-action="remove" data-id="${caseDrop.id}"
-                                            class="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg transition-all duration-200 flex items-center justify-center case-action-btn shadow-md hover:shadow-lg transform hover:scale-105 border border-red-400/20">
-                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                            class="text-red-400 hover:text-red-300 transition-all duration-200 p-1 rounded hover:bg-red-900/20 case-action-btn" title="Delete Case Drop">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
                                     </button>
                                 </div>
                             </div>
@@ -936,6 +971,11 @@ export class CasesPage {
             }
         }, 50)
 
+        // Date picker synchronization setup
+        setTimeout(() => {
+            this.setupDatePickerSync('drop-date', 'drop-date-picker')
+        }, 50)
+
         // Export and Import buttons - use setTimeout to ensure DOM is ready
         setTimeout(() => {
             const exportCsvBtn = document.getElementById('export-cases-csv-btn')
@@ -963,6 +1003,17 @@ export class CasesPage {
                     this.importCasesCSV()
                 })
                 console.log('✅ Import CSV button event listener attached')
+            }
+
+            const clearCasesBtn = document.getElementById('clear-cases-btn')
+            if (clearCasesBtn) {
+                clearCasesBtn.addEventListener('click', () => {
+                    console.log('🗑️ Clear Cases button clicked')
+                    this.clearAllCases()
+                })
+                console.log('✅ Clear Cases button event listener attached')
+            } else {
+                console.log('❌ Clear Cases button not found in DOM')
             }
         }, 100)
 
@@ -1138,6 +1189,17 @@ export class CasesPage {
         document.querySelectorAll('.year-tab').forEach(tab => {
             tab.addEventListener('click', (e) => {
                 this.selectYear(parseInt(e.target.dataset.year))
+            })
+        })
+
+        // Add event listeners for year delete buttons
+        document.querySelectorAll('.year-delete-btn').forEach(deleteBtn => {
+            deleteBtn.addEventListener('click', (e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                const year = parseInt(e.target.dataset.year)
+                console.log('🗑️ Year delete button clicked for year:', year)
+                this.confirmDeleteYear(year)
             })
         })
     }
@@ -1474,9 +1536,12 @@ export class CasesPage {
             return
         }
 
+        // Normalize the date format first
+        const normalizedDate = this.normalizeDateFormat(caseDropData.dropDate)
+
         // Check if the drop date falls within the current week (show warning but allow)
         const currentWeek = this.getCurrentWeek()
-        if (currentWeek && currentWeek.startDate && currentWeek.endDate && !this.isDateInWeek(caseDropData.dropDate, currentWeek)) {
+        if (currentWeek && currentWeek.startDate && currentWeek.endDate && !this.isDateInWeek(normalizedDate, currentWeek)) {
             const weekStart = this.formatDateSafely(currentWeek.startDate)
             const weekEnd = this.formatDateSafely(currentWeek.endDate)
             this.showNotification(
@@ -1486,11 +1551,24 @@ export class CasesPage {
             // Continue with adding the case drop instead of returning
         }
 
-        // Find the correct week for the drop date
-        const weekInfo = this.findWeekForDate(caseDropData.dropDate)
+        // Find the correct week for the drop date, auto-creating year if needed
+        let weekInfo = this.findWeekForDate(normalizedDate)
         if (!weekInfo) {
-            this.showNotification('Could not determine week for the selected date. Please ensure the year structure exists.', 'error')
-            return
+            // Try to auto-create the year structure
+            const [day, month, year] = normalizedDate.split('/').map(num => parseInt(num, 10))
+            
+            console.log(`📅 Auto-creating year ${year} for date ${normalizedDate}`)
+            const state = this.getStore()
+            state.addYear(year)
+            
+            // Try to find the week again after creating the year
+            weekInfo = this.findWeekForDate(normalizedDate)
+            if (!weekInfo) {
+                this.showNotification(`Failed to create week structure for ${caseDropData.dropDate}. Please try again.`, 'error')
+                return
+            }
+            
+            this.showNotification(`Created year ${year} structure for your case drop`, 'success')
         }
 
         const caseDrop = {
@@ -1513,6 +1591,11 @@ export class CasesPage {
         this.renderCurrentWeek()
         this.refreshCaseDropsDisplay()
         this.refreshAnalytics() // Update analytics after adding new case drop
+        
+        // Fetch prices for the newly added case drop
+        this.fetchPricesForCaseDrop(caseDrop).catch(error => {
+            console.error('Failed to fetch prices for new case drop:', error)
+        })
         
         this.showNotification(`Added "${caseDropData.caseName}" to ${weekInfo.week.name || 'week'} (${weekInfo.week.startDate} - ${weekInfo.week.endDate})`, 'success')
     }
@@ -1633,12 +1716,14 @@ export class CasesPage {
     
     confirmDeleteYear(year) {
         console.log('🗑️ confirmDeleteYear called for year:', year)
+        const yearToDelete = parseInt(year)
         
         // Check if year has case drops
         const state = this.getStore()
         const caseDropsInYear = state.caseDrops.filter(caseDrop => {
-            const dropDate = new Date(caseDrop.dropDate)
-            return dropDate.getFullYear() === year
+            if (!caseDrop.dropDate) return false
+            const [day, month, yearValue] = caseDrop.dropDate.split('/').map(num => parseInt(num, 10))
+            return yearValue === yearToDelete
         })
         
         let message = `Are you sure you want to delete year ${year}?`
@@ -1646,8 +1731,13 @@ export class CasesPage {
             message += `\n\nThis will also delete ${caseDropsInYear.length} case drop(s) from this year.`
         }
         
+        console.log(`📊 Found ${caseDropsInYear.length} case drops in year ${yearToDelete}`)
+        
         if (confirm(message)) {
-            this.deleteYear(year)
+            console.log('✅ User confirmed deletion')
+            this.deleteYear(yearToDelete)
+        } else {
+            console.log('❌ User cancelled deletion')
         }
     }
     
@@ -1659,8 +1749,9 @@ export class CasesPage {
             
             // Get case drops that will be deleted for logging
             const caseDropsToDelete = currentState.caseDrops.filter(caseDrop => {
-                const dropDate = new Date(caseDrop.dropDate)
-                return dropDate.getFullYear() === year
+                if (!caseDrop.dropDate) return false
+                const [day, month, yearValue] = caseDrop.dropDate.split('/').map(num => parseInt(num, 10))
+                return yearValue === year
             })
             
             // Use the store's deleteYear method
@@ -1698,6 +1789,55 @@ export class CasesPage {
         }
     }
 
+    clearAllCases() {
+        const state = this.getStore()
+        const caseDrops = state.caseDrops || []
+        
+        if (caseDrops.length === 0) {
+            this.showNotification('No case drops to clear', 'info')
+            return
+        }
+
+        // Show confirmation dialog
+        const confirmed = confirm(
+            `Are you sure you want to delete all ${caseDrops.length} case drops?\n\n` +
+            `This action cannot be undone.`
+        )
+        
+        if (!confirmed) {
+            console.log('🚫 Clear cases operation cancelled by user')
+            return
+        }
+
+        try {
+            // Clear all case drops by setting an empty array and saving to localStorage
+            const emptyData = {
+                years: state.years, // Keep year structure
+                caseDrops: [] // Clear all case drops
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('caseDropsHierarchical', JSON.stringify(emptyData))
+            
+            // Update state directly (since there's no clearAllCaseDrops method)
+            state.caseDrops.length = 0 // Clear the array in place
+            
+            console.log(`🗑️ Cleared ${caseDrops.length} case drops`)
+            this.showNotification(`Successfully cleared ${caseDrops.length} case drops`, 'success')
+            
+            // Comprehensive UI refresh
+            this.renderCurrentWeek()
+            this.refreshCaseDropsDisplay() 
+            this.refreshAnalytics() // Update analytics/stats
+            this.initializeCharts()
+            this.forceUIUpdate('clear-all-cases') // Force complete UI update
+            
+        } catch (error) {
+            console.error('❌ Error clearing case drops:', error)
+            this.showNotification('Failed to clear case drops', 'error')
+        }
+    }
+
     exportCasesCSV() {
         const state = this.getStore()
         const caseDrops = state.caseDrops || []
@@ -1720,14 +1860,18 @@ export class CasesPage {
         ])
         
         const csvContent = [csvHeaders, ...csvRows].map(row => 
-            row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(',')
+            row.map(field => {
+                const str = String(field)
+                const escaped = str.split('"').join('""')
+                return `"${escaped}"`
+            }).join(',')
         ).join('\n')
         
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
-        a.download = `cs2-case-drops-${new Date().toISOString().split('T')[0]}.csv`
+        a.download = `cs2-case-drops-${this.getTodayFormatted().replace(/\//g, '-')}.csv`
         document.body.appendChild(a)
         a.click()
         document.body.removeChild(a)
@@ -1769,7 +1913,7 @@ export class CasesPage {
         const wb = XLSX.utils.book_new()
         XLSX.utils.book_append_sheet(wb, ws, 'Case Drops')
         
-        XLSX.writeFile(wb, `cs2-case-drops-${new Date().toISOString().split('T')[0]}.xlsx`)
+        XLSX.writeFile(wb, `cs2-case-drops-${this.getTodayFormatted().replace(/\//g, '-')}.xlsx`)
         
         this.showNotification(`Exported ${caseDrops.length} case drops to Excel`, 'success')
     }
@@ -1860,7 +2004,8 @@ export class CasesPage {
                             }
                             
                             // Validate date format
-                            const date = new Date(caseDrop.dropDate)
+                            const isoDate = this.convertFormattedToISODate(caseDrop.dropDate)
+                            const date = new Date(isoDate)
                             if (isNaN(date.getTime())) {
                                 errors.push(`Row ${i + 1}: Invalid date format`)
                                 continue
@@ -1880,11 +2025,33 @@ export class CasesPage {
                         return
                     }
                     
-                    // Add cases to store
+                    // Add cases to store using batch import for better performance
                     const state = this.getStore()
+                    
+                    // Batch add all case drops at once to avoid multiple localStorage writes
+                    const currentCaseDrops = [...state.caseDrops]
                     importedCases.forEach(caseDrop => {
-                        state.addCaseDrop(caseDrop)
+                        // Generate unique ID for each imported case drop
+                        let newId = caseDrop.id || Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9)
+                        
+                        // Ensure ID is truly unique
+                        while (currentCaseDrops.some(drop => drop.id === newId)) {
+                            newId = Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9)
+                        }
+                        
+                        caseDrop.id = newId
+                        currentCaseDrops.push(caseDrop)
                     })
+                    
+                    // Update state and localStorage in one operation
+                    const caseDropsData = {
+                        years: state.years,
+                        caseDrops: currentCaseDrops
+                    }
+                    localStorage.setItem('caseDropsHierarchical', JSON.stringify(caseDropsData))
+                    
+                    // Update the state directly
+                    state.caseDrops = currentCaseDrops
                     
                     // Show success message
                     let message = `Successfully imported ${importedCases.length} case drops`
@@ -1895,8 +2062,19 @@ export class CasesPage {
                     
                     this.showNotification(message, 'success')
                     
-                    // Refresh the UI
-                    this.forceUIUpdate()
+                    // Comprehensive UI refresh after import
+                    this.renderCurrentWeek()
+                    this.refreshCaseDropsDisplay() 
+                    this.refreshAnalytics() // Update analytics/stats
+                    this.initializeCharts()
+                    this.forceUIUpdate('csv-import') // Force complete UI update
+                    
+                    // Fetch prices for imported items
+                    importedCases.forEach(caseDrop => {
+                        this.fetchPricesForCaseDrop(caseDrop).catch(error => {
+                            console.error(`Failed to fetch prices for imported item ${caseDrop.caseName}:`, error)
+                        })
+                    })
                     
                 } catch (error) {
                     console.error('CSV import error:', error)
@@ -2031,7 +2209,7 @@ export class CasesPage {
     /**
      * Safely formats date strings without timezone issues
      * @param {string} dateString - ISO date string like '2025-08-01'
-     * @returns {string} - Formatted date like '8/1/2025'
+     * @returns {string} - Formatted date like '01/08/2025' (dd/mm/yyyy)
      */
     formatDateSafely(dateString) {
         if (!dateString) return 'N/A'
@@ -2041,13 +2219,46 @@ export class CasesPage {
         if (parts.length !== 3) return dateString
         
         const year = parseInt(parts[0])
-        const month = parseInt(parts[1]) - 1 // Month is 0-indexed in Date constructor
+        const month = parseInt(parts[1])
         const day = parseInt(parts[2])
         
-        // Create date in local timezone
-        const date = new Date(year, month, day)
+        // Return in dd/mm/yyyy format strictly
+        return `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${year}`
+    }
+
+    /**
+     * Format drop date for display - handles both dd/mm/yyyy and yyyy-mm-dd formats
+     * @param {string} dateString - Date string in various formats
+     * @returns {string} - Formatted date like '01/08/2025' (dd/mm/yyyy)
+     */
+    formatDropDate(dateString) {
+        if (!dateString) return 'N/A'
         
-        return date.toLocaleDateString()
+        // Check if it's already in dd/mm/yyyy format
+        if (dateString.includes('/')) {
+            const parts = dateString.split('/')
+            if (parts.length === 3) {
+                // Ensure proper padding
+                const day = parts[0].padStart(2, '0')
+                const month = parts[1].padStart(2, '0')
+                const year = parts[2]
+                return `${day}/${month}/${year}`
+            }
+        }
+        
+        // Check if it's in yyyy-mm-dd format
+        if (dateString.includes('-')) {
+            const parts = dateString.split('-')
+            if (parts.length === 3) {
+                const year = parseInt(parts[0])
+                const month = parseInt(parts[1])
+                const day = parseInt(parts[2])
+                return `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${year}`
+            }
+        }
+        
+        // Fallback: return as is
+        return dateString
     }
 
     /**
@@ -2055,6 +2266,33 @@ export class CasesPage {
      */
     generateUniqueId() {
         return Date.now().toString() + Math.random().toString(36).substr(2, 9)
+    }
+
+    /**
+     * Setup date picker synchronization between text input and hidden date picker
+     */
+    setupDatePickerSync(textInputId, datePickerId) {
+        setTimeout(() => {
+            const textInput = document.getElementById(textInputId)
+            const datePicker = document.getElementById(datePickerId)
+            
+            if (textInput && datePicker) {
+                // When date picker changes, update text input
+                datePicker.addEventListener('change', () => {
+                    if (datePicker.value) {
+                        textInput.value = this.convertISOToFormattedDate(datePicker.value)
+                    }
+                })
+                
+                // When text input changes, update date picker
+                textInput.addEventListener('blur', () => {
+                    const isoDate = this.convertFormattedToISODate(textInput.value)
+                    if (isoDate) {
+                        datePicker.value = isoDate
+                    }
+                })
+            }
+        }, 100)
     }
 
     /**
@@ -2080,12 +2318,15 @@ export class CasesPage {
             return null
         }
         
-        return {
+        const formData = {
             caseName: caseNameEl.value.trim(),
-            dropDate: this.convertISOToFormattedDate(dropDateEl.value),
+            dropDate: dropDateEl.value.trim(),
             casePrice: parseFloat(casePriceEl.value),
             caseAccount: caseAccountEl.value.trim()
         }
+        
+        console.log('📋 Form data retrieved:', formData)
+        return formData
     }
 
     /**
@@ -2120,7 +2361,7 @@ export class CasesPage {
         
         const dropDateElement = document.getElementById('drop-date')
         if (dropDateElement) {
-            dropDateElement.value = this.getTodayISO()
+            dropDateElement.value = this.getTodayFormatted()
         }
     }
 
@@ -2192,9 +2433,27 @@ export class CasesPage {
     isDateInWeek(dateString, week) {
         if (!week.startDate || !week.endDate) return true // Allow if no date range set
         
-        const dropDateObj = new Date(dateString)
-        const weekStart = new Date(week.startDate)
-        const weekEnd = new Date(week.endDate)
+        // Convert dd/mm/yyyy to Date objects
+        const parseDate = (dateStr) => {
+            // If it's already in dd/mm/yyyy format
+            if (dateStr.includes('/')) {
+                const [day, month, year] = dateStr.split('/')
+                return new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+            }
+            // If it's in ISO format, convert it
+            const date = new Date(dateStr)
+            return date
+        }
+        
+        const dropDateObj = parseDate(dateString)
+        const weekStart = parseDate(week.startDate)
+        const weekEnd = parseDate(week.endDate)
+        
+        // Set time to midnight to ensure proper date comparison
+        dropDateObj.setHours(0, 0, 0, 0)
+        weekStart.setHours(0, 0, 0, 0)
+        weekEnd.setHours(0, 0, 0, 0)
+        
         return dropDateObj >= weekStart && dropDateObj <= weekEnd
     }
 
@@ -2202,29 +2461,43 @@ export class CasesPage {
      * Finds the correct week for a given date
      */
     findWeekForDate(dateString) {
-        const dropDate = new Date(dateString)
-        const year = dropDate.getFullYear()
-        const month = dropDate.getMonth()
+        // Parse dd/mm/yyyy format
+        const [day, month, year] = dateString.split('/').map(num => parseInt(num, 10))
+        const dropDate = new Date(year, month - 1, day) // month is 0-indexed in JavaScript
+        const jsMonth = month - 1 // JavaScript months are 0-indexed
+        
+        console.log(`🔍 Finding week for date: ${dateString} (Year: ${year}, Month: ${month}, JSMonth: ${jsMonth}, Day: ${day})`)
         
         const state = this.getStore()
         const yearData = state.years.find(y => y.year === year)
-        if (!yearData) return null
+        if (!yearData) {
+            console.log(`❌ Year ${year} not found in store`)
+            return null
+        }
         
-        const monthData = yearData.months.find(m => m.month === month)
-        if (!monthData) return null
+        const monthData = yearData.months.find(m => m.month === jsMonth)
+        if (!monthData) {
+            console.log(`❌ Month ${jsMonth} (${month}) not found in year ${year}`)
+            return null
+        }
+        
+        console.log(`📅 Checking ${monthData.weeks.length} weeks in ${monthData.name} ${year}`)
         
         // Find the week that contains this date
         for (const week of monthData.weeks) {
+            console.log(`🔍 Checking week ${week.name} (${week.startDate} to ${week.endDate})`)
             if (this.isDateInWeek(dateString, week)) {
+                console.log(`✅ Found matching week: ${week.name} (${week.id})`)
                 return {
                     weekId: week.id,
                     year: year,
-                    month: month,
+                    month: jsMonth,
                     week: week
                 }
             }
         }
         
+        console.log(`❌ No matching week found for date ${dateString}`)
         return null
     }
 
@@ -2238,7 +2511,8 @@ export class CasesPage {
         
         caseDrops.forEach(caseDrop => {
             if (caseDrop.dropDate) {
-                const correctWeekInfo = this.findWeekForDate(caseDrop.dropDate)
+                const normalizedDate = this.normalizeDateFormat(caseDrop.dropDate)
+                const correctWeekInfo = this.findWeekForDate(normalizedDate)
                 if (correctWeekInfo && caseDrop.weekId !== correctWeekInfo.weekId) {
                     // Update the case drop with correct week assignment
                     state.updateCaseDrop(caseDrop.id, {
@@ -2504,13 +2778,16 @@ export class CasesPage {
         
         // Populate edit form
         document.getElementById('edit-case-name').value = caseDrop.caseName || ''
-        document.getElementById('edit-drop-date').value = this.convertFormattedToISODate(caseDrop.dropDate) || ''
+        document.getElementById('edit-drop-date').value = caseDrop.dropDate || ''
         document.getElementById('edit-case-price').value = caseDrop.price || ''
         document.getElementById('edit-case-account').value = caseDrop.account || ''
 
         // Show modal
         const modal = document.getElementById('edit-case-drop-modal')
         if (modal) modal.classList.remove('hidden')
+        
+        // Note: Edit modal uses readonly input - users should edit via main form
+        
         console.log('✅ Edit case drop modal opened for:', caseDrop.caseName)
     }
 
@@ -2525,7 +2802,7 @@ export class CasesPage {
 
         const editData = {
             caseName: document.getElementById('edit-case-name').value.trim(),
-            dropDate: this.convertISOToFormattedDate(document.getElementById('edit-drop-date').value),
+            dropDate: document.getElementById('edit-drop-date').value.trim(),
             price: parseFloat(document.getElementById('edit-case-price').value),
             account: document.getElementById('edit-case-account').value.trim()
         }
@@ -2817,16 +3094,52 @@ export class CasesPage {
                     plugins: {
                         legend: {
                             labels: { color: '#d1d5db' }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    const index = context[0].dataIndex
+                                    return `${weeklyData.monthInfo[index]} ${weeklyData.labels[index].replace(' ' + weeklyData.monthInfo[index].substring(0,3), '')}`
+                                },
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y}`
+                                }
+                            }
                         }
                     },
                     scales: {
                         y: {
                             beginAtZero: true,
-                            ticks: { color: '#9ca3af' },
+                            ticks: { 
+                                color: '#9ca3af',
+                                stepSize: 1 // Show whole numbers only
+                            },
                             grid: { color: 'rgba(107, 114, 128, 0.3)' }
                         },
                         x: {
-                            ticks: { color: '#9ca3af' },
+                            ticks: { 
+                                color: function(context) {
+                                    // Highlight Week 1 labels (ones that contain month names) - dynamic detection
+                                    const label = weeklyData.labels[context.tick.value]
+                                    if (label && label.includes('Week 1 ')) {
+                                        return '#60a5fa' // Bright blue for Week 1 with month
+                                    }
+                                    return '#9ca3af' // Default gray
+                                },
+                                font: function(context) {
+                                    const label = weeklyData.labels[context.tick.value]
+                                    if (label && label.includes('Week 1 ')) {
+                                        return {
+                                            weight: 'bold' // Bold for Week 1 with month
+                                        }
+                                    }
+                                    return {
+                                        weight: 'normal'
+                                    }
+                                },
+                                maxRotation: 45,
+                                minRotation: 0
+                            },
                             grid: { color: 'rgba(107, 114, 128, 0.3)' }
                         }
                     }
@@ -2971,71 +3284,108 @@ export class CasesPage {
     }
 
     calculateWeeklyDistribution(caseDrops) {
-        
+        const state = this.getStore()
         const weeklyCount = {}
-        const now = new Date()
         
-        // Generate last 12 weeks to capture more data
-        for (let i = 11; i >= 0; i--) {
-            const weekStart = new Date(now)
-            weekStart.setDate(now.getDate() - (i * 7))
+        // Get current date info
+        const now = new Date()
+        const currentYear = now.getFullYear()
+        const currentMonth = now.getMonth() // 0-based
+        
+        // Generate last 6 months of weeks (including current month)
+        const weeksToShow = []
+        
+        for (let monthOffset = 5; monthOffset >= 0; monthOffset--) {
+            const targetDate = new Date(currentYear, currentMonth - monthOffset, 1)
+            const targetYear = targetDate.getFullYear()
+            const targetMonth = targetDate.getMonth()
             
-            // Use Sunday as start of week (getDay() returns 0 for Sunday)
-            const adjustedWeekStart = new Date(weekStart)
-            adjustedWeekStart.setDate(weekStart.getDate() - weekStart.getDay())
-            
-            const weekKey = `Week ${adjustedWeekStart.getMonth() + 1}/${adjustedWeekStart.getDate()}`
-            weeklyCount[weekKey] = 0
+            // Find corresponding data in your structure
+            const yearData = state.years.find(y => y.year === targetYear)
+            if (yearData) {
+                const monthData = yearData.months.find(m => m.month === targetMonth)
+                if (monthData) {
+                    monthData.weeks.forEach(weekData => {
+                        const weekLabel = `${monthData.name} ${weekData.name}`
+                        weeksToShow.push({
+                            label: weekLabel,
+                            id: weekData.id,
+                            year: targetYear,
+                            month: targetMonth,
+                            week: weekData.week || parseInt(weekData.name.replace('Week ', ''))
+                        })
+                        weeklyCount[weekLabel] = 0 // Initialize with 0
+                    })
+                }
+            }
         }
         
-        // Count items per week - use dropDate instead of date
+        // Count case drops by their assigned weekId
         caseDrops.forEach(caseDrop => {
-            // Try multiple possible date field names
-            const dateStr = caseDrop.dropDate || caseDrop.date || caseDrop.dateAdded
-            if (!dateStr) {
-                console.warn('⚠️ Case drop missing date:', caseDrop)
+            if (!caseDrop.weekId) {
+                console.warn('⚠️ Case drop missing weekId:', caseDrop)
                 return
             }
             
-            const dropDate = new Date(dateStr)
-            if (isNaN(dropDate.getTime())) {
-                console.warn('⚠️ Invalid date format:', dateStr, caseDrop)
-                return
+            // Find the week info for this weekId
+            let weekLabel = null
+            state.years.forEach(yearData => {
+                yearData.months.forEach(monthData => {
+                    const week = monthData.weeks.find(w => w.id === caseDrop.weekId)
+                    if (week) {
+                        weekLabel = `${monthData.name} ${week.name}`
+                    }
+                })
+            })
+            
+            if (weekLabel && weeklyCount.hasOwnProperty(weekLabel)) {
+                weeklyCount[weekLabel]++
+                
+                console.log('📊 Case drop assigned to week:', {
+                    itemName: caseDrop.caseName || caseDrop.itemName,
+                    weekId: caseDrop.weekId,
+                    weekLabel: weekLabel,
+                    dropDate: caseDrop.dropDate
+                })
             }
+        })
+        
+        // Sort weeks chronologically and create final arrays
+        const sortedWeeks = weeksToShow.sort((a, b) => {
+            if (a.year !== b.year) return a.year - b.year
+            if (a.month !== b.month) return a.month - b.month
+            return a.week - b.week
+        })
+        
+        // Create labels - only show month on Week 1 of each month
+        const labels = sortedWeeks.map((w, index) => {
+            const parts = w.label.split(' ') // "March Week 1" -> ["March", "Week", "1"] 
+            const weekNumber = parts[2] // "1", "2", "3", etc.
+            const monthName = parts[0]
+            const shortMonth = monthName.substring(0, 3) // "March" -> "Mar"
             
-            // Calculate the week start (Sunday) for this drop date
-            const weekStart = new Date(dropDate)
-            weekStart.setDate(dropDate.getDate() - dropDate.getDay())
-            const weekKey = `Week ${weekStart.getMonth() + 1}/${weekStart.getDate()}`
-            
-            // Always try to match or create the week
-            if (weeklyCount.hasOwnProperty(weekKey)) {
-                weeklyCount[weekKey]++
-                console.log('📊 Added case to existing week:', weekKey, 'Date:', dateStr, 'Drop Date Object:', dropDate)
+            // Only show month on Week 1 of each month
+            if (weekNumber === "1") {
+                return `Week ${weekNumber} ${shortMonth}`
             } else {
-                // Create the week if it doesn't exist and add the case
-                weeklyCount[weekKey] = 1
-                console.log('📊 Created new week and added case:', weekKey, 'Date:', dateStr, 'Drop Date Object:', dropDate)
+                return `Week ${weekNumber}`
             }
         })
+        const values = sortedWeeks.map(w => weeklyCount[w.label] || 0)
+        const monthInfo = sortedWeeks.map(w => w.label.split(' ')[0]) // Extract month names
         
-        // Sort weeks chronologically
-        const sortedWeeks = Object.entries(weeklyCount).sort((a, b) => {
-            const [monthA, dayA] = a[0].replace('Week ', '').split('/').map(Number)
-            const [monthB, dayB] = b[0].replace('Week ', '').split('/').map(Number)
-            
-            // Create dates to compare (using current year)
-            const dateA = new Date(now.getFullYear(), monthA - 1, dayA)
-            const dateB = new Date(now.getFullYear(), monthB - 1, dayB)
-            
-            return dateA - dateB
+        console.log('📊 Final weekly distribution (6 months):', {
+            labels: labels,
+            values: values,
+            monthInfo: monthInfo,
+            totalWeeks: labels.length
         })
-        
-        console.log('📊 Final weekly counts (sorted):', sortedWeeks)
         
         return {
-            labels: sortedWeeks.map(([label]) => label),
-            values: sortedWeeks.map(([, count]) => count)
+            labels: labels,
+            values: values,
+            monthInfo: monthInfo, // Pass month info for tooltips
+            fullLabels: sortedWeeks.map(w => w.label) // Keep full labels for reference
         }
     }
 
@@ -3056,7 +3406,8 @@ export class CasesPage {
             const dateStr = caseDrop.dropDate || caseDrop.date || caseDrop.dateAdded
             if (!dateStr) return
             
-            const dropDate = new Date(dateStr)
+            const isoDate = this.convertFormattedToISODate(dateStr)
+            const dropDate = new Date(isoDate)
             if (isNaN(dropDate.getTime())) return
             
             const monthKey = dropDate.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
@@ -3136,13 +3487,27 @@ export class CasesPage {
         const state = this.getStore()
         const caseDrops = state.caseDrops || []
         
-        // Use Promise.allSettled for concurrent fetching (PriceService handles caching/rate limiting)
-        const pricePromises = caseDrops
-            .filter(caseDrop => caseDrop.caseName && !caseDrop.pricesFetched)
-            .map(caseDrop => this.fetchPricesForCaseDrop(caseDrop))
+        const itemsToFetch = caseDrops.filter(caseDrop => caseDrop.caseName && !caseDrop.pricesFetched)
+        console.log(`💰 Found ${itemsToFetch.length} items needing price fetch`)
         
-        await Promise.allSettled(pricePromises)
-        console.log('✅ Finished fetching prices for all case drops')
+        if (itemsToFetch.length === 0) {
+            console.log('✅ No items need price fetching')
+            return
+        }
+        
+        // Use Promise.allSettled for concurrent fetching (PriceService handles caching/rate limiting)
+        const pricePromises = itemsToFetch.map(caseDrop => this.fetchPricesForCaseDrop(caseDrop))
+        
+        const results = await Promise.allSettled(pricePromises)
+        
+        const successful = results.filter(result => result.status === 'fulfilled').length
+        const failed = results.filter(result => result.status === 'rejected').length
+        
+        console.log(`✅ Price fetching completed: ${successful} successful, ${failed} failed`)
+        
+        if (failed > 0) {
+            console.warn('⚠️ Some price fetches failed, you may need to refresh or use the refresh prices button')
+        }
     }
 
     /**
@@ -3471,9 +3836,38 @@ export class CasesPage {
         const parts = formattedDate.split('/')
         if (parts.length === 3) {
             const [day, month, year] = parts
-            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+            // Ensure we pad with zeros and parse as integers to avoid leading zero issues
+            const paddedMonth = parseInt(month, 10).toString().padStart(2, '0')
+            const paddedDay = parseInt(day, 10).toString().padStart(2, '0')
+            const result = `${year}-${paddedMonth}-${paddedDay}`
+            console.log('📅 Date conversion:', { 
+                input: formattedDate, 
+                parts: parts, 
+                output: result 
+            })
+            return result
         }
         return formattedDate
+    }
+
+
+    /**
+     * Normalize date to dd/mm/yyyy format (handles both ISO and formatted dates)
+     */
+    normalizeDateFormat(dateString) {
+        if (!dateString) return ''
+        
+        // If it's already in dd/mm/yyyy format
+        if (dateString.includes('/')) {
+            return dateString
+        }
+        
+        // If it's in ISO format (yyyy-mm-dd)
+        if (dateString.includes('-') && dateString.length === 10) {
+            return this.convertISOToFormattedDate(dateString)
+        }
+        
+        return dateString
     }
 
     /**
