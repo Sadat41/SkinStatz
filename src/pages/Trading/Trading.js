@@ -17,6 +17,7 @@ export class TradingPage {
         this.currentTab = 'overview'
         this.currentView = 'professional' // professional, compact, mobile
         this.currentEditIndex = null // For tracking which trade is being edited
+        this.analyticsTimePeriod = 'all' // Default analytics time period
         
         // Professional trading components
         this.tradingChart = null
@@ -1171,214 +1172,320 @@ export class TradingPage {
                                         <button id="period-1y" class="period-btn px-3 py-1 text-sm rounded text-gray-400 hover:text-white transition" data-period="365">1Y</button>
                                         <button id="period-all" class="period-btn px-3 py-1 text-sm rounded bg-blue-600 text-white transition" data-period="all">All</button>
                                     </div>
-                                    <!-- Advanced Options -->
-                                    <select id="analytics-comparison" class="bg-gray-800 text-white px-3 py-2 rounded border border-gray-600 text-sm">
-                                        <option value="none">No Comparison</option>
-                                        <option value="previous">vs Previous Period</option>
-                                        <option value="ytd">vs Year to Date</option>
-                                    </select>
                                 </div>
                             </div>
                             
-                            <!-- Enhanced Performance Summary Cards -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
-                                <!-- Core Metrics (Primary Row) -->
-                                <div class="bg-gray-900 border border-gray-700 rounded-xl p-4 hover:border-gray-600 transition-all">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <h3 class="text-gray-400 text-sm">Total Profit</h3>
-                                        <i data-lucide="trending-up" class="w-4 h-4 text-green-400"></i>
-                                    </div>
-                                    <div id="analytics-total-profit" class="text-xl font-bold ${this.getAnalyticsMetrics().totalProfit >= 0 ? 'text-green-400' : 'text-red-400'}">
-                                        ${this.getAnalyticsMetrics().totalProfit >= 0 ? '+' : ''}$${this.store.formatNumber(Math.abs(this.getAnalyticsMetrics().totalProfit))}
-                                    </div>
-                                    <div class="text-gray-500 text-xs">ROI: ${this.getAnalyticsMetrics().roiPercent}%</div>
+                            <!-- Trading Summary Card -->
+                            <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 mb-8">
+                                <div class="flex items-center justify-between mb-6">
+                                    <h2 class="text-2xl font-bold text-white">Trading Summary</h2>
+                                    <i data-lucide="bar-chart-3" class="w-6 h-6 text-blue-400"></i>
                                 </div>
                                 
-                                <div class="bg-gray-900 border border-gray-700 rounded-xl p-4 hover:border-gray-600 transition-all">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <h3 class="text-gray-400 text-sm">Success Rate</h3>
-                                        <i data-lucide="target" class="w-4 h-4 text-purple-400"></i>
-                                    </div>
-                                    <div id="analytics-success-rate" class="text-xl font-bold text-white">${this.getAnalyticsMetrics().successRate}%</div>
-                                    <div class="text-gray-500 text-xs">${this.getAnalyticsMetrics().profitableTrades}/${this.getAnalyticsMetrics().completedTrades} trades</div>
-                                </div>
-                                
-                                <div class="bg-gray-900 border border-gray-700 rounded-xl p-4 hover:border-gray-600 transition-all">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <h3 class="text-gray-400 text-sm">Sharpe Ratio</h3>
-                                        <i data-lucide="bar-chart-4" class="w-4 h-4 text-blue-400"></i>
-                                    </div>
-                                    <div id="analytics-sharpe-ratio" class="text-xl font-bold text-white">${this.getAdvancedAnalytics().sharpeRatio}</div>
-                                    <div class="text-gray-500 text-xs">Risk-adjusted return</div>
-                                </div>
-                                
-                                <div class="bg-gray-900 border border-gray-700 rounded-xl p-4 hover:border-gray-600 transition-all">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <h3 class="text-gray-400 text-sm">Max Drawdown</h3>
-                                        <i data-lucide="trending-down" class="w-4 h-4 text-red-400"></i>
-                                    </div>
-                                    <div id="analytics-max-drawdown" class="text-xl font-bold text-red-400">${this.getAdvancedAnalytics().maxDrawdown}%</div>
-                                    <div class="text-gray-500 text-xs">Largest decline</div>
-                                </div>
-                                
-                                <div class="bg-gray-900 border border-gray-700 rounded-xl p-4 hover:border-gray-600 transition-all">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <h3 class="text-gray-400 text-sm">Profit Factor</h3>
-                                        <i data-lucide="calculator" class="w-4 h-4 text-yellow-400"></i>
-                                    </div>
-                                    <div id="analytics-profit-factor" class="text-xl font-bold text-white">${this.getAdvancedAnalytics().profitFactor}</div>
-                                    <div class="text-gray-500 text-xs">Gross profit/loss ratio</div>
-                                </div>
-                                
-                                <div class="bg-gray-900 border border-gray-700 rounded-xl p-4 hover:border-gray-600 transition-all">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <h3 class="text-gray-400 text-sm">Win Streak</h3>
-                                        <i data-lucide="zap" class="w-4 h-4 text-green-400"></i>
-                                    </div>
-                                    <div id="analytics-win-streak" class="text-xl font-bold text-green-400">${this.getAdvancedAnalytics().winStreak}</div>
-                                    <div class="text-gray-500 text-xs">Max consecutive wins</div>
-                                </div>
-                            </div>
-                            
-                            <!-- Professional Trading Charts -->
-                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                                <!-- Cumulative P&L Timeline -->
-                                <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
-                                    <div class="flex items-center justify-between mb-4">
-                                        <h3 class="text-white font-semibold">Cumulative P&L Timeline</h3>
+                                <!-- Row 1: Core Performance Metrics -->
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                                    <div class="bg-gray-800 border border-gray-600 rounded-lg p-4 hover:border-gray-500 transition-all">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <h3 class="text-gray-400 text-sm">Total Profit</h3>
+                                            <i data-lucide="trending-up" class="w-4 h-4 text-green-400"></i>
+                                        </div>
                                         <div class="flex items-center gap-2">
-                                            <div class="flex bg-gray-800 rounded p-1">
-                                                <button class="chart-period-btn px-2 py-1 text-xs rounded text-gray-400 hover:text-white" data-chart="cumulative" data-period="30">30D</button>
-                                                <button class="chart-period-btn px-2 py-1 text-xs rounded text-gray-400 hover:text-white" data-chart="cumulative" data-period="90">90D</button>
-                                                <button class="chart-period-btn px-2 py-1 text-xs rounded bg-blue-600 text-white" data-chart="cumulative" data-period="all">All</button>
+                                            <div id="analytics-total-profit" class="text-xl font-bold ${this.getAnalyticsMetrics().totalProfit >= 0 ? 'text-green-400' : 'text-red-400'}">
+                                                ${this.getAnalyticsMetrics().totalProfit >= 0 ? '+' : ''}$${this.store.formatNumber(Math.abs(this.getAnalyticsMetrics().totalProfit))}
+                                            </div>
+                                            <div id="analytics-total-profit-trend" class="trend-indicator"></div>
+                                        </div>
+                                        <div class="text-gray-500 text-xs">ROI: ${this.getAnalyticsMetrics().roiPercent}%</div>
+                                    </div>
+                                    
+                                    <div class="bg-gray-800 border border-gray-600 rounded-lg p-4 hover:border-gray-500 transition-all">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <h3 class="text-gray-400 text-sm">Success Rate</h3>
+                                            <i data-lucide="target" class="w-4 h-4 text-purple-400"></i>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <div id="analytics-success-rate" class="text-xl font-bold text-white">${this.getAnalyticsMetrics().successRate}%</div>
+                                            <div id="analytics-success-rate-trend" class="trend-indicator"></div>
+                                        </div>
+                                        <div class="text-gray-500 text-xs">${this.getAnalyticsMetrics().profitableTrades}/${this.getAnalyticsMetrics().completedTrades} trades</div>
+                                    </div>
+                                    
+                                    <div class="bg-gray-800 border border-gray-600 rounded-lg p-4 hover:border-gray-500 transition-all">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <h3 class="text-gray-400 text-sm">Avg Profit/Trade</h3>
+                                            <i data-lucide="calculator" class="w-4 h-4 text-blue-400"></i>
+                                        </div>
+                                        <div id="analytics-avg-profit" class="text-xl font-bold text-white">$${this.store.formatNumber(this.getBasicTradingStats().avgProfitPerTrade)}</div>
+                                        <div class="text-gray-500 text-xs">Per completed trade</div>
+                                    </div>
+                                    
+                                    <div class="bg-gray-800 border border-gray-600 rounded-lg p-4 hover:border-gray-500 transition-all">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <h3 class="text-gray-400 text-sm">Total Volume</h3>
+                                            <i data-lucide="dollar-sign" class="w-4 h-4 text-yellow-400"></i>
+                                        </div>
+                                        <div id="analytics-total-volume" class="text-xl font-bold text-white">$${this.store.formatNumber(this.getBasicTradingStats().totalVolume)}</div>
+                                        <div class="text-gray-500 text-xs">Total traded value</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Row 2: Trade Records & Metrics -->
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <div class="bg-gray-800 border border-gray-600 rounded-lg p-4 hover:border-gray-500 transition-all">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <h3 class="text-gray-400 text-sm">Best Trade</h3>
+                                            <i data-lucide="trophy" class="w-4 h-4 text-green-400"></i>
+                                        </div>
+                                        <div id="analytics-best-trade" class="text-xl font-bold text-green-400">+$${this.store.formatNumber(this.getBasicTradingStats().bestTrade)}</div>
+                                        <div class="text-gray-500 text-xs">Single trade record</div>
+                                    </div>
+                                    
+                                    <div class="bg-gray-800 border border-gray-600 rounded-lg p-4 hover:border-gray-500 transition-all">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <h3 class="text-gray-400 text-sm">Worst Trade</h3>
+                                            <i data-lucide="trending-down" class="w-4 h-4 text-red-400"></i>
+                                        </div>
+                                        <div id="analytics-worst-trade" class="text-xl font-bold text-red-400">-$${this.store.formatNumber(Math.abs(this.getBasicTradingStats().worstTrade))}</div>
+                                        <div class="text-gray-500 text-xs">Biggest loss</div>
+                                    </div>
+                                    
+                                    <div class="bg-gray-800 border border-gray-600 rounded-lg p-4 hover:border-gray-500 transition-all">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <h3 class="text-gray-400 text-sm">Win Streak</h3>
+                                            <i data-lucide="zap" class="w-4 h-4 text-yellow-400"></i>
+                                        </div>
+                                        <div id="analytics-win-streak" class="text-xl font-bold text-yellow-400">${this.getAdvancedAnalytics().winStreak}</div>
+                                        <div class="text-gray-500 text-xs">Consecutive wins</div>
+                                    </div>
+                                    
+                                    <div class="bg-gray-800 border border-gray-600 rounded-lg p-4 hover:border-gray-500 transition-all">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <h3 class="text-gray-400 text-sm">Avg Hold Time</h3>
+                                            <i data-lucide="clock" class="w-4 h-4 text-purple-400"></i>
+                                        </div>
+                                        <div id="analytics-avg-hold-time" class="text-xl font-bold text-white">${this.getBasicTradingStats().avgHoldTime}</div>
+                                        <div class="text-gray-500 text-xs">Days per trade</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Card 1: Performance Overview -->
+                            <div class="bg-gray-900 border border-gray-700 rounded-2xl p-10 mb-12 shadow-xl">
+                                <div class="flex items-center justify-between mb-8">
+                                    <div>
+                                        <h2 class="text-3xl font-bold text-white mb-2">Performance Overview</h2>
+                                        <p class="text-gray-400 text-sm">Comprehensive portfolio performance analysis</p>
+                                    </div>
+                                    <div class="flex items-center gap-3 bg-gray-700 px-4 py-2 rounded-xl">
+                                        <i data-lucide="trending-up" class="w-6 h-6 text-green-400"></i>
+                                        <span class="text-gray-300 text-sm font-medium">Portfolio Performance</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                                    <!-- Cumulative P&L Timeline -->
+                                    <div class="bg-gray-900 border border-gray-600 rounded-2xl p-6">
+                                        <div class="flex items-center justify-between mb-6">
+                                            <h3 class="text-xl font-semibold text-white">Cumulative P&L Timeline</h3>
+                                            <div class="flex bg-gray-800 rounded-lg p-1">
+                                                <button class="chart-period-btn px-3 py-1 text-sm rounded text-gray-400 hover:text-white transition-colors" data-chart="cumulative" data-period="30">30D</button>
+                                                <button class="chart-period-btn px-3 py-1 text-sm rounded text-gray-400 hover:text-white transition-colors" data-chart="cumulative" data-period="90">90D</button>
+                                                <button class="chart-period-btn px-3 py-1 text-sm rounded bg-blue-600 text-white" data-chart="cumulative" data-period="all">All</button>
                                             </div>
                                         </div>
+                                        <div id="cumulative-pnl-chart" class="h-80 relative z-10 overflow-hidden rounded-xl"></div>
                                     </div>
-                                    <div id="cumulative-pnl-chart" class="h-72 relative z-10 overflow-hidden"></div>
-                                </div>
-                                
-                                <!-- Daily P&L Distribution -->
-                                <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
-                                    <div class="flex items-center justify-between mb-4">
-                                        <h3 class="text-white font-semibold">Daily P&L Distribution</h3>
-                                        <div class="flex items-center gap-2">
-                                            <i data-lucide="bar-chart-3" class="w-4 h-4 text-blue-400"></i>
-                                            <span class="text-gray-400 text-sm">Last 90 days</span>
-                                        </div>
-                                    </div>
-                                    <div id="daily-pnl-chart" class="h-72 relative z-10 overflow-hidden"></div>
-                                </div>
-                            </div>
-
-                            <!-- Time-Based Performance Analysis -->
-                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                                <!-- Weekly Performance Heatmap -->
-                                <div class="lg:col-span-2">
-                                    <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
-                                        <div class="flex items-center justify-between mb-4">
-                                            <h3 class="text-white font-semibold">Weekly Performance Heatmap</h3>
+                                    
+                                    <!-- Daily P&L Distribution -->
+                                    <div class="bg-gray-900 border border-gray-600 rounded-2xl p-6">
+                                        <div class="flex items-center justify-between mb-6">
+                                            <h3 class="text-xl font-semibold text-white">Daily P&L Distribution</h3>
                                             <div class="flex items-center gap-2">
-                                                <span class="text-gray-400 text-sm">Profit intensity by week</span>
-                                                <i data-lucide="calendar" class="w-4 h-4 text-gray-400"></i>
+                                                <i data-lucide="bar-chart-3" class="w-5 h-5 text-blue-400"></i>
+                                                <span class="text-gray-300 text-sm">Last 90 days</span>
                                             </div>
                                         </div>
-                                        <div id="weekly-heatmap-chart" class="h-72 relative z-10 overflow-hidden"></div>
-                                        <div class="flex justify-between items-center mt-4 text-xs text-gray-400">
-                                            <span>Less profitable</span>
-                                            <div class="flex gap-1">
-                                                <div class="w-3 h-3 bg-gray-700 rounded-sm"></div>
-                                                <div class="w-3 h-3 bg-red-900 rounded-sm"></div>
-                                                <div class="w-3 h-3 bg-yellow-700 rounded-sm"></div>
-                                                <div class="w-3 h-3 bg-green-700 rounded-sm"></div>
-                                                <div class="w-3 h-3 bg-green-500 rounded-sm"></div>
+                                        <div id="daily-pnl-chart" class="h-80 relative z-10 overflow-hidden rounded-xl"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card 2: Trading Patterns & Timing -->
+                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-10 mb-12">
+                                <!-- Main Trading Calendar -->
+                                <div class="lg:col-span-2">
+                                    <div class="bg-gray-900 border border-gray-700 rounded-2xl p-10 shadow-xl">
+                                        <div class="flex items-center justify-between mb-8">
+                                            <div>
+                                                <h2 class="text-3xl font-bold text-white mb-2">Trading Patterns & Timing</h2>
+                                                <p class="text-gray-400 text-sm">Analysis of when and how you trade</p>
                                             </div>
-                                            <span>More profitable</span>
+                                            <div class="flex items-center gap-3 bg-gray-700 px-4 py-2 rounded-xl">
+                                                <i data-lucide="calendar" class="w-6 h-6 text-blue-400"></i>
+                                                <span class="text-gray-300 text-sm font-medium">Daily P&L over time</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Monthly Trading Calendar -->
+                                        <div class="mb-10 bg-gray-900 border border-gray-600 rounded-2xl p-6">
+                                            <h3 class="text-xl font-semibold text-white mb-6">Monthly Trading Calendar</h3>
+                                            <div id="weekly-heatmap-chart" class="h-80 relative z-10 overflow-hidden rounded-xl"></div>
+                                            <div class="flex justify-between items-center mt-6 text-sm text-gray-300">
+                                                <span class="flex items-center gap-2">
+                                                    <div class="w-4 h-4 bg-red-500 rounded-sm"></div>
+                                                    Losses
+                                                </span>
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-4 h-4 bg-gray-600 rounded-sm" title="Break Even"></div>
+                                                    <div class="w-4 h-4 bg-green-300 rounded-sm" title="Small Profit"></div>
+                                                    <div class="w-4 h-4 bg-green-500 rounded-sm" title="Good Profit"></div>
+                                                    <div class="w-4 h-4 bg-green-700 rounded-sm" title="Major Profit"></div>
+                                                </div>
+                                                <span class="flex items-center gap-2">
+                                                    Profits
+                                                    <div class="w-4 h-4 bg-green-500 rounded-sm"></div>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Trading Activity Charts -->
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            <!-- Trading Frequency -->
+                                            <div class="bg-gray-900 border border-gray-600 rounded-2xl p-6">
+                                                <div class="flex items-center gap-2 mb-6">
+                                                    <h4 class="text-lg font-semibold text-white">Trading Frequency</h4>
+                                                    <i data-lucide="activity" class="w-5 h-5 text-blue-400"></i>
+                                                </div>
+                                                <div id="trade-frequency-chart" class="h-64 relative z-10 overflow-hidden rounded-xl"></div>
+                                            </div>
+                                            
+                                            <!-- Win Rate Trend -->
+                                            <div class="bg-gray-900 border border-gray-600 rounded-2xl p-6">
+                                                <div class="flex items-center gap-2 mb-6">
+                                                    <h4 class="text-lg font-semibold text-white">Win Rate Trend</h4>
+                                                    <i data-lucide="target" class="w-5 h-5 text-green-400"></i>
+                                                </div>
+                                                <div id="win-rate-timeline-chart" class="h-64 relative z-10 overflow-hidden rounded-xl"></div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                                 
-                                <!-- Monthly Summary Stats -->
-                                <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
-                                    <h3 class="text-white font-semibold mb-4">Monthly Breakdown</h3>
-                                    <div id="monthly-stats-list" class="space-y-3 max-h-72 overflow-y-auto">
-                                        ${this.generateMonthlyStatsHTML()}
+                                <!-- Card 3: Monthly Performance Breakdown -->
+                                <div class="bg-gray-900 border border-gray-700 rounded-2xl p-10 shadow-xl">
+                                    <div class="flex items-center justify-between mb-8">
+                                        <div>
+                                            <h2 class="text-2xl font-bold text-white mb-2">Monthly Breakdown</h2>
+                                            <p class="text-gray-400 text-sm">Monthly performance summary</p>
+                                        </div>
+                                        <div class="bg-gray-700 p-3 rounded-xl">
+                                            <i data-lucide="calendar-days" class="w-6 h-6 text-purple-400"></i>
+                                        </div>
+                                    </div>
+                                    <div class="bg-gray-900 border border-gray-600 rounded-2xl p-6">
+                                        <div id="monthly-stats-list" class="space-y-4 max-h-96 overflow-y-auto pr-2">
+                                            ${this.generateMonthlyStatsHTML()}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                             
-                            <!-- Market Intelligence & Analysis -->
-                            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-6">
-                                <!-- Item Category Performance -->
-                                <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
-                                    <div class="flex items-center justify-between mb-4">
-                                        <h3 class="text-white font-semibold">Category Performance</h3>
-                                        <i data-lucide="pie-chart" class="w-4 h-4 text-blue-400"></i>
+                            <!-- Card 4: Market Intelligence -->
+                            <div class="bg-gray-900 border border-gray-700 rounded-2xl p-10 mb-12 shadow-xl">
+                                <div class="flex items-center justify-between mb-8">
+                                    <div>
+                                        <h2 class="text-3xl font-bold text-white mb-2">Market Intelligence</h2>
+                                        <p class="text-gray-400 text-sm">Strategic insights and trading patterns</p>
                                     </div>
-                                    <div id="category-performance-list" class="space-y-3 max-h-64 overflow-y-auto">
-                                        ${this.generateCategoryPerformanceHTML()}
-                                    </div>
-                                </div>
-                                
-                                <!-- Condition Analysis -->
-                                <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
-                                    <div class="flex items-center justify-between mb-4">
-                                        <h3 class="text-white font-semibold">Condition Analysis</h3>
-                                        <i data-lucide="layers" class="w-4 h-4 text-green-400"></i>
-                                    </div>
-                                    <div id="condition-analysis-list" class="space-y-3 max-h-64 overflow-y-auto">
-                                        ${this.generateConditionAnalysisHTML()}
+                                    <div class="flex items-center gap-3 bg-gray-700 px-4 py-2 rounded-xl">
+                                        <i data-lucide="target" class="w-6 h-6 text-purple-400"></i>
+                                        <span class="text-gray-300 text-sm font-medium">Trading Strategy Insights</span>
                                     </div>
                                 </div>
                                 
-                                <!-- Price Range Analysis -->
-                                <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
-                                    <div class="flex items-center justify-between mb-4">
-                                        <h3 class="text-white font-semibold">Price Range ROI</h3>
-                                        <i data-lucide="dollar-sign" class="w-4 h-4 text-yellow-400"></i>
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                                    <!-- Left Column: Category & Items -->
+                                    <div class="space-y-8">
+                                        <!-- Category Performance -->
+                                        <div class="bg-gray-900 border border-gray-600 rounded-2xl p-6">
+                                            <div class="flex items-center gap-2 mb-6">
+                                                <h3 class="text-xl font-semibold text-white">Category Performance</h3>
+                                                <i data-lucide="pie-chart" class="w-5 h-5 text-blue-400"></i>
+                                            </div>
+                                            <div id="category-performance-pie-chart" class="h-80 relative z-10 overflow-hidden rounded-xl"></div>
+                                        </div>
+                                        
+                                        <!-- Most Traded Items -->
+                                        <div class="bg-gray-900 border border-gray-600 rounded-2xl p-6">
+                                            <div class="flex items-center gap-2 mb-6">
+                                                <h3 class="text-xl font-semibold text-white">Most Traded Items</h3>
+                                                <i data-lucide="trending-up" class="w-5 h-5 text-blue-400"></i>
+                                            </div>
+                                            <div id="condition-roi-chart" class="h-80 relative z-10 overflow-hidden rounded-xl"></div>
+                                        </div>
                                     </div>
-                                    <div id="price-range-list" class="space-y-3 max-h-64 overflow-y-auto">
-                                        ${this.generatePriceRangeHTML()}
+                                    
+                                    <!-- Right Column: Timing & Pricing -->
+                                    <div class="space-y-8">
+                                        <!-- Hold Time Analysis -->
+                                        <div class="bg-gray-900 border border-gray-600 rounded-2xl p-6">
+                                            <div class="flex items-center gap-2 mb-6">
+                                                <h3 class="text-xl font-semibold text-white">Hold Time vs Profit</h3>
+                                                <i data-lucide="clock" class="w-5 h-5 text-yellow-400"></i>
+                                            </div>
+                                            <div id="hold-time-analysis-chart" class="h-80 relative z-10 overflow-hidden rounded-xl"></div>
+                                        </div>
+                                        
+                                        <!-- Price Range ROI -->
+                                        <div class="bg-gray-900 border border-gray-600 rounded-2xl p-6">
+                                            <div class="flex items-center gap-2 mb-6">
+                                                <h3 class="text-xl font-semibold text-white">Price Range ROI</h3>
+                                                <i data-lucide="dollar-sign" class="w-5 h-5 text-green-400"></i>
+                                            </div>
+                                            <div id="price-range-heatmap-chart" class="h-80 relative z-10 overflow-hidden rounded-xl"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Card 5: Trade Analysis -->
+                            <div class="bg-gray-900 border border-gray-700 rounded-2xl p-10 mb-12 shadow-xl">
+                                <div class="flex items-center justify-between mb-8">
+                                    <div>
+                                        <h2 class="text-3xl font-bold text-white mb-2">Trade Analysis</h2>
+                                        <p class="text-gray-400 text-sm">Comprehensive performance breakdown and insights</p>
+                                    </div>
+                                    <div class="flex items-center gap-3 bg-gray-700 px-4 py-2 rounded-xl">
+                                        <i data-lucide="bar-chart-4" class="w-6 h-6 text-green-400"></i>
+                                        <span class="text-gray-300 text-sm font-medium">Performance Breakdown</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                                    <!-- Profit Distribution -->
+                                    <div class="bg-gray-900 border border-gray-600 rounded-2xl p-6">
+                                        <div class="flex items-center gap-2 mb-6">
+                                            <h3 class="text-xl font-semibold text-white">Profit Distribution</h3>
+                                            <i data-lucide="bar-chart-4" class="w-5 h-5 text-purple-400"></i>
+                                        </div>
+                                        <div class="text-gray-400 text-sm mb-6">Trade profitability spread analysis</div>
+                                        <div id="profit-distribution-chart" class="h-80 relative z-10 overflow-hidden rounded-xl"></div>
+                                    </div>
+                                    
+                                    <!-- Best vs Worst Trades -->
+                                    <div class="bg-gray-900 border border-gray-600 rounded-2xl p-6">
+                                        <div class="flex items-center gap-2 mb-6">
+                                            <h3 class="text-xl font-semibold text-white">Best vs Worst Trades</h3>
+                                            <i data-lucide="trending-up" class="w-5 h-5 text-green-400"></i>
+                                        </div>
+                                        <div class="text-gray-400 text-sm mb-6">Top 5 performers in each category</div>
+                                        <div id="top-bottom-performers-chart" class="h-80 relative z-10 overflow-hidden rounded-xl"></div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Trading Statistics & Item Categories -->
-                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                <!-- Basic Trading Stats -->
-                                <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
-                                    <h3 class="text-white font-semibold mb-4">Trading Statistics</h3>
-                                    <div class="space-y-4">
-                                        <div class="flex justify-between items-center">
-                                            <span class="text-gray-400">Average Profit per Trade:</span>
-                                            <span class="text-white font-medium">$${this.store.formatNumber(this.getBasicTradingStats().avgProfitPerTrade)}</span>
-                                        </div>
-                                        <div class="flex justify-between items-center">
-                                            <span class="text-gray-400">Best Single Trade:</span>
-                                            <span class="text-green-400 font-medium">+$${this.store.formatNumber(this.getBasicTradingStats().bestTrade)}</span>
-                                        </div>
-                                        <div class="flex justify-between items-center">
-                                            <span class="text-gray-400">Worst Single Trade:</span>
-                                            <span class="text-red-400 font-medium">-$${this.store.formatNumber(Math.abs(this.getBasicTradingStats().worstTrade))}</span>
-                                        </div>
-                                        <div class="flex justify-between items-center">
-                                            <span class="text-gray-400">Total Trade Volume:</span>
-                                            <span class="text-white font-medium">$${this.store.formatNumber(this.getBasicTradingStats().totalVolume)}</span>
-                                        </div>
-                                        <div class="flex justify-between items-center">
-                                            <span class="text-gray-400">Average Hold Time:</span>
-                                            <span class="text-white font-medium">${this.getBasicTradingStats().avgHoldTime} days</span>
-                                        </div>
-                                    </div>
-                                </div>
 
-                                <!-- Item Category Performance -->
-                                <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
-                                    <h3 class="text-white font-semibold mb-4">Item Category Performance</h3>
-                                    <div id="category-performance" class="space-y-3">
-                                        ${this.generateCategoryPerformanceHTML()}
-                                    </div>
-                                </div>
-                            </div>
+
                         </div>
                     </div>
                     
@@ -3435,7 +3542,7 @@ export class TradingPage {
         const categories = {}
         
         trades.forEach(trade => {
-            const category = this.categorizeItem(trade.itemName)
+            const category = this.detectItemCategory(trade.itemName || trade.item)
             
             if (!categories[category]) {
                 categories[category] = {
@@ -3465,7 +3572,7 @@ export class TradingPage {
         
         // Calculate averages and win rates
         Object.values(categories).forEach(cat => {
-            const categoryTrades = trades.filter(t => this.categorizeItem(t.itemName) === cat.name)
+            const categoryTrades = trades.filter(t => this.detectItemCategory(t.itemName || t.item) === cat.name)
             const profitableTrades = categoryTrades.filter(t => t.sellPrice > t.buyPrice)
             cat.winRate = ((profitableTrades.length / categoryTrades.length) * 100).toFixed(1)
             cat.avgHoldTime = Math.round(cat.avgHoldTime / cat.trades)
@@ -3475,28 +3582,6 @@ export class TradingPage {
         return Object.values(categories).sort((a, b) => b.totalProfit - a.totalProfit)
     }
 
-    categorizeItem(itemName) {
-        const name = itemName.toLowerCase()
-        
-        // Weapon categories
-        if (name.includes('ak-47') || name.includes('ak47')) return 'AK-47'
-        if (name.includes('awp')) return 'AWP'
-        if (name.includes('m4a4') || name.includes('m4a1')) return 'M4'
-        if (name.includes('glock')) return 'Glock'
-        if (name.includes('usp') || name.includes('p2000')) return 'Starting Pistols'
-        if (name.includes('karambit') || name.includes('butterfly') || name.includes('bayonet')) return 'Knives'
-        if (name.includes('deagle') || name.includes('desert eagle')) return 'Desert Eagle'
-        if (name.includes('aug') || name.includes('scope')) return 'Scoped Rifles'
-        
-        // Generic categories
-        if (name.includes('rifle')) return 'Rifles'
-        if (name.includes('pistol')) return 'Pistols'
-        if (name.includes('smg') || name.includes('mp')) return 'SMGs'
-        if (name.includes('knife')) return 'Knives'
-        if (name.includes('gloves')) return 'Gloves'
-        
-        return 'Other'
-    }
 
     analyzeConditionPerformance(trades) {
         const conditions = {}
@@ -3540,6 +3625,177 @@ export class TradingPage {
         if (name.includes('battle-scarred')) return 'Battle-Scarred'
         
         return 'Unknown Condition'
+    }
+
+    detectItemCategory(itemName) {
+        if (!itemName) return 'Other'
+        
+        const name = itemName.toLowerCase()
+        
+        // Knives - Most comprehensive knife detection
+        if (name.includes('knife') || name.includes('bayonet') || name.includes('karambit') || 
+            name.includes('butterfly') || name.includes('flip') || name.includes('gut') ||
+            name.includes('huntsman') || name.includes('falchion') || name.includes('bowie') ||
+            name.includes('shadow daggers') || name.includes('daggers') || name.includes('stiletto') ||
+            name.includes('ursus') || name.includes('navaja') || name.includes('talon') ||
+            name.includes('skeleton') || name.includes('survival') || name.includes('paracord') ||
+            name.includes('classic') || name.includes('nomad')) {
+            return 'Knives'
+        }
+        
+        // Guns (broader category covering all weapons)
+        if (name.includes('ak-47') || name.includes('ak47') || name.includes('m4a4') || name.includes('m4a1-s') || 
+            name.includes('m4a1') || name.includes('awp') || name.includes('rifle') || name.includes('scar-20') ||
+            name.includes('g3sg1') || name.includes('sg') || name.includes('aug') ||
+            name.includes('famas') || name.includes('galil') || name.includes('glock') || 
+            name.includes('usp') || name.includes('p250') || name.includes('tec-9') || 
+            name.includes('five-seven') || name.includes('cz75') || name.includes('p2000') || 
+            name.includes('dual berettas') || name.includes('desert eagle') || name.includes('deagle') || name.includes('r8') ||
+            name.includes('p90') || name.includes('mp7') || name.includes('mp9') || 
+            name.includes('mac-10') || name.includes('ump-45') || name.includes('pp-bizon') ||
+            name.includes('mp5') || name.includes('nova') || name.includes('xm1014') || 
+            name.includes('sawed-off') || name.includes('mag-7') || name.includes('knight') ||
+            name.includes('asiimov') || name.includes('redline') || name.includes('howl') ||
+            name.includes('lightning strike') || name.includes('cyrex') || name.includes('vulcan')) {
+            return 'Guns'
+        }
+        
+        // Gloves
+        if (name.includes('gloves') || name.includes('wraps')) {
+            return 'Gloves'
+        }
+        
+        // Cases
+        if (name.includes('case') && !name.includes('knife')) {
+            return 'Cases'
+        }
+        
+        // Stickers
+        if (name.includes('sticker')) {
+            return 'Stickers'
+        }
+        
+        // Agents
+        if (name.includes('agent') || name.includes('specialist') || name.includes('operator')) {
+            return 'Agents'
+        }
+        
+        // Charms
+        if (name.includes('charm')) {
+            return 'Charms'
+        }
+        
+        // Patches
+        if (name.includes('patch')) {
+            return 'Patches'
+        }
+        
+        // Pins
+        if (name.includes('pin')) {
+            return 'Pins'
+        }
+        
+        // Graffiti
+        if (name.includes('graffiti')) {
+            return 'Graffiti'
+        }
+        
+        // Keys
+        if (name.includes('key')) {
+            return 'Keys'
+        }
+        
+        // Music Kits
+        if (name.includes('music kit')) {
+            return 'Music Kits'
+        }
+        
+        return 'Other'
+    }
+
+    // Calculate trend indicators by comparing current vs previous period
+    getTrendIndicators() {
+        const currentPeriod = this.analyticsTimePeriod || 'all'
+        const allTrades = this.getTradingData()
+        
+        // Get current metrics
+        const currentMetrics = this.getAnalyticsMetrics()
+        
+        // Calculate previous period for comparison
+        let previousTrades = []
+        const now = new Date()
+        
+        if (currentPeriod === '7d') {
+            // Compare with 7 days before that
+            const startDate = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
+            const endDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+            previousTrades = this.getTradesInDateRange(allTrades, startDate, endDate)
+        } else if (currentPeriod === '30d') {
+            // Compare with 30 days before that
+            const startDate = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000)
+            const endDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+            previousTrades = this.getTradesInDateRange(allTrades, startDate, endDate)
+        } else if (currentPeriod === '90d') {
+            // Compare with 90 days before that
+            const startDate = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000)
+            const endDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
+            previousTrades = this.getTradesInDateRange(allTrades, startDate, endDate)
+        } else {
+            // For other periods, use a simple split approach
+            const midPoint = Math.floor(allTrades.length / 2)
+            previousTrades = allTrades.slice(0, midPoint)
+        }
+        
+        // Calculate previous period metrics
+        const prevCompleted = previousTrades.filter(t => t.sellPrice)
+        const prevProfit = prevCompleted.reduce((sum, t) => sum + (t.sellPrice - t.buyPrice), 0)
+        const prevProfitable = prevCompleted.filter(t => t.sellPrice > t.buyPrice)
+        const prevSuccessRate = prevCompleted.length > 0 ? (prevProfitable.length / prevCompleted.length) * 100 : 0
+        
+        // Calculate trends
+        const profitTrend = this.calculateTrend(currentMetrics.totalProfit, prevProfit)
+        const successRateTrend = this.calculateTrend(parseFloat(currentMetrics.successRate), prevSuccessRate)
+        
+        return {
+            totalProfitTrend: profitTrend,
+            successRateTrend: successRateTrend
+        }
+    }
+
+    getTradesInDateRange(trades, startDate, endDate) {
+        return trades.filter(trade => {
+            if (!trade.sellDate) return false
+            const tradeDate = this.parseDateForSorting(trade.sellDate)
+            return tradeDate >= startDate && tradeDate <= endDate
+        })
+    }
+
+    calculateTrend(current, previous) {
+        if (previous === 0 && current === 0) return { direction: 'stable', percentage: 0 }
+        if (previous === 0) return { direction: 'up', percentage: 100 }
+        
+        const change = ((current - previous) / Math.abs(previous)) * 100
+        
+        if (Math.abs(change) < 5) return { direction: 'stable', percentage: change }
+        return {
+            direction: change > 0 ? 'up' : 'down',
+            percentage: Math.abs(change)
+        }
+    }
+
+    renderTrendIndicator(trend) {
+        if (!trend || trend.direction === 'stable') {
+            return '<i class="text-gray-400 text-xs">—</i>'
+        }
+        
+        const color = trend.direction === 'up' ? 'text-green-400' : 'text-red-400'
+        const icon = trend.direction === 'up' ? 'trending-up' : 'trending-down'
+        const percentage = trend.percentage > 999 ? '999+' : Math.round(trend.percentage)
+        
+        return `<div class="flex items-center gap-1 ${color} text-xs">
+            <i data-lucide="${icon}" class="w-3 h-3"></i>
+            <span>${percentage}%</span>
+        </div>`
     }
 
     analyzeSeasonalPatterns(trades) {
@@ -3748,7 +4004,15 @@ export class TradingPage {
         const chartContainers = [
             '#cumulative-pnl-chart',
             '#daily-pnl-chart', 
-            '#weekly-heatmap-chart'
+            '#weekly-heatmap-chart',
+            '#profit-distribution-chart',
+            '#top-bottom-performers-chart',
+            '#trade-frequency-chart',
+            '#win-rate-timeline-chart',
+            '#hold-time-analysis-chart',
+            '#category-performance-pie-chart',
+            '#condition-roi-chart',
+            '#price-range-heatmap-chart'
         ]
         
         chartContainers.forEach(selector => {
@@ -3779,6 +4043,16 @@ export class TradingPage {
                 this.initializeCumulativePnLChart()
                 this.initializeDailyPnLChart()
                 this.initializeWeeklyHeatmapChart()
+                
+                // Initialize new enhanced charts
+                this.initializeProfitDistributionChart()
+                this.initializeTopBottomPerformersChart()
+                this.initializeTradeFrequencyChart()
+                this.initializeWinRateTimelineChart()
+                this.initializeHoldTimeAnalysisChart()
+                this.initializeCategoryPerformancePieChart()
+                this.initializeConditionROIChart()
+                this.initializePriceRangeHeatmapChart()
             }
         }, 500)
     }
@@ -3808,7 +4082,18 @@ export class TradingPage {
                 type: 'area',
                 height: 300,
                 background: 'transparent',
-                toolbar: { show: false },
+                toolbar: { 
+                    show: true,
+                    tools: {
+                        download: false,
+                        selection: true,
+                        zoom: true,
+                        zoomin: true,
+                        zoomout: true,
+                        pan: true,
+                        reset: true
+                    }
+                },
                 animations: { enabled: true }
             },
             theme: { mode: 'dark' },
@@ -3886,7 +4171,18 @@ export class TradingPage {
                 type: 'bar',
                 height: 300,
                 background: 'transparent',
-                toolbar: { show: false }
+                toolbar: { 
+                    show: true,
+                    tools: {
+                        download: false,
+                        selection: true,
+                        zoom: true,
+                        zoomin: true,
+                        zoomout: true,
+                        pan: true,
+                        reset: true
+                    }
+                }
             },
             theme: { mode: 'dark' },
             colors: ['#10B981'],
@@ -3944,46 +4240,105 @@ export class TradingPage {
     }
 
     initializeWeeklyHeatmapChart() {
-        const timeBasedData = this.getTimeBasedPerformance()
-        const weeklyData = timeBasedData.weekly
+        const trades = this.getFilteredTradesForAnalytics()
+        const completedTrades = trades.filter(t => t.sellPrice && t.sellDate)
         
-        if (weeklyData.length === 0) return
+        if (completedTrades.length === 0) return
         
-        // Create heatmap data structure
-        const heatmapData = weeklyData.map((week, index) => ({
-            x: `Week ${index + 1}`,
-            y: week.profit
-        }))
+        // Create monthly calendar heatmap data
+        const calendarData = this.generateCalendarHeatmapData(completedTrades)
+        
+        if (calendarData.length === 0) return
         
         const options = {
-            series: [{
-                name: 'Weekly Profit',
-                data: heatmapData
-            }],
+            series: calendarData.series,
             chart: {
                 height: 300,
                 type: 'heatmap',
                 background: 'transparent',
-                toolbar: { show: false }
+                toolbar: { 
+                    show: true,
+                    tools: {
+                        download: false,
+                        selection: true,
+                        zoom: true,
+                        zoomin: true,
+                        zoomout: true,
+                        pan: true,
+                        reset: true
+                    }
+                }
             },
             theme: { mode: 'dark' },
-            colors: ['#10B981'],
+            plotOptions: {
+                heatmap: {
+                    shadeIntensity: 0.5,
+                    colorScale: {
+                        ranges: [
+                            { from: -1000, to: -200, color: '#DC2626', name: 'Major Loss' },
+                            { from: -199, to: -50, color: '#EF4444', name: 'Moderate Loss' },
+                            { from: -49, to: -1, color: '#FCA5A5', name: 'Small Loss' },
+                            { from: 0, to: 0, color: '#6B7280', name: 'Break Even' },
+                            { from: 1, to: 49, color: '#86EFAC', name: 'Small Profit' },
+                            { from: 50, to: 199, color: '#22C55E', name: 'Good Profit' },
+                            { from: 200, to: 1000, color: '#16A34A', name: 'Major Profit' }
+                        ]
+                    }
+                }
+            },
             dataLabels: {
                 enabled: false
             },
             grid: {
-                borderColor: '#374151'
+                borderColor: '#374151',
+                padding: {
+                    top: 0,
+                    right: 10,
+                    bottom: 0,
+                    left: 10
+                }
             },
             xaxis: {
-                labels: { style: { colors: '#9CA3AF' } }
+                type: 'category',
+                labels: { 
+                    style: { colors: '#9CA3AF', fontSize: '12px' }
+                }
             },
             yaxis: {
-                labels: { style: { colors: '#9CA3AF' } }
+                labels: { 
+                    style: { colors: '#9CA3AF', fontSize: '12px' }
+                }
             },
             tooltip: {
                 theme: 'dark',
-                y: {
-                    formatter: (val) => '$' + this.store.formatNumber(val)
+                custom: ({ seriesIndex, dataPointIndex, w }) => {
+                    const data = w.globals.initialSeries[seriesIndex].data[dataPointIndex]
+                    const profit = data.y || 0
+                    const date = data.date || 'Unknown'
+                    const trades = data.trades || 0
+                    const items = data.items || []
+                    
+                    let itemsList = ''
+                    if (items.length > 0) {
+                        itemsList = items.slice(0, 3).map(item => 
+                            `<div class="text-xs text-gray-300">• ${item}</div>`
+                        ).join('')
+                        if (items.length > 3) {
+                            itemsList += `<div class="text-xs text-gray-400">+${items.length - 3} more...</div>`
+                        }
+                    }
+                    
+                    const profitColor = profit >= 0 ? '#22C55E' : '#EF4444'
+                    const profitText = profit >= 0 ? `+$${Math.abs(profit).toFixed(2)}` : `-$${Math.abs(profit).toFixed(2)}`
+                    
+                    return `
+                        <div class="bg-gray-800 p-3 rounded-lg shadow-lg border border-gray-600 min-w-48">
+                            <div class="font-semibold text-white mb-1">${date}</div>
+                            <div class="text-sm text-gray-300 mb-2">${trades} trade${trades !== 1 ? 's' : ''}</div>
+                            <div class="font-bold text-lg mb-2" style="color: ${profitColor}">${profitText}</div>
+                            ${itemsList}
+                        </div>
+                    `
                 }
             }
         }
@@ -3998,6 +4353,877 @@ export class TradingPage {
             const chart = new ApexCharts(chartElement, options)
             chart.render()
             this.chartInstances.weeklyHeatmap = chart
+        }
+    }
+
+    generateCalendarHeatmapData(trades) {
+        // Group trades by date and calculate daily P&L
+        const dailyData = {}
+        
+        trades.forEach(trade => {
+            if (!trade.sellDate) return
+            
+            const sellDate = this.parseDateForSorting(trade.sellDate)
+            if (isNaN(sellDate.getTime())) return
+            
+            const dateKey = sellDate.toISOString().split('T')[0] // YYYY-MM-DD format
+            const profit = (trade.sellPrice || 0) - (trade.buyPrice || 0)
+            
+            if (!dailyData[dateKey]) {
+                dailyData[dateKey] = {
+                    profit: 0,
+                    trades: 0,
+                    items: []
+                }
+            }
+            
+            dailyData[dateKey].profit += profit
+            dailyData[dateKey].trades++
+            dailyData[dateKey].items.push(trade.itemName || trade.item || 'Unknown Item')
+        })
+        
+        // Convert to calendar format (months as series, days as x-axis)
+        const monthData = {}
+        
+        Object.entries(dailyData).forEach(([dateKey, data]) => {
+            const date = new Date(dateKey)
+            const monthKey = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+            const dayKey = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            
+            if (!monthData[monthKey]) {
+                monthData[monthKey] = []
+            }
+            
+            monthData[monthKey].push({
+                x: dayKey,
+                y: Math.round(data.profit * 100) / 100, // Round to 2 decimal places
+                date: date.toLocaleDateString('en-US', { 
+                    weekday: 'short', 
+                    month: 'short', 
+                    day: 'numeric', 
+                    year: 'numeric' 
+                }),
+                trades: data.trades,
+                items: data.items
+            })
+        })
+        
+        // Convert to ApexCharts series format
+        const series = Object.entries(monthData)
+            .sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
+            .slice(-6) // Show last 6 months
+            .map(([monthKey, data]) => ({
+                name: monthKey,
+                data: data.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+            }))
+        
+        return { series }
+    }
+
+    // Enhanced Analytics Chart Methods
+    initializeProfitDistributionChart() {
+        const trades = this.getFilteredTradesForAnalytics()
+        const completedTrades = trades.filter(t => t.sellPrice)
+        
+        if (completedTrades.length === 0) return
+        
+        // Calculate profit percentages and create histogram data
+        const profitPercentages = completedTrades.map(trade => {
+            const profit = ((trade.sellPrice - trade.buyPrice) / trade.buyPrice) * 100
+            return profit
+        })
+        
+        // Create histogram bins
+        const binSize = 10 // 10% bins
+        const bins = {}
+        const minProfit = Math.floor(Math.min(...profitPercentages) / binSize) * binSize
+        const maxProfit = Math.ceil(Math.max(...profitPercentages) / binSize) * binSize
+        
+        // Initialize bins
+        for (let i = minProfit; i <= maxProfit; i += binSize) {
+            bins[i] = 0
+        }
+        
+        // Populate bins
+        profitPercentages.forEach(profit => {
+            const binKey = Math.floor(profit / binSize) * binSize
+            bins[binKey] = (bins[binKey] || 0) + 1
+        })
+        
+        // Convert to chart data
+        const chartData = Object.entries(bins).map(([bin, count]) => ({
+            x: `${bin}% - ${parseInt(bin) + binSize}%`,
+            y: count
+        }))
+        
+        const options = {
+            series: [{
+                name: 'Number of Trades',
+                data: chartData
+            }],
+            chart: {
+                type: 'bar',
+                height: 300,
+                background: 'transparent',
+                toolbar: { 
+                    show: true,
+                    tools: {
+                        download: false,
+                        selection: true,
+                        zoom: true,
+                        zoomin: true,
+                        zoomout: true,
+                        pan: true,
+                        reset: true
+                    }
+                }
+            },
+            theme: { mode: 'dark' },
+            colors: ['#8B5CF6'],
+            plotOptions: {
+                bar: {
+                    distributed: false,
+                    borderRadius: 4
+                }
+            },
+            dataLabels: {
+                enabled: true,
+                style: { colors: ['#fff'] }
+            },
+            grid: {
+                borderColor: '#374151'
+            },
+            xaxis: {
+                labels: { 
+                    style: { colors: '#9CA3AF' },
+                    rotate: -45
+                },
+                title: {
+                    text: 'Profit Range (%)',
+                    style: { color: '#9CA3AF' }
+                }
+            },
+            yaxis: {
+                labels: { style: { colors: '#9CA3AF' } },
+                title: {
+                    text: 'Number of Trades',
+                    style: { color: '#9CA3AF' }
+                }
+            },
+            tooltip: {
+                theme: 'dark',
+                y: {
+                    formatter: (val) => val + ' trades'
+                }
+            }
+        }
+        
+        const chartElement = document.querySelector("#profit-distribution-chart")
+        if (chartElement && this.currentTab === 'analytics') {
+            chartElement.innerHTML = ''
+            chartElement.style.position = 'relative'
+            chartElement.style.zIndex = '10'
+            
+            const chart = new ApexCharts(chartElement, options)
+            chart.render()
+            this.chartInstances.profitDistribution = chart
+        }
+    }
+
+    initializeTopBottomPerformersChart() {
+        const trades = this.getFilteredTradesForAnalytics()
+        const completedTrades = trades.filter(t => t.sellPrice && t.itemName)
+        
+        if (completedTrades.length === 0) return
+        
+        // Calculate profit for each trade
+        const tradesWithProfit = completedTrades.map(trade => ({
+            ...trade,
+            profit: trade.sellPrice - trade.buyPrice
+        }))
+        
+        // Sort by profit and get top 5 and bottom 5
+        const sorted = tradesWithProfit.sort((a, b) => b.profit - a.profit)
+        const top5 = sorted.slice(0, 5)
+        const bottom5 = sorted.slice(-5).reverse()
+        
+        // Combine and create chart data
+        const chartData = [
+            ...top5.map(trade => ({
+                x: trade.itemName.length > 20 ? trade.itemName.substring(0, 20) + '...' : trade.itemName,
+                y: trade.profit,
+                fillColor: '#10B981'
+            })),
+            ...bottom5.map(trade => ({
+                x: trade.itemName.length > 20 ? trade.itemName.substring(0, 20) + '...' : trade.itemName,
+                y: trade.profit,
+                fillColor: '#EF4444'
+            }))
+        ]
+        
+        const options = {
+            series: [{
+                name: 'Profit/Loss',
+                data: chartData
+            }],
+            chart: {
+                type: 'bar',
+                height: 300,
+                background: 'transparent',
+                toolbar: { 
+                    show: true,
+                    tools: {
+                        download: false,
+                        selection: true,
+                        zoom: true,
+                        zoomin: true,
+                        zoomout: true,
+                        pan: true,
+                        reset: true
+                    }
+                }
+            },
+            theme: { mode: 'dark' },
+            plotOptions: {
+                bar: {
+                    distributed: true,
+                    horizontal: true,
+                    borderRadius: 4
+                }
+            },
+            dataLabels: {
+                enabled: true,
+                formatter: (val) => '$' + this.store.formatNumber(Math.abs(val)),
+                style: { colors: ['#fff'] }
+            },
+            colors: ['#10B981', '#EF4444'],
+            grid: {
+                borderColor: '#374151'
+            },
+            xaxis: {
+                labels: { 
+                    style: { colors: '#9CA3AF' },
+                    formatter: (val) => '$' + this.store.formatNumber(Math.abs(val))
+                }
+            },
+            yaxis: {
+                labels: { style: { colors: '#9CA3AF' } }
+            },
+            tooltip: {
+                theme: 'dark',
+                y: {
+                    formatter: (val) => (val >= 0 ? '+' : '') + '$' + this.store.formatNumber(Math.abs(val))
+                }
+            }
+        }
+        
+        const chartElement = document.querySelector("#top-bottom-performers-chart")
+        if (chartElement && this.currentTab === 'analytics') {
+            chartElement.innerHTML = ''
+            chartElement.style.position = 'relative'
+            chartElement.style.zIndex = '10'
+            
+            const chart = new ApexCharts(chartElement, options)
+            chart.render()
+            this.chartInstances.topBottomPerformers = chart
+        }
+    }
+
+    initializeTradeFrequencyChart() {
+        const trades = this.getFilteredTradesForAnalytics()
+        
+        if (trades.length === 0) return
+        
+        // Group trades by day of week
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+        const dayFrequency = new Array(7).fill(0)
+        
+        trades.forEach(trade => {
+            if (trade.buyDate) {
+                const date = this.parseDateForSorting(trade.buyDate)
+                if (!isNaN(date.getTime())) {
+                    dayFrequency[date.getDay()]++
+                }
+            }
+        })
+        
+        const chartData = dayFrequency.map((count, index) => ({
+            x: dayNames[index].substring(0, 3), // Short day names
+            y: count
+        }))
+        
+        const options = {
+            series: [{
+                name: 'Trades',
+                data: chartData
+            }],
+            chart: {
+                type: 'bar',
+                height: 280,
+                background: 'transparent',
+                toolbar: { 
+                    show: true,
+                    tools: {
+                        download: false,
+                        selection: true,
+                        zoom: true,
+                        zoomin: true,
+                        zoomout: true,
+                        pan: true,
+                        reset: true
+                    }
+                }
+            },
+            theme: { mode: 'dark' },
+            colors: ['#3B82F6'],
+            plotOptions: {
+                bar: {
+                    borderRadius: 4,
+                    distributed: false
+                }
+            },
+            dataLabels: {
+                enabled: true,
+                style: { colors: ['#fff'] }
+            },
+            grid: {
+                borderColor: '#374151'
+            },
+            xaxis: {
+                labels: { style: { colors: '#9CA3AF' } }
+            },
+            yaxis: {
+                labels: { style: { colors: '#9CA3AF' } }
+            },
+            tooltip: {
+                theme: 'dark',
+                y: {
+                    formatter: (val) => val + ' trades'
+                }
+            }
+        }
+        
+        const chartElement = document.querySelector("#trade-frequency-chart")
+        if (chartElement && this.currentTab === 'analytics') {
+            chartElement.innerHTML = ''
+            chartElement.style.position = 'relative'
+            chartElement.style.zIndex = '10'
+            
+            const chart = new ApexCharts(chartElement, options)
+            chart.render()
+            this.chartInstances.tradeFrequency = chart
+        }
+    }
+
+    initializeWinRateTimelineChart() {
+        const trades = this.getFilteredTradesForAnalytics()
+        const completedTrades = trades.filter(t => t.sellPrice && t.sellDate)
+        
+        if (completedTrades.length < 5) return // Need at least 5 trades for meaningful timeline
+        
+        // Sort trades by sell date
+        const sortedTrades = completedTrades.sort((a, b) => {
+            const dateA = this.parseDateForSorting(a.sellDate)
+            const dateB = this.parseDateForSorting(b.sellDate)
+            return dateA - dateB
+        })
+        
+        // Calculate rolling win rate (last 10 trades)
+        const windowSize = Math.min(10, sortedTrades.length)
+        const winRateData = []
+        
+        for (let i = windowSize - 1; i < sortedTrades.length; i++) {
+            const window = sortedTrades.slice(i - windowSize + 1, i + 1)
+            const wins = window.filter(t => t.sellPrice > t.buyPrice).length
+            const winRate = (wins / windowSize) * 100
+            
+            winRateData.push({
+                x: this.parseDateForSorting(sortedTrades[i].sellDate),
+                y: winRate
+            })
+        }
+        
+        const options = {
+            series: [{
+                name: 'Win Rate (%)',
+                data: winRateData
+            }],
+            chart: {
+                type: 'line',
+                height: 280,
+                background: 'transparent',
+                toolbar: { 
+                    show: true,
+                    tools: {
+                        download: false,
+                        selection: true,
+                        zoom: true,
+                        zoomin: true,
+                        zoomout: true,
+                        pan: true,
+                        reset: true
+                    }
+                }
+            },
+            theme: { mode: 'dark' },
+            colors: ['#10B981'],
+            stroke: {
+                curve: 'smooth',
+                width: 3
+            },
+            markers: {
+                size: 4,
+                colors: ['#10B981'],
+                strokeWidth: 2,
+                strokeColors: '#1F2937'
+            },
+            grid: {
+                borderColor: '#374151'
+            },
+            xaxis: {
+                type: 'datetime',
+                labels: { style: { colors: '#9CA3AF' } }
+            },
+            yaxis: {
+                labels: { 
+                    style: { colors: '#9CA3AF' },
+                    formatter: (val) => val.toFixed(1) + '%'
+                },
+                min: 0,
+                max: 100
+            },
+            tooltip: {
+                theme: 'dark',
+                y: {
+                    formatter: (val) => val.toFixed(1) + '% (last ' + windowSize + ' trades)'
+                }
+            }
+        }
+        
+        const chartElement = document.querySelector("#win-rate-timeline-chart")
+        if (chartElement && this.currentTab === 'analytics') {
+            chartElement.innerHTML = ''
+            chartElement.style.position = 'relative'
+            chartElement.style.zIndex = '10'
+            
+            const chart = new ApexCharts(chartElement, options)
+            chart.render()
+            this.chartInstances.winRateTimeline = chart
+        }
+    }
+
+    initializeHoldTimeAnalysisChart() {
+        const trades = this.getFilteredTradesForAnalytics()
+        const completedTrades = trades.filter(t => t.sellPrice && t.sellDate && t.buyDate)
+        
+        if (completedTrades.length === 0) return
+        
+        // Calculate hold time and profit for each trade
+        const scatterData = completedTrades.map(trade => {
+            const buyDate = this.parseDateForSorting(trade.buyDate)
+            const sellDate = this.parseDateForSorting(trade.sellDate)
+            
+            if (isNaN(buyDate.getTime()) || isNaN(sellDate.getTime())) return null
+            
+            const holdDays = Math.max(1, Math.floor((sellDate - buyDate) / (1000 * 60 * 60 * 24)))
+            const profitPercent = ((trade.sellPrice - trade.buyPrice) / trade.buyPrice) * 100
+            
+            return {
+                x: holdDays,
+                y: profitPercent,
+                profit: trade.sellPrice - trade.buyPrice
+            }
+        }).filter(Boolean)
+        
+        const options = {
+            series: [{
+                name: 'Trades',
+                data: scatterData
+            }],
+            chart: {
+                type: 'scatter',
+                height: 280,
+                background: 'transparent',
+                toolbar: { 
+                    show: true,
+                    tools: {
+                        download: false,
+                        selection: true,
+                        zoom: true,
+                        zoomin: true,
+                        zoomout: true,
+                        pan: true,
+                        reset: true
+                    }
+                }
+            },
+            theme: { mode: 'dark' },
+            colors: ['#F59E0B'],
+            markers: {
+                size: 6,
+                strokeWidth: 1,
+                strokeColors: '#1F2937'
+            },
+            grid: {
+                borderColor: '#374151'
+            },
+            xaxis: {
+                labels: { 
+                    style: { colors: '#9CA3AF' },
+                    formatter: (val) => Math.floor(val) + ' days'
+                },
+                title: {
+                    text: 'Hold Time (Days)',
+                    style: { color: '#9CA3AF' }
+                }
+            },
+            yaxis: {
+                labels: { 
+                    style: { colors: '#9CA3AF' },
+                    formatter: (val) => val.toFixed(1) + '%'
+                },
+                title: {
+                    text: 'Profit %',
+                    style: { color: '#9CA3AF' }
+                }
+            },
+            tooltip: {
+                theme: 'dark',
+                custom: ({ dataPointIndex, w }) => {
+                    const data = scatterData[dataPointIndex]
+                    return `
+                        <div class="bg-gray-800 p-2 rounded shadow-lg">
+                            <div>Hold Time: ${data.x} days</div>
+                            <div>Profit: ${data.y.toFixed(1)}% ($${this.store.formatNumber(Math.abs(data.profit))})</div>
+                        </div>
+                    `
+                }
+            }
+        }
+        
+        const chartElement = document.querySelector("#hold-time-analysis-chart")
+        if (chartElement && this.currentTab === 'analytics') {
+            chartElement.innerHTML = ''
+            chartElement.style.position = 'relative'
+            chartElement.style.zIndex = '10'
+            
+            const chart = new ApexCharts(chartElement, options)
+            chart.render()
+            this.chartInstances.holdTimeAnalysis = chart
+        }
+    }
+
+    initializeCategoryPerformancePieChart() {
+        const trades = this.getFilteredTradesForAnalytics()
+        const completedTrades = trades.filter(t => t.sellPrice)
+        
+        if (completedTrades.length === 0) return
+        
+        // Group by category and calculate profits
+        const categories = {}
+        completedTrades.forEach(trade => {
+            const category = this.detectItemCategory(trade.itemName || trade.item)
+            if (!categories[category]) {
+                categories[category] = { profit: 0, trades: 0 }
+            }
+            categories[category].profit += (trade.sellPrice - trade.buyPrice)
+            categories[category].trades++
+        })
+        
+        // Convert to pie chart data
+        const pieData = Object.entries(categories).map(([category, data]) => data.profit)
+        const pieLabels = Object.keys(categories)
+        
+        const options = {
+            series: pieData,
+            chart: {
+                type: 'pie',
+                height: 300,
+                background: 'transparent',
+                toolbar: { 
+                    show: true,
+                    tools: {
+                        download: false,
+                        selection: false,
+                        zoom: false,
+                        zoomin: false,
+                        zoomout: false,
+                        pan: false,
+                        reset: true
+                    }
+                }
+            },
+            labels: pieLabels,
+            theme: { mode: 'dark' },
+            colors: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'],
+            dataLabels: {
+                enabled: true,
+                style: { colors: ['#fff'] },
+                formatter: (val, opts) => {
+                    return val.toFixed(1) + '%'
+                }
+            },
+            legend: {
+                position: 'bottom',
+                labels: { colors: '#9CA3AF' }
+            },
+            tooltip: {
+                theme: 'dark',
+                y: {
+                    formatter: (val) => '$' + this.store.formatNumber(Math.abs(val))
+                }
+            }
+        }
+        
+        const chartElement = document.querySelector("#category-performance-pie-chart")
+        if (chartElement && this.currentTab === 'analytics') {
+            chartElement.innerHTML = ''
+            chartElement.style.position = 'relative'
+            chartElement.style.zIndex = '10'
+            
+            const chart = new ApexCharts(chartElement, options)
+            chart.render()
+            this.chartInstances.categoryPerformancePie = chart
+        }
+    }
+
+    initializeConditionROIChart() {
+        const trades = this.getFilteredTradesForAnalytics()
+        const completedTrades = trades.filter(t => t.sellPrice && t.itemName)
+        
+        if (completedTrades.length === 0) return
+        
+        // Count trades by specific item/knife type
+        const itemCounts = {}
+        completedTrades.forEach(trade => {
+            // Extract the main item name (remove condition and extras)
+            let itemName = trade.itemName || trade.item || 'Unknown'
+            
+            // Clean up the name - remove condition words and common prefixes
+            itemName = itemName.replace(/\s*\|\s*.*$/, '') // Remove skin name after |
+            itemName = itemName.replace(/\s*\(.*?\)/g, '') // Remove condition in parentheses
+            itemName = itemName.replace(/★\s*StatTrak™?\s*/i, 'StatTrak ') // Normalize StatTrak
+            itemName = itemName.replace(/★\s*/g, '') // Remove star symbol
+            itemName = itemName.replace(/\s*(Factory New|Minimal Wear|Field-Tested|Well-Worn|Battle-Scarred)\s*$/i, '') // Remove trailing condition
+            itemName = itemName.trim()
+            
+            if (!itemCounts[itemName]) {
+                itemCounts[itemName] = { 
+                    count: 0, 
+                    totalProfit: 0, 
+                    avgProfit: 0,
+                    totalValue: 0
+                }
+            }
+            itemCounts[itemName].count++
+            itemCounts[itemName].totalProfit += (trade.sellPrice - trade.buyPrice)
+            itemCounts[itemName].totalValue += trade.buyPrice
+        })
+        
+        // Calculate average profit and sort by count
+        Object.keys(itemCounts).forEach(item => {
+            itemCounts[item].avgProfit = itemCounts[item].totalProfit / itemCounts[item].count
+        })
+        
+        // Get top 10 most traded items
+        const chartData = Object.entries(itemCounts)
+            .sort(([,a], [,b]) => b.count - a.count)
+            .slice(0, 10)
+            .map(([itemName, data]) => ({
+                x: itemName.length > 25 ? itemName.substring(0, 25) + '...' : itemName,
+                y: data.count,
+                avgProfit: data.avgProfit,
+                totalProfit: data.totalProfit,
+                totalValue: data.totalValue,
+                fullName: itemName
+            }))
+        
+        const options = {
+            series: [{
+                name: 'Trade Count',
+                data: chartData
+            }],
+            chart: {
+                type: 'bar',
+                height: 300,
+                background: 'transparent',
+                toolbar: { 
+                    show: true,
+                    tools: {
+                        download: false,
+                        selection: true,
+                        zoom: true,
+                        zoomin: true,
+                        zoomout: true,
+                        pan: true,
+                        reset: true
+                    }
+                }
+            },
+            theme: { mode: 'dark' },
+            colors: ['#3B82F6'],
+            plotOptions: {
+                bar: {
+                    borderRadius: 4,
+                    horizontal: true
+                }
+            },
+            dataLabels: {
+                enabled: true,
+                formatter: (val) => val + ' trades',
+                style: { colors: ['#fff'] }
+            },
+            grid: {
+                borderColor: '#374151'
+            },
+            xaxis: {
+                labels: { 
+                    style: { colors: '#9CA3AF' }
+                }
+            },
+            yaxis: {
+                labels: { 
+                    style: { colors: '#9CA3AF' }
+                }
+            },
+            tooltip: {
+                theme: 'dark',
+                custom: ({ dataPointIndex }) => {
+                    const data = chartData[dataPointIndex]
+                    const profitColor = data.avgProfit >= 0 ? '#22C55E' : '#EF4444'
+                    const profitText = data.avgProfit >= 0 ? `+$${Math.abs(data.avgProfit).toFixed(2)}` : `-$${Math.abs(data.avgProfit).toFixed(2)}`
+                    const totalProfitColor = data.totalProfit >= 0 ? '#22C55E' : '#EF4444'
+                    const totalProfitText = data.totalProfit >= 0 ? `+$${Math.abs(data.totalProfit).toFixed(2)}` : `-$${Math.abs(data.totalProfit).toFixed(2)}`
+                    
+                    return `
+                        <div class="bg-gray-800 p-3 rounded shadow-lg">
+                            <div class="font-semibold text-white mb-2">${data.fullName}</div>
+                            <div class="text-sm text-gray-300">Trades: ${data.y}</div>
+                            <div class="text-sm" style="color: ${profitColor}">Avg Profit: ${profitText}</div>
+                            <div class="text-sm" style="color: ${totalProfitColor}">Total Profit: ${totalProfitText}</div>
+                            <div class="text-sm text-gray-300">Total Invested: $${this.store.formatNumber(data.totalValue)}</div>
+                        </div>
+                    `
+                }
+            }
+        }
+        
+        const chartElement = document.querySelector("#condition-roi-chart")
+        if (chartElement && this.currentTab === 'analytics') {
+            chartElement.innerHTML = ''
+            chartElement.style.position = 'relative'
+            chartElement.style.zIndex = '10'
+            
+            const chart = new ApexCharts(chartElement, options)
+            chart.render()
+            this.chartInstances.conditionROI = chart
+        }
+    }
+
+    initializePriceRangeHeatmapChart() {
+        const trades = this.getFilteredTradesForAnalytics()
+        const completedTrades = trades.filter(t => t.sellPrice)
+        
+        if (completedTrades.length === 0) return
+        
+        // Define price ranges
+        const ranges = [
+            { min: 0, max: 50, label: '$0-50' },
+            { min: 50, max: 100, label: '$50-100' },
+            { min: 100, max: 250, label: '$100-250' },
+            { min: 250, max: 500, label: '$250-500' },
+            { min: 500, max: 1000, label: '$500-1000' },
+            { min: 1000, max: Infinity, label: '$1000+' }
+        ]
+        
+        // Group trades by price range
+        const rangeData = ranges.map(range => {
+            const tradesInRange = completedTrades.filter(trade => 
+                trade.buyPrice >= range.min && trade.buyPrice < range.max
+            )
+            
+            if (tradesInRange.length === 0) return { x: range.label, y: 0 }
+            
+            const totalInvested = tradesInRange.reduce((sum, t) => sum + t.buyPrice, 0)
+            const totalReturn = tradesInRange.reduce((sum, t) => sum + t.sellPrice, 0)
+            const roi = ((totalReturn - totalInvested) / totalInvested) * 100
+            
+            return {
+                x: range.label,
+                y: roi,
+                trades: tradesInRange.length
+            }
+        })
+        
+        const options = {
+            series: [{
+                name: 'ROI %',
+                data: rangeData
+            }],
+            chart: {
+                height: 300,
+                type: 'heatmap',
+                background: 'transparent',
+                toolbar: { 
+                    show: true,
+                    tools: {
+                        download: false,
+                        selection: true,
+                        zoom: true,
+                        zoomin: true,
+                        zoomout: true,
+                        pan: true,
+                        reset: true
+                    }
+                }
+            },
+            theme: { mode: 'dark' },
+            colorScale: {
+                ranges: [
+                    { from: -100, to: 0, color: '#EF4444' },
+                    { from: 0, to: 10, color: '#F59E0B' },
+                    { from: 10, to: 25, color: '#10B981' },
+                    { from: 25, to: 100, color: '#059669' }
+                ]
+            },
+            dataLabels: {
+                enabled: true,
+                formatter: (val) => val.toFixed(1) + '%',
+                style: { colors: ['#fff'] }
+            },
+            grid: {
+                borderColor: '#374151'
+            },
+            xaxis: {
+                labels: { style: { colors: '#9CA3AF' } }
+            },
+            yaxis: {
+                labels: { style: { colors: '#9CA3AF' } }
+            },
+            tooltip: {
+                theme: 'dark',
+                custom: ({ dataPointIndex }) => {
+                    const data = rangeData[dataPointIndex]
+                    return `
+                        <div class="bg-gray-800 p-2 rounded shadow-lg">
+                            <div><strong>${data.x}</strong></div>
+                            <div>ROI: ${data.y.toFixed(1)}%</div>
+                            <div>Trades: ${data.trades}</div>
+                        </div>
+                    `
+                }
+            }
+        }
+        
+        const chartElement = document.querySelector("#price-range-heatmap-chart")
+        if (chartElement && this.currentTab === 'analytics') {
+            chartElement.innerHTML = ''
+            chartElement.style.position = 'relative'
+            chartElement.style.zIndex = '10'
+            
+            const chart = new ApexCharts(chartElement, options)
+            chart.render()
+            this.chartInstances.priceRangeHeatmap = chart
         }
     }
 
@@ -4600,7 +5826,7 @@ export class TradingPage {
         }, 100)
     }
 
-    updateAnalyticsDisplay(timePeriod = 'current') {
+    updateAnalyticsDisplay(timePeriod = 'all') {
         console.log('🔄 Updating enhanced analytics display for period:', timePeriod)
         
         // Set analytics period for data filtering
@@ -4609,6 +5835,7 @@ export class TradingPage {
         // Update basic analytics metrics cards
         const analyticsMetrics = this.getAnalyticsMetrics()
         const advancedMetrics = this.getAdvancedAnalytics()
+        const trendIndicators = this.getTrendIndicators()
         
         // Update Enhanced Summary Cards
         const totalProfitEl = document.getElementById('analytics-total-profit')
@@ -4617,31 +5844,55 @@ export class TradingPage {
             totalProfitEl.textContent = `${analyticsMetrics.totalProfit >= 0 ? '+' : ''}$${this.store.formatNumber(Math.abs(analyticsMetrics.totalProfit))}`
             totalProfitEl.className = `text-xl font-bold ${profitClass}`
         }
+
+        // Update profit trend indicator
+        const profitTrendEl = document.getElementById('analytics-total-profit-trend')
+        if (profitTrendEl) {
+            profitTrendEl.innerHTML = this.renderTrendIndicator(trendIndicators.totalProfitTrend)
+        }
         
         const successRateEl = document.getElementById('analytics-success-rate')
         if (successRateEl) {
             successRateEl.textContent = `${analyticsMetrics.successRate}%`
         }
-        
-        // Update Advanced Analytics Cards
-        const sharpeRatioEl = document.getElementById('analytics-sharpe-ratio')
-        if (sharpeRatioEl) {
-            sharpeRatioEl.textContent = advancedMetrics.sharpeRatio
+
+        // Update success rate trend indicator  
+        const successRateTrendEl = document.getElementById('analytics-success-rate-trend')
+        if (successRateTrendEl) {
+            successRateTrendEl.innerHTML = this.renderTrendIndicator(trendIndicators.successRateTrend)
         }
         
-        const maxDrawdownEl = document.getElementById('analytics-max-drawdown')
-        if (maxDrawdownEl) {
-            maxDrawdownEl.textContent = `${advancedMetrics.maxDrawdown}%`
+        // Update Trading Statistics Cards
+        const tradingStats = this.getBasicTradingStats()
+        
+        const avgProfitEl = document.getElementById('analytics-avg-profit')
+        if (avgProfitEl) {
+            avgProfitEl.textContent = `$${this.store.formatNumber(tradingStats.avgProfitPerTrade)}`
         }
         
-        const profitFactorEl = document.getElementById('analytics-profit-factor')
-        if (profitFactorEl) {
-            profitFactorEl.textContent = advancedMetrics.profitFactor
+        const bestTradeEl = document.getElementById('analytics-best-trade')
+        if (bestTradeEl) {
+            bestTradeEl.textContent = `+$${this.store.formatNumber(tradingStats.bestTrade)}`
+        }
+        
+        const totalVolumeEl = document.getElementById('analytics-total-volume')
+        if (totalVolumeEl) {
+            totalVolumeEl.textContent = `$${this.store.formatNumber(tradingStats.totalVolume)}`
+        }
+        
+        const avgHoldTimeEl = document.getElementById('analytics-avg-hold-time')
+        if (avgHoldTimeEl) {
+            avgHoldTimeEl.textContent = `${tradingStats.avgHoldTime}`
+        }
+        
+        const worstTradeEl = document.getElementById('analytics-worst-trade')
+        if (worstTradeEl) {
+            worstTradeEl.textContent = `-$${this.store.formatNumber(Math.abs(tradingStats.worstTrade))}`
         }
         
         const winStreakEl = document.getElementById('analytics-win-streak')
         if (winStreakEl) {
-            winStreakEl.textContent = advancedMetrics.winStreak
+            winStreakEl.textContent = `${advancedMetrics.winStreak}`
         }
         
         // Update Market Intelligence Lists
@@ -5758,7 +7009,7 @@ export class TradingPage {
         // Initialize tab-specific content
         if (tabName === 'analytics') {
             setTimeout(() => {
-                this.updateAnalyticsDisplay()
+                this.updateAnalyticsDisplay('all')
             }, 150) // Small delay to ensure DOM is ready and previous charts are cleaned
         }
         
