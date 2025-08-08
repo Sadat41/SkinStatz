@@ -1818,10 +1818,16 @@ export class InvestmentsPage {
         return [...investments].sort((a, b) => {
             switch (this.selectedSortOption) {
                 case 'recent':
-                    // Sort by date - newest first
-                    const dateA = this.parseDateForSorting(a.date)
-                    const dateB = this.parseDateForSorting(b.date)
-                    return dateB - dateA
+                    // Sort by most recent activity date (either buy date or sell date) - newest first
+                    const buyDateA = this.parseDateForSorting(a.date)
+                    const sellDateA = a.sellDate ? this.parseDateForSorting(a.sellDate) : null
+                    const mostRecentA = sellDateA && sellDateA > buyDateA ? sellDateA : buyDateA
+                    
+                    const buyDateB = this.parseDateForSorting(b.date)
+                    const sellDateB = b.sellDate ? this.parseDateForSorting(b.sellDate) : null
+                    const mostRecentB = sellDateB && sellDateB > buyDateB ? sellDateB : buyDateB
+                    
+                    return mostRecentB - mostRecentA
                     
                 case 'ascending':
                     // Sort by total buy price - lowest to highest

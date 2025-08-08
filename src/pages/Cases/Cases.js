@@ -384,8 +384,8 @@ export class CasesPage {
                 </form>
                 
                 <div class="mt-6 flex justify-center">
-                    <button id="save-case-drop" class="group relative bg-gray-900 hover:bg-gradient-to-r hover:from-blue-600 hover:to-purple-600 text-gray-300 hover:text-white font-medium py-3 px-8 rounded-xl transition-all duration-300 flex items-center gap-2 min-w-[180px] justify-center overflow-hidden">
-                        <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 p-0.5">
+                    <button id="save-case-drop" class="group relative bg-gray-900 hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-600 text-gray-300 hover:text-white font-semibold py-3 px-8 rounded-xl transition-all duration-300 flex items-center gap-2 min-w-[180px] justify-center overflow-hidden border border-gray-700 hover:border-transparent">
+                        <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-600 p-0.5">
                             <div class="w-full h-full bg-gray-900 rounded-xl group-hover:bg-transparent transition-colors duration-300"></div>
                         </div>
                         <i data-lucide="plus" class="w-4 h-4 relative z-10"></i>
@@ -2994,8 +2994,21 @@ export class CasesPage {
             return
         }
 
+        // Check if the case name has changed to trigger price fetching
+        const nameChanged = this.editingCaseDrop.caseName !== editData.caseName
+        
         // Update in store
         this.getStore().updateCaseDrop(this.editingCaseDrop.id, editData)
+        
+        // If the case name changed, fetch new prices
+        if (nameChanged) {
+            const updatedCaseDrop = this.getStore().caseDrops.find(drop => drop.id === this.editingCaseDrop.id)
+            if (updatedCaseDrop) {
+                this.fetchPricesForCaseDrop(updatedCaseDrop).catch(error => {
+                    console.error('Failed to fetch prices for updated case drop:', error)
+                })
+            }
+        }
         
         this.closeCaseDropEditModal()
         this.renderCurrentWeek()
@@ -3704,6 +3717,21 @@ export class CasesPage {
     }
 
     /**
+     * Check if prices have expired (older than 7 days)
+     */
+    arePricesExpired(caseDrop) {
+        if (!caseDrop.pricesFetched || !caseDrop.pricesFetchedTimestamp) {
+            return true // No prices fetched yet or no timestamp
+        }
+        
+        const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds
+        const now = Date.now()
+        const timeDiff = now - caseDrop.pricesFetchedTimestamp
+        
+        return timeDiff > sevenDaysInMs
+    }
+
+    /**
      * Fetch prices for all case drops
      */
     async fetchAllCaseDropPrices() {
@@ -3711,7 +3739,7 @@ export class CasesPage {
         const state = this.getStore()
         const caseDrops = state.caseDrops || []
         
-        const itemsToFetch = caseDrops.filter(caseDrop => caseDrop.caseName && !caseDrop.pricesFetched)
+        const itemsToFetch = caseDrops.filter(caseDrop => caseDrop.caseName && this.arePricesExpired(caseDrop))
         console.log(`💰 Found ${itemsToFetch.length} items needing price fetch`)
         
         if (itemsToFetch.length === 0) {
@@ -3744,14 +3772,18 @@ export class CasesPage {
             // Use the centralized PriceService (same as investments)
             const prices = await priceService.getItemPrices(caseDrop.caseName)
             
-            // Update the case drop object in store
+            // Update the case drop object in store using the proper store method
             const state = this.getStore()
-            const caseDropIndex = state.caseDrops.findIndex(cd => cd.id === caseDrop.id)
+            const existingCaseDrop = state.caseDrops.find(cd => cd.id === caseDrop.id)
             
-            if (caseDropIndex !== -1) {
-                state.caseDrops[caseDropIndex].csfloatPrice = prices.csfloatPrice
-                state.caseDrops[caseDropIndex].buff163Price = prices.buffPrice
-                state.caseDrops[caseDropIndex].pricesFetched = true
+            if (existingCaseDrop) {
+                // Use the store's updateCaseDrop method to ensure persistence
+                state.updateCaseDrop(caseDrop.id, {
+                    csfloatPrice: prices.csfloatPrice,
+                    buff163Price: prices.buffPrice,
+                    pricesFetched: true,
+                    pricesFetchedTimestamp: Date.now()
+                })
                 
                 // Update the UI immediately
                 this.updatePriceDisplay(caseDrop.id, prices.csfloatPrice, prices.buffPrice)

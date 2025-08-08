@@ -3045,14 +3045,13 @@ export class TradingPage {
         const currentMonthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1)
         const currentMonthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0)
         
+        // Get recent trades from all time, not just current month
         const recentTrades = trades
             .filter(trade => {
-                if (!trade.sellDate) return false
-                const sellDate = this.parseDateForSorting(trade.sellDate)
-                return sellDate >= currentMonthStart && sellDate <= currentMonthEnd
+                return trade.sellDate && trade.sellPrice // Only completed trades
             })
             .sort((a, b) => this.parseDateForSorting(b.sellDate) - this.parseDateForSorting(a.sellDate))
-            .slice(0, 5)
+            .slice(0, 5) // Last 5 completed trades
         
         if (recentTrades.length === 0) {
             return `
@@ -3093,7 +3092,7 @@ export class TradingPage {
                             <i data-lucide="${profitIcon}" class="w-4 h-4 ${statusIconColor}"></i>
                         </div>
                         <div class="flex-1">
-                            <div class="text-white font-semibold truncate">${trade.itemName}</div>
+                            <div class="text-white font-semibold" title="${trade.itemName}" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${trade.itemName}</div>
                             <div class="text-gray-400 text-sm">
                                 ${this.formatDate(trade.sellDate)} • ${holdDays}d hold
                             </div>
