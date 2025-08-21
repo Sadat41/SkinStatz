@@ -42,14 +42,14 @@ SkinStatz is a comprehensive CS2 skin trading analytics platform that provides p
 
 ### Key Features
 
-- **📊 Portfolio Dashboard** - Real-time portfolio overview with P&L tracking and performance metrics
-- **💹 Trading Management** - Complete trade history with buy/sell operations and profit analysis
-- **🎯 Investment Tracking** - Long-term investment monitoring with category-based organization
-- **📦 Case Drop Analytics** - Weekly case drop tracking with detailed statistics
-- **🔄 Real-time Pricing** - Live market data from CSFloat and Buff163 APIs
-- **📈 Advanced Charts** - Interactive charts powered by ApexCharts and Chart.js
-- **🌐 Cross-Browser Support** - Available for both Chrome and Firefox
-- **💾 Data Persistence** - Local storage with export/import functionality
+- **Trading Management** - Track trades with advanced weekly and monthly analytics, graphs, and comprehensive data visualization
+- **Investment Tracking** - Long-term investment monitoring with detailed analytics and performance metrics
+- **Case Drop Analytics** - Weekly drop tracking with advanced analytics and statistical insights
+- **Skin Explorer** - Comprehensive market browser supporting Steam and CSFloat with recent sales, listings, and in-depth analytics
+- **Advanced Analytics** - Weekly, monthly, and yearly breakdowns with interactive charts and graphs
+- **Real-time Pricing** - Live market data integration from CSFloat and Buff163 APIs
+- **Cross-Browser Support** - Available for both Chrome and Firefox
+- **Data Persistence** - Local storage with export/import functionality
 
 ---
 
@@ -150,7 +150,7 @@ SkinStatz is a comprehensive CS2 skin trading analytics platform that provides p
 | **Trading** | Manage individual trades, track holdings, and analyze performance |
 | **Investments** | Long-term investment tracking with category organization |
 | **Cases** | Track weekly case drops and analyze opening patterns |
-| **Skin Explorer** | Browse market data and discover new trading opportunities |
+| **Skin Explorer** | Browse market data with Steam and CSFloat integration, view recent sales and listings with detailed analytics |
 
 ### Data Management
 
@@ -385,28 +385,28 @@ git push origin feature/amazing-feature
 
 ## Roadmap
 
-### Completed Features ✅
-- Portfolio dashboard with real-time metrics
-- Complete trading system with P&L tracking
-- Investment management with categories
-- Case drop analytics and tracking
-- Real-time price integration
-- Cross-browser compatibility
+### Completed Features
+- Trading management with advanced weekly and monthly analytics
+- Investment tracking with comprehensive analytics and performance metrics
+- Case drop tracking with detailed weekly analytics and graphs
+- Skin Explorer with Steam and CSFloat integration for recent sales and listings
+- Advanced data visualization with interactive charts and graphs
+- Real-time price integration from multiple APIs
+- Cross-browser compatibility with Chrome and Firefox extensions
 - Data export/import functionality
 
-### In Development 🚧
+### In Development
 - Advanced charting and technical indicators
 - Mobile-responsive design improvements
 - Enhanced notification system
 - Portfolio optimization recommendations
 
-### Planned Features 📋
-- Steam inventory integration
-- Automated trade suggestions
-- Risk management tools
-- Social trading features
-- Advanced market analysis
-- Multi-language support
+### Planned Features
+- **Profile Section** - User settings and preferences with multi-currency support
+- **Enhanced Skin Explorer** - Buff163 integration for expanded market data
+- **Steam Integration** - Steam sign-in option for seamless account connectivity
+- **Advanced Analytics** - Extended market analysis and trend prediction
+- **Multi-currency Support** - Support for various currencies in profile settings
 
 ---
 
