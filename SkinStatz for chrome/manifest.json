@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "SkinStatz",
+  "version": "2.0.0",
+  "description": "Professional CS2 skin trading portfolio tracker with real-time analytics",
+  "permissions": [
+    "storage",
+    "downloads"
+  ],
+  "host_permissions": [
+    "https://prices.csgotrader.app/*",
+    "https://steamcommunity.com/*",
+    "https://csfloat.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Open SkinStatz Dashboard"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; style-src 'self' 'unsafe-inline'"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/libs/*.js"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
