@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkinStatz</title>
+    <link rel="stylesheet" href="popup.css">
+    <style>
+        html, body { margin: 0 !important; padding: 0 !important; overflow: hidden !important; }
+    </style>
+</head>
+<body>
+    <div class="popup-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-glow"></div>
+            <div class="logo">
+                <div class="logo-container">
+                    <div class="logo-icon">
+                        <div class="icon-glow"></div>
+                        <img src="icons/icon64.png" alt="SkinStatz Logo" class="logo-image">
+                    </div>
+                    <div class="logo-text">
+                        <h1>SkinStatz</h1>
+                        <p>Your Skin Arsenal, Fully Tracked.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <!-- Animated Background Elements -->
+            <div class="bg-animation">
+                <div class="floating-shape shape-1"></div>
+                <div class="floating-shape shape-2"></div>
+                <div class="floating-shape shape-3"></div>
+            </div>
+
+            <!-- Welcome Section -->
+            <div class="welcome-section">
+                <div class="welcome-text">
+                    <h2>Welcome to SkinStatz</h2>
+                    <p>Professional CS2 skin trading analytics and portfolio management</p>
+                </div>
+                
+                <!-- Stats Preview Cards -->
+                <div class="stats-preview">
+                    <div class="stat-item">
+                        <div class="stat-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M3 3v18h18" stroke="currentColor" stroke-width="2" fill="none"/>
+                                <path d="M7 16l4-4 4 4 6-6" stroke="currentColor" stroke-width="2" fill="none"/>
+                            </svg>
+                        </div>
+                        <span>Live Analytics</span>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" stroke="currentColor" stroke-width="2" fill="none"/>
+                            </svg>
+                        </div>
+                        <span>Portfolio Tracking</span>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2" fill="none"/>
+                                <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" fill="none"/>
+                            </svg>
+                        </div>
+                        <span>Market Analysis</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enhanced Dashboard Button -->
+            <button id="openDashboard" class="dashboard-btn">
+                <div class="btn-background"></div>
+                <div class="btn-content">
+                    <div class="btn-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="3" y="3" width="7" height="7" rx="1" fill="currentColor"/>
+                            <rect x="14" y="3" width="7" height="7" rx="1" fill="currentColor"/>
+                            <rect x="3" y="14" width="7" height="7" rx="1" fill="currentColor"/>
+                            <rect x="14" y="14" width="7" height="7" rx="1" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <span>Open Dashboard</span>
+                    <div class="btn-arrow">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5 12h14m-7-7l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="btn-shine"></div>
+            </button>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-content">
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>Connected</span>
+                </div>
+                <div class="version">v1.0.0</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

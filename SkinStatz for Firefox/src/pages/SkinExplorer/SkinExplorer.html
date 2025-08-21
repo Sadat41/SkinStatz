@@ -1,0 +1,664 @@
+<div class="min-h-screen text-white px-2 py-4">
+    <div class="w-full">
+
+        <!-- Search Section -->
+        <div class="search-section-enhanced bg-gray-900 border border-gray-700 rounded-xl p-6 mb-6 mx-2 shadow-lg">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <i data-lucide="search" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Quick Search</h2>
+                        <p class="text-gray-400 text-sm">Find and analyze CS2 skins instantly</p>
+                    </div>
+                </div>
+                <div class="text-xs text-gray-500 bg-gray-800 px-3 py-1 rounded-full">
+                    Powered by Steam & CSFloat
+                </div>
+            </div>
+            
+            <div class="relative mb-6">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <i data-lucide="search" class="w-5 h-5 text-gray-400"></i>
+                </div>
+                <input type="text" 
+                       id="skin-search"
+                       placeholder="Search for CS2 skins... (e.g., Karambit Lore, AK-47 Redline)"
+                       class="w-full bg-gray-800/50 border border-gray-600/50 rounded-xl px-4 py-4 pl-12 pr-4 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none focus:bg-gray-800 transition-all duration-300 backdrop-blur-sm">
+            </div>
+            
+            <!-- Search Results -->
+            <div id="search-results" class="mb-6 space-y-2 hidden"></div>
+            
+        </div>
+
+        <!-- Item Analysis Section (Initially Hidden) -->
+        <div id="item-analysis" class="hidden space-y-4">
+            <!-- Item Header - New Layout -->
+            <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 mb-4 mx-2">
+                <div class="flex space-x-8">
+                    <!-- Left Side: Icon and Small Cards -->
+                    <div class="flex flex-col items-center space-y-4" style="width: 280px;">
+                        <!-- Item Name (Above Icon) -->
+                        <h2 id="item-name" class="text-xl font-bold text-white text-center">★ Karambit | Lore (Battle-Scarred)</h2>
+                        
+                        <!-- Item Image -->
+                        <div class="w-48 h-36 rounded-xl flex items-center justify-center flex-shrink-0 border-2 border-purple-500 shadow-lg overflow-hidden bg-gradient-to-br from-gray-700 to-gray-800">
+                            <img id="item-image" src="src/pages/SkinExplorer/Karambit.Lore.Battle-Scarred.png" alt="Karambit Lore" class="w-full h-full object-contain">
+                        </div>
+                        
+                        <!-- Small Market Price Cards (Below Icon) -->
+                        <div class="space-y-3 w-full">
+                            <!-- CSFloat Price (Main Provider) -->
+                            <div class="group small-market-card csfloat text-center cursor-pointer h-20 flex flex-col justify-center" id="csfloat-market-card">
+                                <div class="flex items-center justify-center mb-1">
+                                    <div class="w-4 h-4 bg-orange-600 rounded flex items-center justify-center mr-2">
+                                        <i data-lucide="target" class="w-2 h-2 text-white"></i>
+                                    </div>
+                                    <div class="text-xs font-medium text-gray-300">CSFloat</div>
+                                    <i data-lucide="external-link" class="w-2 h-2 text-gray-400 ml-2 group-hover:text-orange-400 transition-colors"></i>
+                                </div>
+                                <div class="text-lg font-bold text-orange-400" id="csfloat-price">$1,420.50</div>
+                            </div>
+
+                            <!-- Steam Market Price -->
+                            <div class="group small-market-card steam text-center cursor-pointer h-20 flex flex-col justify-center" id="steam-market-card">
+                                <div class="flex items-center justify-center mb-1">
+                                    <div class="w-4 h-4 bg-blue-600 rounded flex items-center justify-center mr-2">
+                                        <i data-lucide="zap" class="w-2 h-2 text-white"></i>
+                                    </div>
+                                    <div class="text-xs font-medium text-gray-300">Steam</div>
+                                    <i data-lucide="external-link" class="w-2 h-2 text-gray-400 ml-2 group-hover:text-blue-400 transition-colors"></i>
+                                </div>
+                                <div class="text-lg font-bold text-blue-400" id="steam-price">$1,382.28</div>
+                            </div>
+
+                        </div>
+                    </div>
+                    
+                    <!-- Right Side: Large Market Analysis Cards -->
+                    <div class="flex-1">
+                        <!-- Market Analysis Tabs -->
+                        <div class="flex space-x-2 mb-4">
+                            <button id="csfloat-tab" class="market-tab active px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium transition-colors">
+                                <i data-lucide="target" class="w-4 h-4 inline mr-2"></i>
+                                CSFloat Market
+                            </button>
+                            <button id="steam-tab" class="market-tab px-4 py-2 bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white rounded-lg text-sm font-medium transition-colors">
+                                <i data-lucide="zap" class="w-4 h-4 inline mr-2"></i>
+                                Steam Market
+                            </button>
+                        </div>
+
+                        <!-- Market Analysis Content Area -->
+                        <div class="market-content-area p-6 min-h-[500px]">
+                            <!-- CSFloat Content (Default Active) -->
+                            <div id="csfloat-content" class="market-content">
+                                <div class="flex items-center justify-between mb-6">
+                                    <h3 class="text-xl font-semibold text-white">CSFloat Market Analysis</h3>
+                                    <button id="view-csfloat-btn" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded-lg transition-colors flex items-center space-x-2 text-sm">
+                                        <i data-lucide="external-link" class="w-4 h-4"></i>
+                                        <span>View on CSFloat</span>
+                                    </button>
+                                </div>
+                                
+                                <!-- Hero Average Prices Row -->
+                                <div class="grid grid-cols-4 gap-4 mb-8">
+                                    <!-- 24h Average -->
+                                    <div class="stat-card p-6 text-center bg-gray-800 border border-gray-700 rounded-xl hover:bg-gray-750 transition-colors">
+                                        <div class="flex items-center justify-center mb-2">
+                                            <i data-lucide="clock" class="w-5 h-5 text-orange-400 mr-2"></i>
+                                            <div class="text-sm text-gray-400 font-medium">24h Average</div>
+                                        </div>
+                                        <div class="text-2xl font-bold text-orange-400 mb-1" id="csfloat-24h-avg">$0.00</div>
+                                        <div class="text-xs text-gray-500">Last 24 hours</div>
+                                    </div>
+                                    <!-- 7d Average -->
+                                    <div class="stat-card p-6 text-center bg-gray-800 border border-gray-700 rounded-xl hover:bg-gray-750 transition-colors">
+                                        <div class="flex items-center justify-center mb-2">
+                                            <i data-lucide="calendar" class="w-5 h-5 text-blue-400 mr-2"></i>
+                                            <div class="text-sm text-gray-400 font-medium">7d Average</div>
+                                        </div>
+                                        <div class="text-2xl font-bold text-blue-400 mb-1" id="csfloat-7d-avg">$0.00</div>
+                                        <div class="text-xs text-gray-500">Last 7 days</div>
+                                    </div>
+                                    <!-- 14d Average -->
+                                    <div class="stat-card p-6 text-center bg-gray-800 border border-gray-700 rounded-xl hover:bg-gray-750 transition-colors">
+                                        <div class="flex items-center justify-center mb-2">
+                                            <i data-lucide="trending-up" class="w-5 h-5 text-purple-400 mr-2"></i>
+                                            <div class="text-sm text-gray-400 font-medium">14d Average</div>
+                                        </div>
+                                        <div class="text-2xl font-bold text-purple-400 mb-1" id="csfloat-14d-avg">$0.00</div>
+                                        <div class="text-xs text-gray-500">Last 14 days</div>
+                                    </div>
+                                    <!-- 30d Average -->
+                                    <div class="stat-card p-6 text-center bg-gray-800 border border-gray-700 rounded-xl hover:bg-gray-750 transition-colors">
+                                        <div class="flex items-center justify-center mb-2">
+                                            <i data-lucide="bar-chart-3" class="w-5 h-5 text-green-400 mr-2"></i>
+                                            <div class="text-sm text-gray-400 font-medium">30d Average</div>
+                                        </div>
+                                        <div class="text-2xl font-bold text-green-400 mb-1" id="csfloat-30d-avg">$0.00</div>
+                                        <div class="text-xs text-gray-500">Last 30 days</div>
+                                    </div>
+                                </div>
+
+                                <!-- Secondary Action Cards -->
+                                <div class="grid grid-cols-2 gap-4 mb-6">
+                                    <!-- Recent Sales Card -->
+                                    <div class="stat-card p-4 cursor-pointer hover:bg-gray-800 transition-colors bg-gray-800 border border-gray-700 rounded-xl" id="csfloat-recent-sales-btn">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <div class="text-sm text-gray-400 font-medium uppercase tracking-wider">Recent Sales</div>
+                                            <i data-lucide="list" class="w-4 h-4 text-orange-400"></i>
+                                        </div>
+                                        <div class="text-center py-4">
+                                            <i data-lucide="trending-up" class="w-8 h-8 text-orange-400 mx-auto mb-2"></i>
+                                            <div class="text-sm font-medium text-white mb-1">Check Recent Sales</div>
+                                            <div class="text-xs text-gray-500">View last 25/50/100 transactions</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Latest Listings Card -->
+                                    <div class="stat-card p-4 cursor-pointer hover:bg-gray-800 transition-colors bg-gray-800 border border-gray-700 rounded-xl" id="csfloat-latest-listings-btn">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <div class="text-sm text-gray-400 font-medium uppercase tracking-wider">Latest Listings</div>
+                                            <i data-lucide="shopping-cart" class="w-4 h-4 text-orange-400"></i>
+                                        </div>
+                                        <div class="text-center py-4">
+                                            <i data-lucide="shopping-cart" class="w-8 h-8 text-orange-400 mx-auto mb-2"></i>
+                                            <div class="text-sm font-medium text-white mb-1">Check Latest Listings</div>
+                                            <div class="text-xs text-gray-500">Current market offers</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- CSFloat Time Period Changes -->
+                                <div class="grid grid-cols-4 gap-4 mb-6">
+                                    <!-- CSFloat 24h Change -->
+                                    <div class="stat-card p-4 text-center">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="text-xs text-gray-400 font-medium uppercase tracking-wider">24h Change</div>
+                                            <i id="csfloat-24h-icon" class="w-4 h-4" data-lucide="trending-up"></i>
+                                        </div>
+                                        <div class="text-lg font-bold mb-1" id="csfloat-24h-change">+$0.00</div>
+                                        <div class="text-xs font-medium" id="csfloat-24h-percent">(+0.0%)</div>
+                                    </div>
+
+                                    <!-- CSFloat 7d Change -->
+                                    <div class="stat-card p-4 text-center">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="text-xs text-gray-400 font-medium uppercase tracking-wider">7d Change</div>
+                                            <i id="csfloat-7d-icon" class="w-4 h-4" data-lucide="trending-up"></i>
+                                        </div>
+                                        <div class="text-lg font-bold mb-1" id="csfloat-7d-change">+$0.00</div>
+                                        <div class="text-xs font-medium" id="csfloat-7d-percent">(+0.0%)</div>
+                                    </div>
+
+                                    <!-- CSFloat 30d Change -->
+                                    <div class="stat-card p-4 text-center">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="text-xs text-gray-400 font-medium uppercase tracking-wider">30d Change</div>
+                                            <i id="csfloat-30d-icon" class="w-4 h-4" data-lucide="trending-up"></i>
+                                        </div>
+                                        <div class="text-lg font-bold mb-1" id="csfloat-30d-change">+$0.00</div>
+                                        <div class="text-xs font-medium" id="csfloat-30d-percent">(+0.0%)</div>
+                                    </div>
+
+                                    <!-- CSFloat 90d Change -->
+                                    <div class="stat-card p-4 text-center">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="text-xs text-gray-400 font-medium uppercase tracking-wider">90d Change</div>
+                                            <i id="csfloat-90d-icon" class="w-4 h-4" data-lucide="trending-up"></i>
+                                        </div>
+                                        <div class="text-lg font-bold mb-1" id="csfloat-90d-change">+$0.00</div>
+                                        <div class="text-xs font-medium" id="csfloat-90d-percent">(+0.0%)</div>
+                                    </div>
+                                </div>
+
+                                <!-- CSFloat Price Chart - Enhanced Prominence -->
+                                <div class="mb-8 bg-gray-800 border border-gray-700 rounded-xl p-6">
+                                    <div class="flex items-center justify-between mb-6">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
+                                                <i data-lucide="trending-up" class="w-5 h-5 text-white"></i>
+                                            </div>
+                                            <div>
+                                                <div class="text-xl font-bold text-white">CSFloat Price History</div>
+                                                <div class="text-sm text-gray-400">Historical price data in USD</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center bg-gray-700 rounded-lg p-1">
+                                            <button class="csfloat-period-btn px-3 py-1 text-xs rounded text-gray-300 hover:text-white transition-colors" data-period="7d">7D</button>
+                                            <button class="csfloat-period-btn px-3 py-1 text-xs rounded text-gray-300 hover:text-white transition-colors" data-period="30d">30D</button>
+                                            <button class="csfloat-period-btn px-3 py-1 text-xs rounded text-gray-300 hover:text-white transition-colors" data-period="90d">90D</button>
+                                            <button class="csfloat-period-btn px-3 py-1 text-xs rounded text-gray-300 hover:text-white transition-colors" data-period="1y">1Y</button>
+                                            <button class="csfloat-period-btn px-3 py-1 text-xs rounded bg-orange-600 text-white transition-colors" data-period="all">ALL</button>
+                                        </div>
+                                    </div>
+                                    <div id="csfloat-chart" class="enhanced-chart-container h-96 bg-gray-900 rounded-lg border border-gray-600 p-4"></div>
+                                </div>
+
+                                <!-- CSFloat Trading Intelligence Grid -->
+                                <div class="grid grid-cols-2 gap-4">
+                                    <!-- CSFloat All-Time High -->
+                                    <div class="stat-card p-4 text-center">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="text-xs text-gray-400 font-medium uppercase tracking-wider">All-Time High</div>
+                                            <i class="w-4 h-4 text-green-400" data-lucide="trending-up"></i>
+                                        </div>
+                                        <div class="text-2xl font-bold text-green-400 mb-1" id="csfloat-ath-price">$0.00</div>
+                                        <div class="text-xs text-gray-500 font-medium" id="csfloat-ath-distance">-0% from ATH</div>
+                                    </div>
+                                    
+                                    <!-- CSFloat Investment Score -->
+                                    <div class="stat-card p-4 text-center">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="text-xs text-gray-400 font-medium uppercase tracking-wider">Investment Score</div>
+                                            <i class="w-4 h-4 text-purple-400" data-lucide="star"></i>
+                                        </div>
+                                        <div class="text-2xl font-bold text-purple-400 mb-1" id="csfloat-investment-score">8.5</div>
+                                        <div class="text-xs text-gray-500 font-medium" id="csfloat-roi-1year">1Y ROI: +0%</div>
+                                    </div>
+                                    
+                                    <!-- CSFloat Liquidity Score -->
+                                    <div class="stat-card p-4 text-center">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="text-xs text-gray-400 font-medium uppercase tracking-wider">Liquidity Score</div>
+                                            <i class="w-4 h-4 text-blue-400" data-lucide="droplets"></i>
+                                        </div>
+                                        <div class="text-2xl font-bold text-blue-400 mb-1" id="csfloat-liquidity-score">7.5</div>
+                                        <div class="text-xs text-gray-500 font-medium" id="csfloat-liquidity-status">High Liquidity</div>
+                                    </div>
+                                    
+                                    <!-- CSFloat Float Premium -->
+                                    <div class="stat-card p-4 text-center">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="text-xs text-gray-400 font-medium uppercase tracking-wider">Float Premium</div>
+                                            <i class="w-4 h-4 text-purple-400" data-lucide="zap"></i>
+                                        </div>
+                                        <div class="text-2xl font-bold text-purple-400 mb-1" id="csfloat-float-premium">+12.5%</div>
+                                        <div class="text-xs text-gray-500 font-medium">vs Steam avg</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Steam Market Content (Hidden by default) -->
+                            <div id="steam-content" class="market-content hidden">
+                                <div class="flex items-center justify-between mb-6">
+                                    <h3 class="text-xl font-semibold text-white">Steam Market Analysis</h3>
+                                    <button id="view-steam-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg transition-colors flex items-center space-x-2 text-sm">
+                                        <i data-lucide="external-link" class="w-4 h-4"></i>
+                                        <span>View on Steam</span>
+                                    </button>
+                                </div>
+                                
+                                <!-- Hero Average Prices Row (Steam) -->
+                                <div class="grid grid-cols-4 gap-4 mb-8">
+                                    <!-- 24h Average -->
+                                    <div class="stat-card p-6 text-center bg-gray-800 border border-gray-700 rounded-xl hover:bg-gray-750 transition-colors">
+                                        <div class="flex items-center justify-center mb-2">
+                                            <i data-lucide="clock" class="w-5 h-5 text-blue-400 mr-2"></i>
+                                            <div class="text-sm text-gray-400 font-medium">24h Average</div>
+                                        </div>
+                                        <div class="text-2xl font-bold text-blue-400 mb-1" id="steam-24h-avg">$0.00</div>
+                                        <div class="text-xs text-gray-500">Last 24 hours</div>
+                                    </div>
+                                    <!-- 7d Average -->
+                                    <div class="stat-card p-6 text-center bg-gray-800 border border-gray-700 rounded-xl hover:bg-gray-750 transition-colors">
+                                        <div class="flex items-center justify-center mb-2">
+                                            <i data-lucide="calendar" class="w-5 h-5 text-cyan-400 mr-2"></i>
+                                            <div class="text-sm text-gray-400 font-medium">7d Average</div>
+                                        </div>
+                                        <div class="text-2xl font-bold text-cyan-400 mb-1" id="steam-7d-avg">$0.00</div>
+                                        <div class="text-xs text-gray-500">Last 7 days</div>
+                                    </div>
+                                    <!-- 14d Average -->
+                                    <div class="stat-card p-6 text-center bg-gray-800 border border-gray-700 rounded-xl hover:bg-gray-750 transition-colors">
+                                        <div class="flex items-center justify-center mb-2">
+                                            <i data-lucide="trending-up" class="w-5 h-5 text-indigo-400 mr-2"></i>
+                                            <div class="text-sm text-gray-400 font-medium">14d Average</div>
+                                        </div>
+                                        <div class="text-2xl font-bold text-indigo-400 mb-1" id="steam-14d-avg">$0.00</div>
+                                        <div class="text-xs text-gray-500">Last 14 days</div>
+                                    </div>
+                                    <!-- 30d Average -->
+                                    <div class="stat-card p-6 text-center bg-gray-800 border border-gray-700 rounded-xl hover:bg-gray-750 transition-colors">
+                                        <div class="flex items-center justify-center mb-2">
+                                            <i data-lucide="bar-chart-3" class="w-5 h-5 text-emerald-400 mr-2"></i>
+                                            <div class="text-sm text-gray-400 font-medium">30d Average</div>
+                                        </div>
+                                        <div class="text-2xl font-bold text-emerald-400 mb-1" id="steam-30d-avg">$0.00</div>
+                                        <div class="text-xs text-gray-500">Last 30 days</div>
+                                    </div>
+                                </div>
+
+                                <!-- Secondary Action Cards (Steam) -->
+                                <div class="grid grid-cols-2 gap-4 mb-6">
+
+                                    <!-- Recent Sales Card -->
+                                    <div class="stat-card p-4 cursor-pointer hover:bg-gray-800 transition-colors bg-gray-800 border border-gray-700 rounded-xl" id="steam-recent-sales-btn">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <div class="text-sm text-gray-400 font-medium uppercase tracking-wider">Recent Sales</div>
+                                            <i data-lucide="list" class="w-4 h-4 text-blue-400"></i>
+                                        </div>
+                                        <div class="text-center py-4">
+                                            <i data-lucide="trending-up" class="w-8 h-8 text-blue-400 mx-auto mb-2"></i>
+                                            <div class="text-sm font-medium text-white mb-1">Check Recent Sales</div>
+                                            <div class="text-xs text-gray-500">View last 25/50/100 transactions</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Latest Listings Card -->
+                                    <div class="stat-card p-4 cursor-pointer hover:bg-gray-800 transition-colors bg-gray-800 border border-gray-700 rounded-xl" id="steam-latest-listings-btn">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <div class="text-sm text-gray-400 font-medium uppercase tracking-wider">Latest Listings</div>
+                                            <i data-lucide="shopping-cart" class="w-4 h-4 text-blue-400"></i>
+                                        </div>
+                                        <div class="text-center py-4">
+                                            <i data-lucide="shopping-cart" class="w-8 h-8 text-blue-400 mx-auto mb-2"></i>
+                                            <div class="text-sm font-medium text-white mb-1">Check Latest Listings</div>
+                                            <div class="text-xs text-gray-500">Current market offers</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Time Period Changes -->
+                                <div class="grid grid-cols-4 gap-4 mb-6">
+                                    <!-- 24h Change -->
+                                    <div class="stat-card p-4 text-center">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="text-xs text-gray-400 font-medium uppercase tracking-wider">24h Change</div>
+                                            <i id="price-change-icon" class="w-4 h-4" data-lucide="trending-up"></i>
+                                        </div>
+                                        <div class="text-lg font-bold mb-1" id="price-change">+$0.00</div>
+                                        <div class="text-xs font-medium" id="price-change-percent">(+0.0%)</div>
+                                    </div>
+
+                                    <!-- 7d Change -->
+                                    <div class="stat-card p-4 text-center">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="text-xs text-gray-400 font-medium uppercase tracking-wider">7d Change</div>
+                                            <i id="week-change-icon" class="w-4 h-4" data-lucide="trending-up"></i>
+                                        </div>
+                                        <div class="text-lg font-bold mb-1" id="week-change">+$0.00</div>
+                                        <div class="text-xs font-medium" id="week-change-percent">(+0.0%)</div>
+                                    </div>
+
+                                    <!-- 30d Change -->
+                                    <div class="stat-card p-4 text-center">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="text-xs text-gray-400 font-medium uppercase tracking-wider">30d Change</div>
+                                            <i id="month-change-icon" class="w-4 h-4" data-lucide="trending-up"></i>
+                                        </div>
+                                        <div class="text-lg font-bold mb-1" id="month-change">+$0.00</div>
+                                        <div class="text-xs font-medium" id="month-change-percent">(+0.0%)</div>
+                                    </div>
+
+                                    <!-- 90d Change -->
+                                    <div class="stat-card p-4 text-center">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="text-xs text-gray-400 font-medium uppercase tracking-wider">90d Change</div>
+                                            <i id="quarter-change-icon" class="w-4 h-4" data-lucide="trending-up"></i>
+                                        </div>
+                                        <div class="text-lg font-bold mb-1" id="quarter-change">+$0.00</div>
+                                        <div class="text-xs font-medium" id="quarter-change-percent">(+0.0%)</div>
+                                    </div>
+                                </div>
+
+                                <!-- Steam Price Chart - Enhanced Prominence -->
+                                <div class="mb-8 bg-gray-800 border border-gray-700 rounded-xl p-6">
+                                    <div class="flex items-center justify-between mb-6">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                                                <i data-lucide="trending-up" class="w-5 h-5 text-white"></i>
+                                            </div>
+                                            <div>
+                                                <div class="text-xl font-bold text-white">Steam Price History</div>
+                                                <div class="text-sm text-gray-400">Historical price data in USD</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center bg-gray-700 rounded-lg p-1">
+                                            <button class="chart-period-btn px-3 py-1 text-xs rounded text-gray-300 hover:text-white transition-colors" data-period="7d">7D</button>
+                                            <button class="chart-period-btn px-3 py-1 text-xs rounded text-gray-300 hover:text-white transition-colors" data-period="30d">30D</button>
+                                            <button class="chart-period-btn px-3 py-1 text-xs rounded text-gray-300 hover:text-white transition-colors" data-period="90d">90D</button>
+                                            <button class="chart-period-btn px-3 py-1 text-xs rounded text-gray-300 hover:text-white transition-colors" data-period="1y">1Y</button>
+                                            <button class="chart-period-btn px-3 py-1 text-xs rounded bg-blue-600 text-white transition-colors" data-period="all">ALL</button>
+                                        </div>
+                                    </div>
+                                    <div id="price-chart" class="enhanced-chart-container h-96 bg-gray-900 rounded-lg border border-gray-600 p-4"></div>
+                                </div>
+
+                                <!-- Trading Intelligence Grid -->
+                                <div class="grid grid-cols-2 gap-4 mb-6">
+                                    <!-- All-Time High -->
+                                    <div class="stat-card p-4 text-center">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="text-xs text-gray-400 font-medium uppercase tracking-wider">All-Time High</div>
+                                            <i class="w-4 h-4 text-green-400" data-lucide="trending-up"></i>
+                                        </div>
+                                        <div class="text-2xl font-bold text-green-400 mb-1" id="ath-price">$0.00</div>
+                                        <div class="text-xs text-gray-500 font-medium" id="ath-distance">-0% from ATH</div>
+                                    </div>
+                                    
+                                    <!-- Volume Intelligence -->
+                                    <div class="stat-card p-4 text-center">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="text-xs text-gray-400 font-medium uppercase tracking-wider">Volume Trend</div>
+                                            <i id="volume-trend-icon" class="w-4 h-4 text-blue-400" data-lucide="activity"></i>
+                                        </div>
+                                        <div class="text-2xl font-bold text-blue-400 mb-1" id="volume-status">Normal</div>
+                                        <div class="text-xs text-gray-500 font-medium" id="volume-comparison">vs 30d avg</div>
+                                    </div>
+                                    
+                                    <!-- Support Level -->
+                                    <div class="stat-card p-4 text-center">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="text-xs text-gray-400 font-medium uppercase tracking-wider">Support Level</div>
+                                            <i class="w-4 h-4 text-yellow-400" data-lucide="shield"></i>
+                                        </div>
+                                        <div class="text-2xl font-bold text-yellow-400 mb-1" id="support-level">$0.00</div>
+                                        <div class="text-xs text-gray-500 font-medium" id="support-distance">+0% above</div>
+                                    </div>
+                                    
+                                    <!-- Investment Score -->
+                                    <div class="stat-card p-4 text-center">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="text-xs text-gray-400 font-medium uppercase tracking-wider">Investment Score</div>
+                                            <i class="w-4 h-4 text-purple-400" data-lucide="star"></i>
+                                        </div>
+                                        <div class="text-2xl font-bold text-purple-400 mb-1" id="investment-score">8.5</div>
+                                        <div class="text-xs text-gray-500 font-medium" id="roi-1year">1Y ROI: +0%</div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading-state" class="bg-gray-900 border border-gray-700 rounded-xl p-12 text-center hidden mx-2">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <div class="text-lg text-white mb-2">Loading market data...</div>
+            <div class="text-gray-400">This may take a few seconds</div>
+        </div>
+
+        <!-- Recent Sales Modal -->
+        <div id="recent-sales-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center hidden z-50">
+            <div class="bg-gray-900 border border-gray-700 rounded-xl max-w-5xl w-full mx-4 max-h-[85vh] overflow-hidden">
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between p-6 border-b border-gray-700">
+                    <div class="flex items-center space-x-3">
+                        <i data-lucide="list" class="w-6 h-6 text-blue-400"></i>
+                        <div>
+                            <h2 class="text-xl font-bold text-white">Recent Sales</h2>
+                            <p class="text-sm text-gray-400" id="modal-subtitle">Last 25 individual transactions</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <!-- Quantity Selector -->
+                        <div class="flex items-center bg-gray-700 rounded-lg p-1">
+                            <button id="sales-25" class="sales-qty-btn px-3 py-1 text-xs rounded bg-blue-600 text-white transition-colors">25</button>
+                            <button id="sales-50" class="sales-qty-btn px-3 py-1 text-xs rounded text-gray-300 hover:text-white transition-colors">50</button>
+                            <button id="sales-100" class="sales-qty-btn px-3 py-1 text-xs rounded text-gray-300 hover:text-white transition-colors">100</button>
+                        </div>
+                        <!-- Close Button -->
+                        <button id="close-modal" class="text-gray-400 hover:text-white transition-colors">
+                            <i data-lucide="x" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="p-4 overflow-y-auto max-h-[65vh]">
+                    <!-- Data Source Tabs -->
+                    <div class="flex space-x-2 mb-4">
+                        <button id="modal-csfloat-tab" class="modal-tab-btn px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium transition-colors">
+                            <i data-lucide="target" class="w-4 h-4 inline mr-2"></i>
+                            CSFloat Sales
+                        </button>
+                        <button id="modal-steam-tab" class="modal-tab-btn px-4 py-2 bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white rounded-lg text-sm font-medium transition-colors">
+                            <i data-lucide="zap" class="w-4 h-4 inline mr-2"></i>
+                            Steam Sales
+                        </button>
+                    </div>
+
+                    <!-- Sales Chart -->
+                    <div class="mb-4">
+                        <h3 class="text-md font-semibold text-white mb-3">Sales Price Trend</h3>
+                        <div class="bg-gray-800 rounded-lg p-3">
+                            <div id="sales-chart" class="h-48"></div>
+                        </div>
+                    </div>
+
+                    <!-- Sales Table -->
+                    <div class="mb-2">
+                        <h3 class="text-md font-semibold text-white mb-3">Transaction Details</h3>
+                        <div class="bg-gray-800 rounded-lg overflow-hidden max-h-64 overflow-y-auto">
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead class="bg-gray-700 sticky top-0">
+                                        <tr>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">#</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:text-white" id="sort-date">
+                                                Date & Time
+                                                <i data-lucide="arrow-up-down" class="w-3 h-3 inline ml-1"></i>
+                                            </th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:text-white" id="sort-price">
+                                                Price
+                                                <i data-lucide="arrow-up-down" class="w-3 h-3 inline ml-1"></i>
+                                            </th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Volume</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Source</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="sales-table-body" class="bg-gray-800 divide-y divide-gray-700">
+                                        <!-- Sales data will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- No Data Message -->
+                    <div id="no-sales-data" class="hidden text-center py-8">
+                        <i data-lucide="alert-circle" class="w-12 h-12 text-gray-500 mx-auto mb-4"></i>
+                        <h3 class="text-lg font-medium text-gray-400 mb-2">No Sales Data Available</h3>
+                        <p class="text-gray-500">There are no recent sales to display for this item.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Latest Listings Modal -->
+        <div id="latest-listings-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center hidden z-50">
+            <div class="bg-gray-900 border border-gray-700 rounded-xl max-w-6xl w-full mx-4 max-h-[85vh] overflow-hidden">
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between p-6 border-b border-gray-700">
+                    <div class="flex items-center space-x-3">
+                        <i data-lucide="shopping-cart" class="w-6 h-6 text-green-400"></i>
+                        <div>
+                            <h2 class="text-xl font-bold text-white">Latest Listings</h2>
+                            <p class="text-sm text-gray-400" id="listings-modal-subtitle">Current market listings</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <!-- Wear Condition Selector -->
+                        <div class="flex items-center bg-gray-700 rounded-lg p-1">
+                            <button id="wear-fn" class="wear-btn px-3 py-1 text-xs rounded bg-green-600 text-white transition-colors">FN</button>
+                            <button id="wear-mw" class="wear-btn px-3 py-1 text-xs rounded text-gray-300 hover:text-white transition-colors">MW</button>
+                            <button id="wear-ft" class="wear-btn px-3 py-1 text-xs rounded text-gray-300 hover:text-white transition-colors">FT</button>
+                            <button id="wear-ww" class="wear-btn px-3 py-1 text-xs rounded text-gray-300 hover:text-white transition-colors">WW</button>
+                            <button id="wear-bs" class="wear-btn px-3 py-1 text-xs rounded text-gray-300 hover:text-white transition-colors">BS</button>
+                        </div>
+                        <!-- Close Button -->
+                        <button id="close-listings-modal" class="text-gray-400 hover:text-white transition-colors">
+                            <i data-lucide="x" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="p-4 overflow-y-auto max-h-[65vh]">
+                    <!-- Listings Header Info -->
+                    <div class="mb-4 p-4 bg-gray-800 rounded-lg">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-lg font-semibold text-white" id="listings-item-name">Loading...</h3>
+                                <p class="text-sm text-gray-400" id="listings-wear-info">Factory New (0.00 - 0.07 float)</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-gray-400">Listings Found</div>
+                                <div class="text-xl font-bold text-green-400" id="listings-count">0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Listings Table -->
+                    <div class="mb-4">
+                        <div class="bg-gray-800 rounded-lg overflow-hidden max-h-96 overflow-y-auto">
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead class="bg-gray-700 sticky top-0">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Image</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Float</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:text-white" id="sort-listings-price">
+                                                Price
+                                                <i data-lucide="arrow-up-down" class="w-3 h-3 inline ml-1"></i>
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Stickers</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Seller</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="listings-table-body" class="bg-gray-800 divide-y divide-gray-700">
+                                        <!-- Listings data will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div id="listings-loading" class="hidden text-center py-8">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto mb-4"></div>
+                        <div class="text-white">Loading listings...</div>
+                    </div>
+
+                    <!-- No Listings Message -->
+                    <div id="no-listings-data" class="hidden text-center py-8">
+                        <i data-lucide="shopping-cart" class="w-12 h-12 text-gray-500 mx-auto mb-4"></i>
+                        <h3 class="text-lg font-medium text-gray-400 mb-2">No Listings Available</h3>
+                        <p class="text-gray-500">There are no current listings for this item in the selected condition.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
