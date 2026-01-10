@@ -5,13 +5,13 @@
 // Features: Portfolio tracking, Performance analytics, Category management, Price monitoring
 // ================================================================================================
 
-import { useAppStore } from '../../store.js'
 import { ChartComponent } from '../../components/Chart.js'
 import { priceService } from '../../services/PriceService.js'
 
 export class InvestmentsPage {
     constructor() {
-        this.store = useAppStore
+        // Store the getState function so we can call it for fresh state
+        this.store = window.useAppStore.getState.bind(window.useAppStore)
         this.charts = {}
         this.editingInvestment = null
         this.editingLongTermInvestment = null
@@ -53,11 +53,18 @@ export class InvestmentsPage {
                     console.error('❌ Failed to initialize investments page:', initError)
                 }
             }, 0)
-            
+
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons()
             }
-            
+
+            // Initialize responsive table behavior
+            setTimeout(() => {
+                if (window.responsiveTableUtil) {
+                    window.responsiveTableUtil.init()
+                }
+            }, 100)
+
         } catch (error) {
             console.error('❌ Failed to render investments page:', error)
             container.innerHTML = this.getErrorHTML(error)
@@ -502,7 +509,7 @@ export class InvestmentsPage {
                     </div>
 
                     <!-- Long Term Investments Table - Professional Styling -->
-                    <div class="bg-gray-900 border border-gray-700 rounded-xl overflow-hidden">
+                    <div class="bg-gray-900 border border-gray-700 rounded-xl overflow-hidden responsive-investment-table">
                         <div class="p-4 border-b border-gray-700">
                             <div class="flex items-center justify-between">
                                 <h3 class="text-white font-semibold">Investment History</h3>
@@ -585,7 +592,7 @@ export class InvestmentsPage {
                                 </div>
                                 
                                 <!-- 24h % Column -->
-                                <div class="flex-none w-16 text-center">
+                                <div class="flex-none w-16 text-center percentage-col">
                                     <span class="inline-flex items-center justify-center gap-1">
                                         <svg class="w-3 h-3 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
@@ -593,9 +600,9 @@ export class InvestmentsPage {
                                         <span class="text-amber-400">24h %</span>
                                     </span>
                                 </div>
-                                
+
                                 <!-- 7d % Column -->
-                                <div class="flex-none w-16 text-center">
+                                <div class="flex-none w-16 text-center percentage-col">
                                     <span class="inline-flex items-center justify-center gap-1">
                                         <svg class="w-3 h-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
@@ -603,9 +610,9 @@ export class InvestmentsPage {
                                         <span class="text-emerald-400">7d %</span>
                                     </span>
                                 </div>
-                                
+
                                 <!-- 30d % Column -->
-                                <div class="flex-none w-16 text-center">
+                                <div class="flex-none w-16 text-center percentage-col">
                                     <span class="inline-flex items-center justify-center gap-1">
                                         <svg class="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -1515,21 +1522,21 @@ export class InvestmentsPage {
                         </div>
                         
                         <!-- 24h % -->
-                        <div class="flex-none w-16 text-center">
+                        <div class="flex-none w-16 text-center percentage-col">
                             <span class="text-xs font-medium text-gray-500">
                                 --%
                             </span>
                         </div>
-                        
+
                         <!-- 7d % -->
-                        <div class="flex-none w-16 text-center">
+                        <div class="flex-none w-16 text-center percentage-col">
                             <span class="text-xs font-medium text-gray-500">
                                 --%
                             </span>
                         </div>
-                        
+
                         <!-- 30d % -->
-                        <div class="flex-none w-16 text-center">
+                        <div class="flex-none w-16 text-center percentage-col">
                             <span class="text-xs font-medium text-gray-500">
                                 --%
                             </span>

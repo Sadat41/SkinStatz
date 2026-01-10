@@ -27,7 +27,7 @@
     <link href="animate.min.css" rel="stylesheet">
     <link href="notyf.min.css" rel="stylesheet">
     <link href="tracker.css" rel="stylesheet">
-    
+
     <!-- Modern Dependencies - All Local Files -->
     <script src="zustand-local.js"></script>
     <script src="page.js"></script>
@@ -737,11 +737,23 @@
     <!-- Load export/import utility -->
     <script src="src/utils/exportImport.js"></script>
     <script src="src/utils/steamApi.js"></script>
-    
+
+    <!-- Viewport Scaler - Automatic responsive scaling -->
+    <script src="src/viewportScaler.js"></script>
+
+    <!-- Responsive Table Utility - Column hiding for narrow viewports -->
+    <script src="src/utils/responsiveTable.js"></script>
+
+    <!-- Auto-Sync Manager (must load before store) -->
+    <script src="src/autoSync.js"></script>
+
+    <!-- Global Store - Load as regular script for export/import handlers -->
+    <script src="src/store.js"></script>
+
     <!-- Export/Import Event Handlers - Extension Compatible -->
     <script src="src/exportImportHandlers.js"></script>
 
     <!-- Load modular system components with proper dependency handling -->
-    <script src="src/extension-init.js"></script>
+    <script type="module" src="src/extension-init.js"></script>
 </body>
 </html>

@@ -693,10 +693,68 @@ function generateRealisticCSFloatListings(apiUrl) {
     return listings
 }
 
+// ================================================================================================
+// CROSS-DEVICE SYNC - Listen for chrome.storage.sync changes from other devices
+// ================================================================================================
+
+// Listen for sync storage changes (changes from other devices)
+chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName !== 'sync') {
+        return // Only handle sync storage changes
+    }
+
+    console.log('📡 Sync storage changed (likely from another device):', Object.keys(changes))
+
+    // Broadcast the change to all open tabs/popups so they can update
+    chrome.runtime.sendMessage({
+        action: 'syncDataChanged',
+        changes: changes,
+        areaName: areaName
+    }).catch((error) => {
+        // It's OK if no tabs are open to receive the message
+        console.log('ℹ️ No tabs open to receive sync update (this is normal)')
+    })
+
+    console.log('✅ Sync change broadcast to extension pages')
+})
+
+// Handle sync initialization requests
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'initSync') {
+        console.log('🔄 Sync initialization requested')
+
+        // The actual sync initialization happens in the SyncManager
+        // This handler just acknowledges the request
+        sendResponse({ success: true, message: 'Sync initialization acknowledged' })
+        return true
+    }
+
+    if (request.action === 'getSyncStatus') {
+        console.log('📊 Sync status requested')
+
+        // Get sync storage usage
+        chrome.storage.sync.getBytesInUse(null, (bytesInUse) => {
+            sendResponse({
+                success: true,
+                bytesInUse: bytesInUse,
+                bytesInUseKB: Math.round(bytesInUse / 1024),
+                percentUsed: Math.round((bytesInUse / 102400) * 100) // 100KB limit
+            })
+        })
+
+        return true
+    }
+})
+
+console.log('✅ Sync storage listener initialized')
+
+// ================================================================================================
 // Extension installation/update handlers
+// ================================================================================================
+
 chrome.runtime.onInstalled.addListener((details) => {
     console.log('🔧 SkinStatz extension installed/updated:', details.reason)
-    
+
     if (details.reason === 'install') {
         console.log('🎉 First time installation')
     } else if (details.reason === 'update') {

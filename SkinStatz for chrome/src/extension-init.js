@@ -212,20 +212,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     }, 10000) // 10 second global timeout
     
     try {
-        // Load modules in sequence with timeout protection
-        console.log('📦 Loading store module...')
-        await Promise.race([
-            import('./store.js'),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Store module timeout')), 3000))
-        ])
-        
+        // Store is now loaded as a regular script, just verify it's available
+        console.log('📦 Verifying store availability...')
+
         // Wait a bit for store to be available globally
-        await new Promise(resolve => setTimeout(resolve, 200))
-        
+        await new Promise(resolve => setTimeout(resolve, 100))
+
         if (!window.useAppStore) {
-            throw new Error('Store module failed to export useAppStore globally')
+            throw new Error('Store is not available. Please check if store.js loaded correctly.')
         }
-        console.log('✅ Store module loaded successfully')
+        console.log('✅ Store is available')
         
         console.log('📦 Loading router module...')
         await Promise.race([

@@ -1,7 +1,7 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "SkinStatz",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Professional CS2 skin trading portfolio tracker with real-time analytics",
   "permissions": [
     "storage",
@@ -13,7 +13,7 @@
     "https://csfloat.com/*"
   ],
   "background": {
-    "service_worker": "background.js"
+    "scripts": ["background.js"]
   },
   "action": {
     "default_popup": "popup.html",

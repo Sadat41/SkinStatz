@@ -5,13 +5,12 @@
 // Modular structure: HTML, CSS, and JS in separate files
 // ================================================================================================
 
-import { useAppStore } from '../../store.js'
 import { generateUrlFromItem, generateCSFloatUrl, getItemTypeFromId } from '../../utils/csfloatUrls.js'
 
 export class SkinExplorerPage {
     constructor() {
-        // Store the useAppStore function, not a snapshot of state
-        this.useAppStore = useAppStore
+        // Access global Zustand store
+        this.useAppStore = window.useAppStore.getState
         
         // Create a method to get fresh store state
         this.getStore = () => this.useAppStore()
@@ -2147,22 +2146,16 @@ export class SkinExplorerPage {
     async getItemIconUrl(itemName) {
         try {
             console.log(`🔍 Fetching icon URL for: ${itemName}`)
-            
+
             // Find item data across all databases
             const itemData = await this.findItemByName(itemName)
-            
+
             if (!itemData) {
                 console.warn(`⚠️ No item data found for ${itemName}`)
                 return null
             }
-            
-            // If item has direct image URL (stickers, cases), use it
-            if (itemData.image) {
-                console.log(`✅ Using direct image URL for ${itemName}`)
-                return itemData.image
-            }
-            
-            // For weapons, fetch from CSFloat listings API
+
+            // For weapons, always fetch from CSFloat listings API (ignore local image paths)
             if (itemData.itemType === 'weapons') {
                 console.log(`🔫 Fetching weapon icon from CSFloat listings API`)
                 
@@ -2193,7 +2186,7 @@ export class SkinExplorerPage {
                 const listingsData = await this.fetchListingsViaBackground(apiUrl)
                 
                 if (listingsData && listingsData.length > 0 && listingsData[0].item && listingsData[0].item.icon_url) {
-                    const iconUrl = `https://community.steamstatic.com/economy/image/${listingsData[0].item.icon_url}`
+                    const iconUrl = `https://community.fastly.steamstatic.com/economy/image/${listingsData[0].item.icon_url}`
                     console.log(`✅ Got weapon icon URL: ${iconUrl}`)
                     return iconUrl
                 } else {
@@ -2201,7 +2194,13 @@ export class SkinExplorerPage {
                     return null
                 }
             }
-            
+
+            // For non-weapons (stickers, cases, etc.), use direct image URL if available
+            if (itemData.image) {
+                console.log(`✅ Using direct image URL for ${itemName}`)
+                return itemData.image
+            }
+
             console.warn(`⚠️ No icon method available for ${itemName} (type: ${itemData.itemType})`)
             return null
             
@@ -4763,7 +4762,7 @@ export class SkinExplorerPage {
             let iconUrl = 'https://via.placeholder.com/64x48/374151/9CA3AF?text=No+Image' // Default placeholder
             if (listing.item && listing.item.icon_url) {
                 // Real CSFloat API format
-                iconUrl = `https://community.steamstatic.com/economy/image/${listing.item.icon_url}`
+                iconUrl = `https://community.fastly.steamstatic.com/economy/image/${listing.item.icon_url}`
             }
             
             return `
