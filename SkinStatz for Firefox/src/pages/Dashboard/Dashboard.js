@@ -5,12 +5,12 @@
 // Inspired by professional trading platforms with real-time insights
 // ================================================================================================
 
-import { useAppStore } from '../../store.js'
 import { ChartComponent } from '../../components/Chart.js'
 
 export class DashboardPage {
     constructor() {
-        this.store = useAppStore()  // Call the function to get the store instance
+        // Access global Zustand store (use .getState() to get current state)
+        this.store = window.useAppStore.getState()
         this.charts = {}
         this.refreshInterval = null
     }

@@ -2130,5 +2130,42 @@ table tbody tr:hover {
 }
 
 /* ================================ */
+/* RESPONSIVE TABLE - HIDE PERCENTAGE COLUMNS */
+/* ================================ */
+
+/* ALWAYS prevent horizontal scrollbar on table containers */
+.responsive-trading-table,
+.responsive-investment-table {
+  overflow-x: hidden !important;
+}
+
+/* Hide percentage columns when space is limited - high specificity */
+.responsive-trading-table.hide-percentage-cols .percentage-col,
+.responsive-investment-table.hide-percentage-cols .percentage-col,
+.hide-percentage-cols .percentage-col {
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+}
+
+/* SIMPLE FIX: Just hide percentage columns when viewport is not super wide */
+/* This ensures Item Name is always visible and no scrollbar appears */
+@media (max-width: 1800px) {
+  .percentage-col {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}
+
+/* ================================ */
 /* END OF STYLESHEET */
 /* ================================ */

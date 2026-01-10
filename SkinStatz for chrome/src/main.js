@@ -69,31 +69,36 @@ class CS2TradingApp {
             if (window.useAppStore && window.CS2Router) {
                 console.log('✅ Global objects found - initializing...')
                 
-                // Initialize store
+                // Initialize store (Zustand store, not a function to call)
                 console.log('🏪 Initializing store...')
-                this.store = window.useAppStore()
-                
+                this.store = window.store  // Use window.store which is the Zustand hook
+
                 // Initialize router
                 console.log('🗺️ Initializing router...')
                 this.router = window.CS2Router
                 
                 // Test store functionality with detailed verification
-                if (this.store && typeof this.store.calculateTradingMetrics === 'function') {
-                    console.log('✅ Store working correctly')
-                    
-                    // Test store data
-                    try {
-                        const testMetrics = this.store.calculateTradingMetrics()
-                        console.log('📊 Store data accessible:', {
-                            investments: this.store.investments?.length || 0,
-                            balance: this.store.accountBalance || 0,
-                            metricsCalculated: !!testMetrics
-                        })
-                    } catch (storeError) {
-                        console.warn('⚠️ Store data test failed:', storeError)
+                if (this.store && typeof this.store.getState === 'function') {
+                    const storeState = this.store.getState()
+                    if (typeof storeState.calculateTradingMetrics === 'function') {
+                        console.log('✅ Store working correctly')
+
+                        // Test store data
+                        try {
+                            const testMetrics = storeState.calculateTradingMetrics()
+                            console.log('📊 Store data accessible:', {
+                                investments: storeState.investments?.length || 0,
+                                balance: storeState.accountBalance || 0,
+                                metricsCalculated: !!testMetrics
+                            })
+                        } catch (storeError) {
+                            console.warn('⚠️ Store data test failed:', storeError)
+                        }
+                    } else {
+                        throw new Error('Store not working properly - missing calculateTradingMetrics function')
                     }
                 } else {
-                    throw new Error('Store not working properly - missing calculateTradingMetrics function')
+                    throw new Error('Store not working properly - missing getState function')
                 }
                 
                 // Test router functionality
@@ -296,9 +301,56 @@ class CS2TradingApp {
             }
         })
 
+        // Setup automatic page zoom based on window size
+        this.setupAutoScaling()
+
         // Auto-save is handled by the store itself, no need for manual subscription
 
         console.log('🎧 Event listeners setup complete')
+    }
+
+    /**
+     * Setup automatic page zoom - uses CSS zoom on main content
+     */
+    setupAutoScaling() {
+        const applyScale = () => {
+            // Get sidebar width
+            const sidebar = document.querySelector('#nav-sidebar')
+            const sidebarWidth = sidebar ? sidebar.offsetWidth : 288
+
+            // Available space = window width - sidebar
+            const availableWidth = window.innerWidth - sidebarWidth
+
+            // Content needs 1600px to display table without scroll
+            const contentRequiredWidth = 1600
+
+            // Calculate scale
+            let scale = availableWidth / contentRequiredWidth
+            scale = Math.max(0.5, Math.min(1.0, scale))
+
+            // Apply CSS zoom to the main content area (works in Chrome!)
+            const mainContent = document.querySelector('.main-area') || document.querySelector('#main-content')
+            if (mainContent) {
+                mainContent.style.setProperty('zoom', scale, 'important')
+            }
+
+            // Also zoom the sidebar to keep UI consistent
+            if (sidebar) {
+                sidebar.style.setProperty('zoom', scale, 'important')
+            }
+
+            // Hide scrollbars
+            document.body.style.setProperty('overflow-x', 'hidden', 'important')
+        }
+
+        // Apply immediately and on resize
+        applyScale()
+        setTimeout(applyScale, 100)
+        setTimeout(applyScale, 500)
+        setTimeout(applyScale, 1000)
+
+        window.addEventListener('resize', applyScale)
+        window.addEventListener('hashchange', () => setTimeout(applyScale, 200))
     }
 
     initializeComponents() {

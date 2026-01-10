@@ -4,12 +4,10 @@
 // User profile management and account settings with personalization options
 // ================================================================================================
 
-import { useAppStore } from '../../store.js'
-
 export class ProfilePage {
     constructor() {
-        // Store the useAppStore function, not a snapshot of state
-        this.useAppStore = useAppStore
+        // Access global Zustand store
+        this.useAppStore = window.useAppStore.getState
         
         // Create a method to get fresh store state
         this.getStore = () => this.useAppStore()

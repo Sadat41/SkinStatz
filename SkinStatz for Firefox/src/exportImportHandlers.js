@@ -7,10 +7,10 @@
 // Simple export/import functions without complex initialization
 window.handleQuickExport = function() {
     console.log('🔄 Export button clicked');
-    
+
     try {
-        // Get the store directly
-        const store = window.useAppStore ? window.useAppStore() : null;
+        // Get the store state using Zustand API
+        const store = window.useAppStore ? window.useAppStore.getState() : null;
         if (!store || !store.exportData) {
             if (window.notyf) {
                 window.notyf.error('❌ Data store not ready. Please refresh the page.');
@@ -45,7 +45,7 @@ window.handleQuickExport = function() {
                 downloadFile(JSON.stringify(allData, null, 2), `SkinStatz_Complete_Export_${timestamp}.json`, 'application/json');
                 if (window.notyf) window.notyf.success('✅ Complete data exported successfully');
                 break;
-                
+
             case '2':
                 // Trading data only
                 const tradingData = {
@@ -110,9 +110,9 @@ window.handleQuickExport = function() {
 
 window.handleQuickImport = function() {
     console.log('🔄 Import button clicked');
-    
+
     try {
-        const store = window.useAppStore ? window.useAppStore() : null;
+        const store = window.useAppStore ? window.useAppStore.getState() : null;
         if (!store) {
             if (window.notyf) {
                 window.notyf.error('❌ Data store not ready. Please refresh the page.');
@@ -136,7 +136,7 @@ window.handleQuickImport = function() {
             reader.onload = (e) => {
                 try {
                     const data = JSON.parse(e.target.result);
-                    
+
                     if (importMode === 'replace' && store.replaceAllData) {
                         store.replaceAllData(data);
                         if (window.notyf) window.notyf.success('✅ Data replaced successfully');

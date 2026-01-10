@@ -2,9 +2,6 @@
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('🚀 SkinStatz popup loaded');
     
-    // Load and display quick stats
-    await loadQuickStats();
-    
     // Setup event listeners
     setupEventListeners();
 });
@@ -45,43 +42,6 @@ async function openDashboard() {
         }
     }
 }
-
-async function loadQuickStats() {
-    try {
-        // Try to load data from extension storage
-        const data = await getStoredData();
-        
-        if (data && data.investments) {
-            console.log('✅ Data loaded successfully');
-            // Data available - could update status indicators if needed
-        } else {
-            console.log('ℹ️ No trading data found');
-        }
-    } catch (error) {
-        console.error('❌ Error loading data:', error);
-    }
-}
-
-async function getStoredData() {
-    return new Promise((resolve) => {
-        try {
-            // Try chrome storage first
-            chrome.storage.local.get(null, (result) => {
-                if (chrome.runtime.lastError) {
-                    console.log('Chrome storage not available, trying localStorage');
-                    // Fallback to reading from content script or injected script
-                    resolve(null);
-                } else {
-                    resolve(result);
-                }
-            });
-        } catch (error) {
-            console.log('Storage access failed:', error);
-            resolve(null);
-        }
-    });
-}
-
 
 function formatCurrency(value) {
     if (value === 0) return '$0.00';

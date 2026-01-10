@@ -69,7 +69,46 @@ const generateWeeksForMonth = (year, monthIndex) => {
 }
 
 // Create store and make it globally available
-const useAppStore = create((set, get) => ({
+const useAppStore = create((originalSet, get) => {
+    // Wrap set to trigger auto-sync after state changes
+    const set = (partial, replace) => {
+        // Call original set
+        originalSet(partial, replace);
+
+        // Trigger auto-sync if AutoSync is available
+        if (window.AutoSync && window.AutoSync.isAvailable()) {
+            // Get the full state after update
+            const state = get();
+
+            // Only sync if important data changed (not UI state)
+            let shouldSync = false;
+
+            if (typeof partial === 'object' && partial !== null) {
+                const syncableFields = [
+                    'investments', 'longTermInvestments', 'caseDrops', 'years',
+                    'trades', 'tradeHistory', 'accountBalance', 'deposits',
+                    'withdrawals', 'categories'
+                ];
+
+                for (const key of Object.keys(partial)) {
+                    if (syncableFields.includes(key)) {
+                        shouldSync = true;
+                        break;
+                    }
+                }
+            }
+
+            // TEMPORARILY DISABLED - auto-sync causing issues
+            // Will re-enable once data size is resolved
+            if (false && shouldSync) {
+                // Export MINIMAL data for syncing (saves storage space)
+                const exportData = state.exportMinimalSyncData();
+                window.AutoSync.autoSave(exportData);
+            }
+        }
+    };
+
+    return {
     // ============================================================================================
     // CORE DATA STATE - Connected to original localStorage structure
     // ============================================================================================
@@ -89,7 +128,12 @@ const useAppStore = create((set, get) => ({
     deposits: [],                      // Money added to account
     withdrawals: [],                   // Money taken out
     tradingStats: {},                  // Cached analytics
-    
+
+    // Auto-Sync State
+    syncStatus: 'idle',                // Sync status: idle, syncing, synced, error
+    lastSyncTime: null,                // Timestamp of last sync
+    syncError: null,                   // Last sync error message
+
     // Market Data (Professional Trading)
     priceHistory: {},                  // Historical price data for charts
     marketData: {},                    // Real-time market information
@@ -1117,7 +1161,7 @@ const useAppStore = create((set, get) => ({
 
     exportData: () => {
         const state = get()
-        
+
         // Get trading data from localStorage (where it's actually stored)
         const getTradingData = () => {
             try {
@@ -1128,34 +1172,111 @@ const useAppStore = create((set, get) => ({
                 return []
             }
         }
-        
+
         const tradingData = getTradingData()
-        
+
         return {
             // Trading data (from localStorage)
             trades: tradingData,
             tradeHistory: tradingData,
-            
+
             // Investment data
             investments: state.investments || [],
             longTermInvestments: state.longTermInvestments || [],
-            
+
             // Case drops data
             caseDrops: state.caseDrops || [],
             years: state.years || [],
-            
+
             // Financial data
             accountBalance: state.accountBalance || 0,
             deposits: state.deposits || [],
             withdrawals: state.withdrawals || [],
-            
+
             // Categories
             categories: state.categories || [],
-            
+
             // Additional metadata
             exportDate: new Date().toISOString(),
             version: '2.0.0',
             appName: 'SkinStatz'
+        }
+    },
+
+    // Export minimal data for syncing (removes calculated/fetched fields)
+    exportMinimalSyncData: () => {
+        const state = get()
+
+        // Helper to strip unnecessary fields - BARE MINIMUM
+        const minimalItem = (item) => {
+            const minimal = {
+                id: item.id,
+                n: item.name || item.itemName, // Keep name only
+                bp: item.buyPrice,
+                bd: item.buyDate || item.dateAdded,
+                st: item.status
+            }
+
+            // Only add sell data if sold
+            if (item.sellPrice) minimal.sp = item.sellPrice
+            if (item.sellDate) minimal.sd = item.sellDate
+
+            // Removed: category, float, stickers - can be inferred/re-fetched
+
+            return minimal
+        }
+
+        // Get trading data
+        const getTradingData = () => {
+            try {
+                const saved = localStorage.getItem('tradingData')
+                return saved ? JSON.parse(saved) : []
+            } catch (e) {
+                return []
+            }
+        }
+
+        const tradingData = getTradingData()
+
+        return {
+            // Minimal trading data (strip price history, calculated fields)
+            trades: tradingData.map(minimalItem),
+
+            // Minimal investment data
+            investments: (state.investments || []).map(minimalItem),
+            longTermInvestments: (state.longTermInvestments || []).map(minimalItem),
+
+            // Minimal case drops - shortened keys
+            caseDrops: (state.caseDrops || []).map(drop => ({
+                id: drop.id,
+                n: drop.name, // name
+                w: drop.weekId, // weekId
+                d: drop.date || drop.dateAdded, // date
+                v: drop.value || drop.sellPrice // value
+            })),
+
+            years: state.years || [],
+
+            // Financial data - shortened keys, remove notes
+            accountBalance: state.accountBalance || 0,
+            deposits: (state.deposits || []).map(d => ({
+                id: d.id,
+                a: d.amount, // amount
+                d: d.date // date
+                // note removed to save space
+            })),
+            withdrawals: (state.withdrawals || []).map(w => ({
+                id: w.id,
+                a: w.amount, // amount
+                d: w.date // date
+                // note removed to save space
+            })),
+
+            // Categories removed to save space - not needed for core functionality
+
+            // Metadata - shortened
+            v: '2.0.0' // version only, no export date
+            // exportDate removed to save space
         }
     },
 
@@ -1179,6 +1300,55 @@ const useAppStore = create((set, get) => ({
                 throw new Error('Invalid data format')
             }
 
+            // Helper to expand minimal format back to full format
+            const expandMinimalItem = (item) => {
+                // Check if it's minimal format (has shortened keys)
+                if (item.n && !item.name) {
+                    return {
+                        id: item.id,
+                        name: item.n,
+                        itemName: item.n,
+                        buyPrice: item.bp,
+                        buyDate: item.bd,
+                        dateAdded: item.bd,
+                        sellPrice: item.sp,
+                        sellDate: item.sd,
+                        status: item.st
+                        // category, float, stickers removed to save space
+                    }
+                }
+                // Already full format
+                return item
+            }
+
+            // Expand case drops
+            const expandCaseDrop = (drop) => {
+                if (drop.n && !drop.name) {
+                    return {
+                        id: drop.id,
+                        name: drop.n,
+                        weekId: drop.w,
+                        date: drop.d,
+                        dateAdded: drop.d,
+                        value: drop.v,
+                        sellPrice: drop.v
+                    }
+                }
+                return drop
+            }
+
+            // Expand deposits/withdrawals
+            const expandFinancial = (item) => {
+                if (item.a && item.amount === undefined) {
+                    return {
+                        id: item.id,
+                        amount: item.a,
+                        date: item.d
+                    }
+                }
+                return item
+            }
+
             // Get existing trading data from localStorage
             const getExistingTradingData = () => {
                 try {
@@ -1189,9 +1359,9 @@ const useAppStore = create((set, get) => ({
                     return []
                 }
             }
-            
+
             const existingTradingData = getExistingTradingData()
-            const importedTrades = importedData.trades || importedData.tradeHistory || []
+            const importedTrades = (importedData.trades || importedData.tradeHistory || []).map(expandMinimalItem)
             const mergedTradingData = [...existingTradingData, ...importedTrades]
 
             // Save merged trading data to localStorage
@@ -1204,22 +1374,22 @@ const useAppStore = create((set, get) => ({
             const newState = {
                 // Trading data (note: we don't store this in state, it's in localStorage)
                 tradeHistory: mergedTradingData,
+
+                // Investment data (expand minimal format)
+                investments: [...(state.investments || []), ...(importedData.investments || []).map(expandMinimalItem)],
+                longTermInvestments: [...(state.longTermInvestments || []), ...(importedData.longTermInvestments || []).map(expandMinimalItem)],
                 
-                // Investment data
-                investments: [...(state.investments || []), ...(importedData.investments || [])],
-                longTermInvestments: [...(state.longTermInvestments || []), ...(importedData.longTermInvestments || [])],
-                
-                // Case drops data
-                caseDrops: [...(state.caseDrops || []), ...(importedData.caseDrops || [])],
+                // Case drops data (expand minimal format)
+                caseDrops: [...(state.caseDrops || []), ...(importedData.caseDrops || []).map(expandCaseDrop)],
                 years: importedData.years ? [...(state.years || []), ...importedData.years] : state.years,
-                
-                // Financial data
+
+                // Financial data (expand minimal format)
                 accountBalance: state.accountBalance + (importedData.accountBalance || 0),
-                deposits: [...(state.deposits || []), ...(importedData.deposits || [])],
-                withdrawals: [...(state.withdrawals || []), ...(importedData.withdrawals || [])],
+                deposits: [...(state.deposits || []), ...(importedData.deposits || []).map(expandFinancial)],
+                withdrawals: [...(state.withdrawals || []), ...(importedData.withdrawals || []).map(expandFinancial)],
                 
-                // Categories
-                categories: [...(state.categories || []), ...(importedData.categories || [])],
+                // Categories - keep existing (not synced to save space)
+                categories: state.categories || [],
                 
                 // Reset calculated data
                 performanceMetrics: {},
@@ -1387,49 +1557,80 @@ const useAppStore = create((set, get) => ({
         tradeHistory: [],
         performanceMetrics: {},
         lastCalculated: null
-    }))
-}))
+    })),
 
-// Initialize store instance once with existing data
-let storeInstance = null
+    // Sync status actions
+    setSyncStatus: (status, error = null) => set({
+        syncStatus: status,
+        syncError: error,
+        lastSyncTime: status === 'synced' ? Date.now() : get().lastSyncTime
+    })
+}})
 
-const getStore = () => {
-    if (!storeInstance) {
-        console.log('🏪 Creating new store instance...')
-        storeInstance = useAppStore()
-        // Load data from original localStorage structure on first initialization
+// Initialize store with data on first access
+let initialized = false
+
+const initializeStore = () => {
+    if (!initialized) {
+        console.log('🏪 Initializing store with local data...')
+        initialized = true
+
+        // Load data from original localStorage structure
         try {
-            storeInstance.loadFromOriginalStructure()
+            useAppStore.getState().loadFromOriginalStructure()
             console.log('✅ Store initialized with existing data')
         } catch (error) {
             console.error('❌ Failed to load existing data:', error)
             console.log('🔄 Store initialized with empty data')
         }
+
+        // TEMPORARILY DISABLED - sync loading causing issues with old base64 data
+        // Will re-enable once data size is resolved
+        if (false && window.AutoSync && window.AutoSync.isAvailable()) {
+            console.log('🔄 Loading from sync storage...')
+            useAppStore.getState().setSyncStatus('syncing')
+
+            window.AutoSync.load(function(syncedData) {
+                if (syncedData) {
+                    try {
+                        console.log('📥 Merging synced data...')
+                        // Use importData to merge (it handles duplicates intelligently)
+                        useAppStore.getState().importData(syncedData)
+                        useAppStore.getState().setSyncStatus('synced')
+                        console.log('✅ Synced data loaded and merged')
+                    } catch (error) {
+                        console.error('❌ Failed to merge synced data:', error)
+                        useAppStore.getState().setSyncStatus('error', error.message)
+                    }
+                } else {
+                    console.log('ℹ️ No synced data found, using local data only')
+                    useAppStore.getState().setSyncStatus('idle')
+                }
+            })
+
+            // Setup listener for changes from other devices
+            window.AutoSync.setupListener()
+        } else {
+            console.log('ℹ️ Auto-sync temporarily disabled')
+        }
     }
-    return storeInstance
 }
 
-// Make store creation function immediately available
-const createStoreInstance = () => {
-    console.log('🏪 Explicit store creation requested')
-    return getStore()
-}
+// Make the Zustand store directly available globally
+window.useAppStore = useAppStore
+window.store = useAppStore
 
-// Make store globally available for script tag loading - make it synchronous
-window.useAppStore = getStore
-window.createStoreInstance = createStoreInstance
-
-// Also make the store instance directly available for immediate access
+// Initialize store immediately
 try {
-    const immediateStore = getStore()
-    window.store = immediateStore
-    console.log('🏪 Store instance made immediately available as window.store')
+    initializeStore()
+    console.log('🏪 Store made immediately available as window.store and window.useAppStore')
 } catch (error) {
-    console.warn('⚠️ Could not create immediate store instance:', error)
+    console.warn('⚠️ Could not initialize store:', error)
 }
 
-// ES6 export for module imports
-export { useAppStore }
+// ES6 export for module imports (commented out for extension compatibility)
+// Only enable if using pure ES6 module setup
+// export { useAppStore }
 
 console.log('🏪 CS2 Trading Store initialized and available globally')
 console.log('🔍 Available global store methods:', {

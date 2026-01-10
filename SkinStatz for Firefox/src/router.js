@@ -98,8 +98,8 @@ class CS2Router {
             this.initStore()
             
             // Update store if available
-            if (this.store) {
-                this.store.setCurrentPage(pageName)
+            if (this.store && this.store.getState) {
+                this.store.getState().setCurrentPage(pageName)
                 console.log(`✅ Store updated with current page: ${pageName}`)
             } else {
                 console.warn('⚠️ Store not available in router')

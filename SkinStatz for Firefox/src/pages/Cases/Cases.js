@@ -6,13 +6,12 @@
 // Supports Wednesday-to-Tuesday week cycles, hierarchical navigation, and comprehensive analytics
 // ================================================================================================
 
-import { useAppStore } from '../../store.js'
 import { priceService } from '../../services/PriceService.js'
 
 export class CasesPage {
     constructor() {
-        // Store the useAppStore function, not a snapshot of state
-        this.useAppStore = useAppStore
+        // Access global Zustand store
+        this.useAppStore = window.useAppStore.getState
         
         // Create a method to get fresh store state
         this.getStore = () => this.useAppStore()

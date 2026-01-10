@@ -5,14 +5,14 @@
 // Features real-time charts, market heatmaps, advanced analytics, and position management
 // ================================================================================================
 
-import { useAppStore } from '../../store.js'
 import { priceService } from '../../services/PriceService.js'
 
 // Components will be loaded dynamically when needed
 
 export class TradingPage {
     constructor() {
-        this.store = useAppStore()
+        // Access global Zustand store (use .getState() to get current state)
+        this.store = window.useAppStore.getState()
         this.charts = {}
         this.currentTab = 'overview'
         this.currentView = 'professional' // professional, compact, mobile
@@ -282,7 +282,14 @@ export class TradingPage {
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons()
             }
-            
+
+            // Initialize responsive table behavior
+            setTimeout(() => {
+                if (window.responsiveTableUtil) {
+                    window.responsiveTableUtil.init()
+                }
+            }, 100)
+
             // Setup modal event listeners after a delay to ensure DOM is ready
             setTimeout(() => {
                 this.setupModalEventListeners()
@@ -299,7 +306,7 @@ export class TradingPage {
             
             // Make this instance available globally for onclick handlers
             window.tradingPage = this
-            
+
         } catch (error) {
             console.error('❌ Failed to render trading page:', error)
             container.innerHTML = this.getErrorHTML(error)
@@ -310,25 +317,25 @@ export class TradingPage {
         return `
             <!-- Professional Trading Dashboard -->
             <div class="professional-trading-dashboard min-h-full bg-gray-950">
-                
+
                 <!-- Top Navigation Bar -->
                 <div class="trading-header bg-gray-900 border-b border-gray-700 py-4">
-                    <div class="px-6">
-                        <div class="flex items-center justify-between">
+                    <div class="px-4 md:px-6">
+                        <div class="flex items-center justify-between gap-4 flex-wrap xl:flex-nowrap">
                             <!-- Left: Logo and Main Metrics -->
-                            <div class="flex items-center gap-6" style="overflow: hidden;">
-                                <div class="flex items-center gap-3" style="min-width: 250px;">
+                            <div class="flex items-center gap-3 md:gap-6 flex-wrap" style="min-width: 0;">
+                                <div class="flex items-center gap-3 flex-shrink-0">
                                     <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
                                         <i data-lucide="trending-up" class="w-5 h-5 text-white"></i>
                                     </div>
-                                    <h1 class="text-xl font-bold text-white">CS2 Trading Pro</h1>
+                                    <h1 class="text-lg md:text-xl font-bold text-white whitespace-nowrap">CS2 Trading Pro</h1>
                                     <span class="bg-gradient-to-r from-green-500 to-blue-600 text-white text-xs px-2 py-1 rounded-full">
                                         Live
                                     </span>
                                 </div>
-                                
+
                                 <!-- Real-time Trading Metrics -->
-                                <div class="flex items-center gap-6 text-sm">
+                                <div class="flex items-center gap-3 md:gap-6 text-xs md:text-sm flex-wrap">
                                     <div class="flex items-center gap-2">
                                         <span class="text-gray-400">Holdings:</span>
                                         <span class="text-white font-semibold" id="portfolio-value">$${this.store.formatNumber(metrics.portfolioValue || 0)}</span>
@@ -343,8 +350,8 @@ export class TradingPage {
                                         <span class="text-green-400 text-xs" id="daily-pnl-percent">0.0%</span>
                                     </div>
                                     <!-- Trading Gains Card -->
-                                    <div class="bg-gray-800 border border-gray-600 rounded-lg px-3 py-1">
-                                        <div class="flex items-center gap-3 text-xs">
+                                    <div class="bg-gray-800 border border-gray-600 rounded-lg px-2 md:px-3 py-1">
+                                        <div class="flex items-center gap-2 md:gap-3 text-xs">
                                             <span class="text-gray-400">7d</span>
                                             <span class="text-green-400 font-medium" id="header-gains-7d">$0</span>
                                             <span class="text-gray-400">30d</span>
@@ -355,9 +362,9 @@ export class TradingPage {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Right: Controls and Settings -->
-                            <div class="flex items-center gap-3">
+                            <div class="flex items-center gap-3 flex-shrink-0">
                                 <div class="trading-status flex items-center gap-2 bg-green-900/30 px-3 py-1 rounded-lg">
                                     <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                                     <span class="text-green-400 text-sm">Market Open</span>
@@ -414,7 +421,7 @@ export class TradingPage {
                                     </div>
 
                             <!-- Enhanced Monthly Summary Cards -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-10">
                                 <!-- Average Return Percentage -->
                                 <div class="stat-card bg-gray-900 border border-gray-700 rounded-xl p-6 hover:border-gray-600 transition-all duration-200">
                                     <div class="flex items-center justify-between mb-3">
@@ -487,7 +494,7 @@ export class TradingPage {
                             </div>
 
                             <!-- Original Monthly Metrics Cards -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-10">
                                 <!-- Total Trades This Month -->
                                 <div class="stat-card bg-gray-900 border border-gray-700 rounded-xl p-6 hover:border-gray-600 transition-all duration-200">
                                     <div class="flex items-center justify-between mb-3">
@@ -562,7 +569,7 @@ export class TradingPage {
                                             </div>
                                             <h3 id="weekly-breakdown-title" class="text-xl font-bold text-white">Weekly Breakdown - ${this.getCurrentMonthDisplay()}</h3>
                                         </div>
-                                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6" id="weekly-breakdown-container">
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 md:gap-6" id="weekly-breakdown-container">
                                             ${this.generateWeeklyBreakdownHTML()}
                                         </div>
                                     </div>
@@ -623,7 +630,7 @@ export class TradingPage {
                                     </div>
                                     <h3 class="text-xl font-bold text-white">Trading Insights</h3>
                                 </div>
-                                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
                                     <!-- Trading Pattern Analysis -->
                                     <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 hover:border-gray-600 transition-all duration-200">
                                         <div class="flex items-center gap-3 mb-4">
@@ -854,7 +861,7 @@ export class TradingPage {
                                 </div>
                                 <!-- Trading Statistics Cards -->
                             <section class="trading-stats-cards mb-8">
-                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
                                     <!-- Total Portfolio Value -->
                                     <div class="stat-card bg-gray-800 border border-gray-600 rounded-xl p-6">
                                         <div class="text-center">
@@ -899,7 +906,7 @@ export class TradingPage {
 
                             <!-- Second Row - Performance Metrics -->
                             <section class="trading-performance-cards mb-8">
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                                     <!-- Price Changes -->
                                     <div class="stat-card bg-gray-800 border border-gray-600 rounded-xl p-4">
                                         <div class="text-center">
@@ -960,7 +967,7 @@ export class TradingPage {
                             <!-- Trading Table -->
                             <div class="bg-gray-900 border border-gray-700 rounded-xl overflow-hidden">
                                 <div class="p-4 border-b border-gray-700">
-                                    <div class="flex items-center justify-between">
+                                    <div class="flex items-center justify-between flex-wrap gap-3">
                                         <h3 class="text-white font-semibold">Trading History</h3>
                                         <div class="flex items-center gap-3">
                                             <i data-lucide="activity" class="w-4 h-4 text-gray-400"></i>
@@ -1015,9 +1022,11 @@ export class TradingPage {
                                         </div>
                                     </div>
                                 </div>
-                                <div class="p-4 border-b border-gray-700">
-                                    <div class="flex items-center gap-3 w-full text-gray-400 text-sm font-medium">
-                                        <div class="flex-none w-12 text-center">
+                                <!-- Horizontally Scrollable Table Container -->
+                                <div class="overflow-x-auto responsive-trading-table">
+                                    <div class="p-4 border-b border-gray-700" style="min-width: 1400px;">
+                                        <div class="flex items-center gap-3 w-full text-gray-400 text-sm font-medium">
+                                            <div class="flex-none w-12 text-center">
                                             <span class="inline-flex items-center justify-center w-6 h-6 bg-gray-800 border border-gray-600 rounded text-gray-400 text-xs font-medium">
                                                 #
                                             </span>
@@ -1040,7 +1049,7 @@ export class TradingPage {
                                         </div>
                                         
                                         <!-- 24h % Column -->
-                                        <div class="flex-none w-20 text-center">
+                                        <div class="flex-none w-20 text-center percentage-col">
                                             <span class="inline-flex items-center justify-center gap-1">
                                                 <svg class="w-3 h-3 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
@@ -1048,9 +1057,9 @@ export class TradingPage {
                                                 <span class="text-amber-400">24h %</span>
                                             </span>
                                         </div>
-                                        
+
                                         <!-- 7d % Column -->
-                                        <div class="flex-none w-20 text-center">
+                                        <div class="flex-none w-20 text-center percentage-col">
                                             <span class="inline-flex items-center justify-center gap-1">
                                                 <svg class="w-3 h-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
@@ -1058,9 +1067,9 @@ export class TradingPage {
                                                 <span class="text-emerald-400">7d %</span>
                                             </span>
                                         </div>
-                                        
+
                                         <!-- 30d % Column -->
-                                        <div class="flex-none w-20 text-center">
+                                        <div class="flex-none w-20 text-center percentage-col">
                                             <span class="inline-flex items-center justify-center gap-1">
                                                 <svg class="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -1144,9 +1153,9 @@ export class TradingPage {
                                             </span>
                                         </div>
                                     </div>
-                                </div>
-                                <div id="trades-table-body" class="divide-y divide-gray-700">
-                                    ${this.getTradingTableHTML()}
+                                    <div id="trades-table-body" class="divide-y divide-gray-700" style="min-width: 1400px;">
+                                        ${this.getTradingTableHTML()}
+                                    </div>
                                 </div>
                             </div>
                             </div>
@@ -2163,21 +2172,21 @@ export class TradingPage {
                         </div>
                         
                         <!-- 24h % -->
-                        <div class="flex-none w-20 text-center">
+                        <div class="flex-none w-20 text-center percentage-col">
                             <span class="text-xs font-medium text-gray-500">
                                 --%
                             </span>
                         </div>
-                        
+
                         <!-- 7d % -->
-                        <div class="flex-none w-20 text-center">
+                        <div class="flex-none w-20 text-center percentage-col">
                             <span class="text-xs font-medium text-gray-500">
                                 --%
                             </span>
                         </div>
-                        
+
                         <!-- 30d % -->
-                        <div class="flex-none w-20 text-center">
+                        <div class="flex-none w-20 text-center percentage-col">
                             <span class="text-xs font-medium text-gray-500">
                                 --%
                             </span>
